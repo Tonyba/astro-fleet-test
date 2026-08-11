@@ -29,7 +29,7 @@ public_folder: /images/home                          # URL these files resolve t
 
 media_libraries:
   all:
-    max_file_size: 1024000
+    max_file_size: 125829120
     slugify_filename: true
     transformations:
       raster_image: # original format
