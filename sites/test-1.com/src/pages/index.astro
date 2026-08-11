@@ -12,29 +12,13 @@ import CpaBlog from '@astro-fleet/shared-ui/src/components/CpaBlog.astro';
 import CpaContact from '@astro-fleet/shared-ui/src/components/CpaContact.astro';
 
 // All content is CMS-managed via Sveltia (see public/admin/config.yml).
-import settingsData from '../data/settings.json';
-import homeData from '../data/home.json';
-
-// Prefix every internal path (images + links, i.e. strings starting with "/")
-// with the configured base, so the site works under a GitHub Pages sub-path.
-// tel:/mailto:/https/# links don't start with "/" and are left untouched.
-const BASE = import.meta.env.BASE_URL;
-const withBase = (p: unknown) =>
-  typeof p === 'string' && p.startsWith('/') ? BASE.replace(/\/$/, '') + p : p;
-const rebase = (v: any): any =>
-  Array.isArray(v)
-    ? v.map(rebase)
-    : v && typeof v === 'object'
-      ? Object.fromEntries(Object.entries(v).map(([k, val]) => [k, rebase(val)]))
-      : withBase(v);
-
-const settings = rebase(settingsData);
-const home = rebase(homeData);
+import settings from '../data/settings.json';
+import home from '../data/home.json';
 
 // Fixed brand-widget assets (not user content).
-const GOOGLE_G = withBase('/images/home/google-g.svg');
-const TP_STARS = withBase('/images/home/trustpilot-stars.svg');
-const TP_STAR = withBase('/images/home/trustpilot-star.svg');
+const GOOGLE_G = '/images/home/google-g.svg';
+const TP_STARS = '/images/home/trustpilot-stars.svg';
+const TP_STAR = '/images/home/trustpilot-star.svg';
 
 const header = {
   navigation: settings.header.nav,
