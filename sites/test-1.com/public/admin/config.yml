@@ -1,0 +1,390 @@
+# yaml-language-server: $schema=https://unpkg.com/@sveltia/cms/schema/sveltia-cms.json
+
+# ---------------------------------------------------------------------------
+# Backend
+# ---------------------------------------------------------------------------
+# Sveltia is a GIT-BASED CMS: it commits content straight back to your repo.
+# For production, point this at your GitHub repo (owner/name). The paths below
+# are relative to the REPOSITORY ROOT — this is a monorepo, so every path is
+# prefixed with sites/test-1.com/.
+backend:
+  name: github
+  repo: tonyba/astro-fleet-test        # TODO: change to your real GitHub repo (only used for the remote/production backend)
+  branch: main
+
+# ---------------------------------------------------------------------------
+# Local development
+# ---------------------------------------------------------------------------
+# With this flag set, opening the admin on localhost lets you edit files
+# directly on disk via the File System Access API — no OAuth, no proxy server
+# (a Sveltia-only convenience over Decap/Netlify CMS). Works in Chrome/Edge.
+# When prompted, pick the MONOREPO ROOT folder (the one containing sites/).
+local_backend: true
+
+# ---------------------------------------------------------------------------
+# Media
+# ---------------------------------------------------------------------------
+media_folder: sites/test-1.com/public/images/home   # where uploads are stored (repo path)
+public_folder: /images/home                          # URL these files resolve to on the site
+
+# ---------------------------------------------------------------------------
+# Collections
+# ---------------------------------------------------------------------------
+collections:
+  # =========================================================================
+  # GLOBAL SETTINGS — brand, palette, fonts, header + footer menus
+  # =========================================================================
+  - name: settings
+    label: Site Settings
+    icon: settings
+    files:
+      - name: general
+        label: Global — Brand, Theme & Menus
+        file: sites/test-1.com/src/data/settings.json
+        description: Logo, colors, fonts, the announcement bar, and the header/footer menus.
+        fields:
+          - label: Brand
+            name: site
+            widget: object
+            fields:
+              - { label: Site name, name: name, widget: string }
+              - { label: Logo, name: logo, widget: image }
+              - { label: Logo alt text, name: logoAlt, widget: string }
+
+          - label: Colors
+            name: colors
+            widget: object
+            collapsed: true
+            fields:
+              - { label: Accent / Primary (red), name: red, widget: color }
+              - { label: Text (black), name: black, widget: color }
+              - { label: White, name: white, widget: color }
+              - { label: Muted text, name: muted, widget: color }
+              - { label: Surface (beige), name: surface, widget: color }
+              - { label: Surface dark, name: surfaceDark, widget: color }
+              - { label: Green, name: green, widget: color }
+              - { label: Border, name: border, widget: color }
+              - { label: Input background, name: inputBg, widget: color }
+              - { label: Muted background, name: bgMuted, widget: color }
+
+          - label: Fonts
+            name: fonts
+            widget: object
+            hint: >-
+              "Instrument Sans" and "Poppins" are pre-loaded and self-hosted. Any
+              other name falls back to a matching system font (loading a brand-new
+              web font also needs a change in astro.config.mjs).
+            fields:
+              - { label: Sans (headings & body), name: sans, widget: string, default: Instrument Sans }
+              - { label: Large body font, name: large, widget: string, default: Poppins }
+
+          - label: Announcement bar
+            name: announcement
+            widget: object
+            fields:
+              - label: Segments
+                name: segments
+                widget: list
+                label_singular: Segment
+                summary: '{{fields.text}}'
+                fields:
+                  - { label: Text, name: text, widget: string }
+                  - { label: Link (optional), name: href, widget: string, required: false }
+                  - { label: Underline, name: underline, widget: boolean, default: false }
+
+          - label: Header
+            name: header
+            widget: object
+            fields:
+              - { label: Button text, name: ctaText, widget: string }
+              - { label: Button link, name: ctaHref, widget: string }
+              - label: Navigation
+                name: nav
+                widget: list
+                label_singular: Menu item
+                summary: '{{fields.label}}'
+                fields:
+                  - { label: Label, name: label, widget: string }
+                  - { label: Link, name: href, widget: string }
+                  - { label: Show dropdown caret, name: caret, widget: boolean, default: false }
+
+          - label: Footer
+            name: footer
+            widget: object
+            collapsed: true
+            fields:
+              - { label: Tagline, name: tagline, widget: text }
+              - { label: '"Follow us" label', name: followLabel, widget: string }
+              - label: Social links
+                name: socials
+                widget: list
+                label_singular: Social
+                summary: '{{fields.platform}}'
+                fields:
+                  - label: Platform
+                    name: platform
+                    widget: select
+                    options: [facebook, twitter, linkedin, instagram]
+                  - { label: URL, name: href, widget: string }
+              - label: Link columns
+                name: linkColumns
+                widget: list
+                label_singular: Column
+                summary: '{{fields.title}}'
+                fields:
+                  - { label: Title, name: title, widget: string }
+                  - { label: Dim links, name: muted, widget: boolean, default: false }
+                  - label: Links
+                    name: links
+                    widget: list
+                    summary: '{{fields.label}}'
+                    fields:
+                      - { label: Label, name: label, widget: string }
+                      - { label: Link, name: href, widget: string }
+              - label: Contact column
+                name: contact
+                widget: object
+                fields:
+                  - { label: Title, name: title, widget: string }
+                  - { label: Intro, name: intro, widget: text }
+                  - { label: Phone, name: phone, widget: string, required: false }
+                  - { label: Phone link, name: phoneHref, widget: string, required: false }
+                  - { label: Email, name: email, widget: string, required: false }
+                  - { label: Email link, name: emailHref, widget: string, required: false }
+                  - { label: Address lines, name: addressLines, widget: list, required: false }
+              - { label: Copyright, name: copyright, widget: string }
+              - label: Legal links
+                name: legalLinks
+                widget: list
+                summary: '{{fields.label}}'
+                fields:
+                  - { label: Label, name: label, widget: string }
+                  - { label: Link, name: href, widget: string }
+
+  # =========================================================================
+  # HOMEPAGE — every section's text, links, buttons and images
+  # =========================================================================
+  - name: pages
+    label: Pages
+    icon: file
+    files:
+      - name: home
+        label: Homepage
+        file: sites/test-1.com/src/data/home.json
+        description: All content for the homepage, section by section.
+        fields:
+          - label: SEO
+            name: seo
+            widget: object
+            fields:
+              - { label: Page title, name: title, widget: string }
+              - { label: Meta description, name: description, widget: text }
+
+          - label: Hero
+            name: hero
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Title, name: title, widget: text }
+              - { label: Description, name: description, widget: text }
+              - label: Buttons
+                name: buttons
+                widget: list
+                max: 2
+                summary: '{{fields.text}}'
+                fields:
+                  - { label: Text, name: text, widget: string }
+                  - { label: Link, name: href, widget: string }
+                  - { label: Style, name: variant, widget: select, options: [primary, outline] }
+              - { label: Photo, name: photoSrc, widget: image }
+              - { label: Photo alt, name: photoAlt, widget: string }
+              - { label: Badge image, name: badgeSrc, widget: image }
+              - { label: Badge alt, name: badgeAlt, widget: string }
+              - { label: Review card image, name: reviewCardSrc, widget: image }
+              - { label: Review card alt, name: reviewCardAlt, widget: string }
+              - { label: Google rating, name: googleRating, widget: string }
+              - { label: Google label, name: googleLabel, widget: string }
+              - { label: Trustpilot label, name: trustpilotLabel, widget: string }
+              - { label: Name card — name, name: nameCardName, widget: string }
+              - { label: Name card — lines, name: nameCardLines, widget: list }
+
+          - label: Feature strip
+            name: featureStrip
+            widget: object
+            fields:
+              - label: Items
+                name: items
+                widget: list
+                summary: '{{fields.text}}'
+                fields:
+                  - label: Icon
+                    name: icon
+                    widget: select
+                    options: [calendar-check, adjust, deadline, pricing]
+                  - { label: Text, name: text, widget: string }
+
+          - label: Services
+            name: services
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Title, name: title, widget: string }
+              - { label: Subtitle, name: subtitle, widget: text }
+              - { label: Button text, name: ctaText, widget: string }
+              - { label: Button link, name: ctaHref, widget: string }
+              - label: Cards
+                name: items
+                widget: list
+                summary: '{{fields.title}}'
+                fields:
+                  - label: Icon
+                    name: icon
+                    widget: select
+                    options: [tax, books, payroll, audit, formation, cfo]
+                  - { label: Title, name: title, widget: string }
+                  - { label: Description, name: description, widget: text }
+                  - { label: Link, name: href, widget: string }
+                  - { label: Image, name: imageSrc, widget: image }
+                  - { label: Image alt, name: imageAlt, widget: string }
+
+          - label: About
+            name: about
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Title, name: title, widget: string }
+              - { label: Description, name: description, widget: text }
+              - { label: Image, name: imageSrc, widget: image }
+              - { label: Image alt, name: imageAlt, widget: string }
+              - { label: Feature list, name: features, widget: list }
+              - label: Primary button
+                name: primaryButton
+                widget: object
+                fields:
+                  - { label: Text, name: text, widget: string }
+                  - { label: Link, name: href, widget: string }
+              - label: Secondary button
+                name: secondaryButton
+                widget: object
+                fields:
+                  - { label: Text, name: text, widget: string }
+                  - { label: Link, name: href, widget: string }
+
+          - label: Stats bar
+            name: stats
+            widget: list
+            summary: '{{fields.value}} — {{fields.label}}'
+            fields:
+              - { label: Value, name: value, widget: string }
+              - { label: Label, name: label, widget: string }
+
+          - label: Testimonials
+            name: testimonials
+            widget: object
+            fields:
+              - { label: Title, name: title, widget: string }
+              - { label: Google rating, name: googleRating, widget: string }
+              - { label: Google label, name: googleLabel, widget: string }
+              - { label: Reviews label, name: reviewsLabel, widget: string }
+              - { label: Button text, name: ctaText, widget: string }
+              - { label: Button link, name: ctaHref, widget: string }
+              - label: Reviews
+                name: items
+                widget: list
+                summary: '{{fields.name}}'
+                fields:
+                  - { label: Quote, name: quote, widget: text }
+                  - { label: Name, name: name, widget: string }
+                  - { label: Role, name: role, widget: string }
+                  - { label: Avatar, name: avatarSrc, widget: image }
+
+          - label: CTA banner
+            name: ctaBanner
+            widget: object
+            fields:
+              - { label: Title, name: title, widget: string }
+              - { label: Subtitle, name: subtitle, widget: text }
+              - { label: Background image, name: backgroundSrc, widget: image }
+              - label: Primary button
+                name: primaryButton
+                widget: object
+                fields:
+                  - { label: Text, name: text, widget: string }
+                  - { label: Link, name: href, widget: string }
+              - label: Secondary button
+                name: secondaryButton
+                widget: object
+                fields:
+                  - { label: Text, name: text, widget: string }
+                  - { label: Link, name: href, widget: string }
+
+          - label: FAQ
+            name: faq
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Title, name: title, widget: string }
+              - { label: Subtitle, name: subtitle, widget: text }
+              - { label: Footer text, name: footerText, widget: string }
+              - { label: WhatsApp button text, name: whatsappText, widget: string }
+              - { label: WhatsApp link, name: whatsappHref, widget: string }
+              - label: Questions
+                name: items
+                widget: list
+                summary: '{{fields.question}}'
+                fields:
+                  - { label: Question, name: question, widget: string }
+                  - { label: Open by default, name: open, widget: boolean, default: false }
+                  - { label: Answer (HTML), name: answerHtml, widget: text, required: false }
+
+          - label: Blog teasers
+            name: blog
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Title, name: title, widget: string }
+              - { label: Button text, name: viewAllText, widget: string }
+              - { label: Button link, name: viewAllHref, widget: string }
+              - label: Posts
+                name: posts
+                widget: list
+                summary: '{{fields.title}}'
+                fields:
+                  - { label: Tag, name: tag, widget: string }
+                  - { label: Date, name: date, widget: string }
+                  - { label: Title, name: title, widget: string }
+                  - { label: Link, name: href, widget: string }
+                  - { label: Image, name: imageSrc, widget: image }
+                  - { label: Image alt, name: imageAlt, widget: string }
+
+          - label: Contact
+            name: contact
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Title, name: title, widget: string }
+              - { label: Lead (HTML), name: leadHtml, widget: text }
+              - { label: Description, name: description, widget: text }
+              - { label: Form title, name: formTitle, widget: string }
+              - { label: Submit button text, name: submitText, widget: string }
+              - { label: Phone flag image, name: flagSrc, widget: image }
+              - { label: Feature list, name: features, widget: list }
+
+  # =========================================================================
+  # BLOG POSTS
+  # =========================================================================
+  - name: posts
+    label: Blog Posts
+    label_singular: Post
+    icon: article
+    folder: sites/test-1.com/src/content/posts
+    create: true
+    slug: '{{fields.title | slugify}}'
+    extension: md
+    format: frontmatter
+    fields:
+      - { label: Title, name: title, widget: string }
+      - { label: Date, name: date, widget: datetime, format: 'YYYY-MM-DD', date_format: 'YYYY-MM-DD', time_format: false }
+      - { label: Description, name: description, widget: text, required: false }
+      - { label: Draft, name: draft, widget: boolean, default: false, required: false }
+      - { label: Body, name: body, widget: markdown }

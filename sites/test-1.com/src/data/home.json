@@ -1,0 +1,134 @@
+{
+  "seo": {
+    "title": "BACI & CO — Tax, Accounting & Strategic Consulting for Businesses & Individuals",
+    "description": "Tax, bookkeeping, payroll and CFO services for small businesses and individuals — handled by licensed CPAs who actually pick up the phone."
+  },
+  "hero": {
+    "eyebrow": "Certified Public Accountants — Cheyenne, WY",
+    "title": "Tax, Accounting & Strategic Consulting for Businesses & Individuals",
+    "description": "Tax, bookkeeping, payroll and CFO services for small businesses and individuals — handled by licensed CPAs who actually pick up the phone.",
+    "buttons": [
+      { "text": "Free Consultation", "href": "/contact/", "variant": "primary" },
+      { "text": "Our Services", "href": "/services/", "variant": "outline" }
+    ],
+    "photoSrc": "/images/home/hero-photo.png",
+    "photoAlt": "Licensed CPA standing with arms crossed",
+    "badgeSrc": "/images/home/hero-cpa-badge.png",
+    "badgeAlt": "Licensed CPA — State of Connecticut badge",
+    "reviewCardSrc": "/images/home/card-google-review.png",
+    "reviewCardAlt": "Google rating 4.9 out of 5, verified by Google",
+    "googleRating": "4.9",
+    "googleLabel": "Google Rating",
+    "trustpilotLabel": "Excellent",
+    "nameCardName": "Taulant",
+    "nameCardLines": ["Former IRS Special Agent", "Now On Your Side"]
+  },
+  "featureStrip": {
+    "items": [
+      { "icon": "calendar-check", "text": "Get a free mid-year check-in with a tax pro" },
+      { "icon": "adjust", "text": "Estimate and adjust your withholdings" },
+      { "icon": "deadline", "text": "File before the Oct. 15 extension deadline" },
+      { "icon": "pricing", "text": "Fixed monthly pricing — no surprise bills" }
+    ]
+  },
+  "services": {
+    "eyebrow": "What We Do",
+    "title": "Services tailored to your situation",
+    "subtitle": "Pick one service or hand us the whole back office — every engagement is led by a licensed CPA.",
+    "ctaText": "View all services",
+    "ctaHref": "/services/",
+    "items": [
+      { "icon": "tax", "title": "Tax preparation & planning", "description": "Accurate tax preparation for individuals and businesses, ensuring compliance while identifying opportunities to maximize deductions and reduce unnecessary liabilities.", "href": "/services/", "imageSrc": "/images/home/service-card.png", "imageAlt": "CPA reviewing tax documents at a desk" },
+      { "icon": "books", "title": "Bookkeeping & accounting", "description": "Clean, reconciled books every month in QuickBooks or Xero, so your numbers are always ready for decisions and lenders.", "href": "/services/", "imageSrc": "/images/home/service-card.png", "imageAlt": "Accountant working on monthly bookkeeping" },
+      { "icon": "payroll", "title": "Payroll services", "description": "On-time payroll runs, filings and W-2s/1099s for teams from one employee to one hundred — fully compliant, fully handled.", "href": "/services/", "imageSrc": "/images/home/service-card.png", "imageAlt": "Payroll being processed on a laptop" },
+      { "icon": "audit", "title": "Audit & IRS representation", "description": "Preparation and representation for IRS notices, state audits and lender reviews, so you never face an auditor alone.", "href": "/services/", "imageSrc": "/images/home/service-card.png", "imageAlt": "CPA preparing audit representation documents" },
+      { "icon": "formation", "title": "Business formation", "description": "Entity selection, EIN and state registration done right the first time — LLC, S-corp or partnership, matched to your tax picture.", "href": "/services/", "imageSrc": "/images/home/service-card.png", "imageAlt": "Advisor helping form a new business entity" },
+      { "icon": "cfo", "title": "Fractional CFO", "description": "Cash-flow forecasts, budgets and margin analysis from a senior CPA, at a fraction of the cost of a full-time hire.", "href": "/services/", "imageSrc": "/images/home/service-card.png", "imageAlt": "Fractional CFO analysing business finances" }
+    ]
+  },
+  "about": {
+    "eyebrow": "About Our Firm",
+    "title": "A team of advisors, not just a tax shop.",
+    "description": "Anderson, Blackwell & Associates CPAs, LLC was founded on a simple belief: clients deserve more than accurate returns. They deserve a firm that understands their business, anticipates problems, and earns trust over years — not just quarters.",
+    "imageSrc": "/images/home/about-photo.png",
+    "imageAlt": "Senior CPA advisor standing in front of US flags",
+    "features": [
+      "Deep expertise in small and mid-market businesses",
+      "Proactive communication — you hear from us, not just at tax time",
+      "Fixed-fee engagements with no billing surprises",
+      "Direct partner access on every engagement"
+    ],
+    "primaryButton": { "text": "Book Consultation", "href": "/contact/" },
+    "secondaryButton": { "text": "Learn More", "href": "/about/" }
+  },
+  "stats": [
+    { "value": "500+", "label": "Clients Served" },
+    { "value": "25 YRS", "label": "In Practice" },
+    { "value": "4.2M", "label": "Tax Savings Found Last Year" },
+    { "value": "98%", "label": "Client Retention" }
+  ],
+  "testimonials": {
+    "title": "What our clients say",
+    "googleRating": "4.9",
+    "googleLabel": "Google Rating",
+    "reviewsLabel": "Read our 40 reviews",
+    "ctaText": "Book Consultation",
+    "ctaHref": "/contact/",
+    "items": [
+      { "quote": "\"Anderson, Blackwell & Associates didn't just prepare our taxes — they found $47,000 in deductions our previous firm had missed for three consecutive years. The savings paid for their fees many times over.\"", "name": "James Whitfield", "role": "Owner, Delgado Construction LLC", "avatarSrc": "/images/home/avatar.png" },
+      { "quote": "\"I ran my own numbers for years and thought I was doing fine. Their mid-year planning session found a retirement strategy that cut my tax bill by a third — and they explained it so I actually understood it.\"", "name": "David Okafor", "role": "Independent consultant", "avatarSrc": "/images/home/avatar.png" },
+      { "quote": "\"They set up our S-corp, explained exactly why, and the payroll-versus-distribution split saved us about $11,000 in the first year alone.\"", "name": "Tyler Brook", "role": "Founder, Highline Gear Co.", "avatarSrc": "/images/home/avatar.png" },
+      { "quote": "\"Having a CFO on call changed how we bid jobs. We finally know our real margins per project instead of guessing at the end of the year.\"", "name": "Miguel Santos", "role": "President, Santos Concrete LLC", "avatarSrc": "/images/home/avatar.png" }
+    ]
+  },
+  "ctaBanner": {
+    "title": "Ready to Take Control of Your Tax Strategy?",
+    "subtitle": "Schedule a consultation with a CPA who brings firsthand IRS experience and strategic tax knowledge.",
+    "backgroundSrc": "/images/home/cta-bg.jpg",
+    "primaryButton": { "text": "Book Consultation", "href": "/contact/" },
+    "secondaryButton": { "text": "Call 860-801-1565", "href": "tel:+18608011565" }
+  },
+  "faq": {
+    "eyebrow": "FAQs",
+    "title": "Questions, answered",
+    "subtitle": "Can't find what you're looking for? Call us or send a message — a CPA replies within one business day.",
+    "footerText": "Still Have Questions?",
+    "whatsappText": "Chat via WhatsApp",
+    "whatsappHref": "https://wa.me/18608011565",
+    "items": [
+      {
+        "question": "How to Find a Tax Accountant Near Me?",
+        "open": true,
+        "answerHtml": "<p>If tax season has you stressed, or you're running a business and need help keeping the numbers straight, finding the right CPA or tax accountant nearby can make life a whole lot easier. A good one won't just file your return — they'll look out for you all year, help you avoid costly mistakes, and find ways to save you money.</p><p>Here's how to start your search:</p><p><strong>Check professional lists.</strong> Sites like the American Institute of CPAs (AICPA) directory, your state CPA society, or even Thumbtack can help you find licensed pros close by.</p><p>Ask around. Friends, family, coworkers, or other business owners can be your best source for recommendations — especially if they've been with their CPA for years.</p><p><strong>Google it —</strong> but dig deeper. Search for \"CPA near me\", \"tax accountant near me\", \"tax advisor near me\" or \"tax accountants near me\". Don't just stop at the first result — check reviews, look at recent comments, and see if people mention good communication and accuracy.</p><p><strong>Make sure they're legit.</strong> They should be licensed in your state and have experience with your specific needs, whether that's small business accounting, freelance taxes, or dealing with IRS letters.</p><p><strong>Know what they do (and don't do).</strong> Some focus only on tax prep, while others offer bookkeeping, payroll, and year-round planning. Pick someone who can handle what you actually need.</p><p><strong>Be clear on costs.</strong> Ask if they charge a flat fee, hourly, or per form. Surprises are fine for birthdays — not for billing.</p><p>Meet before you decide. A quick consultation can tell you if they explain things clearly, listen to your concerns, and make you feel confident they've got your back.</p>"
+      },
+      { "question": "Accountants For Powerful and Personal Niche Businesses", "open": false, "answerHtml": "" },
+      { "question": "Tax Services in NYC and Queens, NY", "open": false, "answerHtml": "" },
+      { "question": "QuickBooks Accounting, QuickBooks ProAdvisor", "open": false, "answerHtml": "" }
+    ]
+  },
+  "blog": {
+    "eyebrow": "Blog",
+    "title": "Latest from our blog",
+    "viewAllText": "View All Articles",
+    "viewAllHref": "/blog/",
+    "posts": [
+      { "tag": "Tax Strategy", "date": "Mar 13, 2025", "title": "2025 Tax Law Changes Every Small Business Owner Should Know", "href": "/blog/", "imageSrc": "/images/home/blog-post.jpg", "imageAlt": "Advisor on a video call discussing 2025 tax law changes" },
+      { "tag": "Tax Strategy", "date": "Mar 13, 2025", "title": "2025 Tax Law Changes Every Small Business Owner Should Know", "href": "/blog/", "imageSrc": "/images/home/blog-post.jpg", "imageAlt": "Advisor on a video call discussing 2025 tax law changes" },
+      { "tag": "Tax Strategy", "date": "Mar 13, 2025", "title": "2025 Tax Law Changes Every Small Business Owner Should Know", "href": "/blog/", "imageSrc": "/images/home/blog-post.jpg", "imageAlt": "Advisor on a video call discussing 2025 tax law changes" }
+    ]
+  },
+  "contact": {
+    "eyebrow": "Contact",
+    "title": "Need to speak to an expert?",
+    "leadHtml": "Fill out the form below and we'll review your situation immediately. Or call <span class=\"contact__phone\">(860) 801-1565</span> now!",
+    "description": "Whether you're overpaying in tax, dealing with IRS pressure, running the wrong entity structure, missing deductions, or trying to fix years of bad accounting, we'll tell you exactly what can be done, quickly and clearly.",
+    "formTitle": "Speak with a tax specialist now",
+    "submitText": "Submit",
+    "flagSrc": "/images/home/flag-us.png",
+    "features": [
+      "Speak directly with a senior CPA — no junior sales staff",
+      "Fixed pricing agreed before any work starts",
+      "Confidential and secure — documents move through an encrypted portal"
+    ]
+  }
+}

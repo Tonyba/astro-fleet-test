@@ -1,0 +1,187 @@
+---
+/**
+ * CpaServices.astro
+ * -----------------
+ * "Services tailored to your situation" grid. Figma node 112:13603.
+ * 6 service cards (icon, image with red base border, copy, Learn More) + CTA.
+ */
+import CpaSectionHeading from './CpaSectionHeading.astro';
+import CpaButton from './CpaButton.astro';
+
+export type ServiceIcon = 'tax' | 'books' | 'payroll' | 'audit' | 'formation' | 'cfo';
+
+export interface ServiceItem {
+  icon: ServiceIcon;
+  title: string;
+  description: string;
+  href: string;
+  imageSrc: string;
+  imageAlt: string;
+}
+
+export interface Props {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  services: ServiceItem[];
+  ctaText: string;
+  ctaHref: string;
+  linkText?: string;
+}
+
+const { eyebrow, title, subtitle, services, ctaText, ctaHref, linkText = 'Learn More' } = Astro.props;
+---
+
+<section class="services" aria-label="Services">
+  <div class="services__inner cpa-container">
+    <CpaSectionHeading eyebrow={eyebrow} title={title} subtitle={subtitle} accent="red" />
+
+    <ul class="services__grid">
+      {services.map((s) => (
+        <li class="service-card">
+          <div class="service-card__head">
+            <span class="service-card__icon" aria-hidden="true">
+              {s.icon === 'tax' && (
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M9.5 12h5M9.5 15.5h5M9.5 8.5h2"/></svg>
+              )}
+              {s.icon === 'books' && (
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2z"/><path d="M18 16H7a2 2 0 0 0-2 2M9 8h6M9 11h6"/></svg>
+              )}
+              {s.icon === 'payroll' && (
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 9v6M18 9v6"/></svg>
+              )}
+              {s.icon === 'audit' && (
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+              )}
+              {s.icon === 'formation' && (
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M9 8V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/></svg>
+              )}
+              {s.icon === 'cfo' && (
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4M4 20h16M8 16l4-5 3 3 5-6"/></svg>
+              )}
+            </span>
+            <h3 class="service-card__title">{s.title}</h3>
+          </div>
+
+          <div class="service-card__media">
+            <img src={s.imageSrc} alt={s.imageAlt} loading="lazy" width="465" height="225" />
+          </div>
+
+          <div class="service-card__body">
+            <p class="service-card__desc">{s.description}</p>
+            <a href={s.href} class="service-card__link">
+              {linkText}
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10h11m0 0-4.5-4.5M15 10l-4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+          </div>
+        </li>
+      ))}
+    </ul>
+
+    <div class="services__cta">
+      <CpaButton text={ctaText} href={ctaHref} variant="primary" />
+    </div>
+  </div>
+</section>
+
+<style>
+  .services { background: var(--cpa-white, #fff); }
+  .services__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    padding-block: 80px;
+  }
+
+  .services__grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .service-card {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-block: 20px;
+    background: var(--cpa-white, #fff);
+    border-radius: 20px;
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.06);
+  }
+
+  .service-card__head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-inline: 20px;
+  }
+  .service-card__icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background: var(--cpa-red, #bc1a18);
+    border-radius: 18px;
+  }
+  .service-card__icon svg { width: 26px; height: 26px; }
+  .service-card__title {
+    font-size: var(--cpa-fs-subtitle, 20px);
+    font-weight: 600;
+    line-height: var(--cpa-lh-subtitle, 28px);
+    color: var(--cpa-black, #000);
+    margin: 0;
+  }
+
+  .service-card__media {
+    height: 225px;
+    border-bottom: 8px solid var(--cpa-red, #bc1a18);
+    overflow: hidden;
+  }
+  .service-card__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .service-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-inline: 20px;
+  }
+  .service-card__desc {
+    font-size: var(--cpa-fs-body, 16px);
+    font-weight: 400;
+    line-height: var(--cpa-lh-body, 24px);
+    color: var(--cpa-muted, #606060);
+    margin: 0;
+  }
+  .service-card__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--cpa-red, #bc1a18);
+    font-size: var(--cpa-fs-large, 18px);
+    font-weight: 600;
+    line-height: 24px;
+  }
+  .service-card__link svg { width: 18px; height: 18px; }
+
+  .services__cta { margin-top: 10px; }
+
+  @media (max-width: 1024px) {
+    .services__grid { grid-template-columns: repeat(2, 1fr); }
+    .services__inner { padding-block: 64px; }
+  }
+  @media (max-width: 767px) {
+    .services__grid { grid-template-columns: 1fr; }
+    .services__inner { padding-block: 48px; }
+  }
+</style>

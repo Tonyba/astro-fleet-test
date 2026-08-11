@@ -1,0 +1,149 @@
+---
+/**
+ * CpaAbout.astro
+ * --------------
+ * "A team of advisors, not just a tax shop" split section. Figma node 112:13604.
+ * Left: 4:5 photo. Right: eyebrow, H2, rule, lead, check-list, two buttons.
+ */
+import CpaButton from './CpaButton.astro';
+
+export interface Props {
+  eyebrow: string;
+  title: string;
+  description: string;
+  features: string[];
+  imageSrc: string;
+  imageAlt: string;
+  primaryButton: { text: string; href: string };
+  secondaryButton: { text: string; href: string };
+}
+
+const { eyebrow, title, description, features, imageSrc, imageAlt, primaryButton, secondaryButton } = Astro.props;
+---
+
+<section class="about" aria-label="About our firm">
+  <div class="about__inner cpa-container">
+    <div class="about__media">
+      <img src={imageSrc} alt={imageAlt} loading="lazy" width="590" height="624" />
+    </div>
+
+    <div class="about__content">
+      <div class="about__title">
+        <span class="about__eyebrow">{eyebrow}</span>
+        <h2 class="about__heading">{title}</h2>
+        <span class="about__rule" aria-hidden="true"></span>
+        <p class="about__lead">{description}</p>
+      </div>
+
+      <ul class="about__features">
+        {features.map((f) => (
+          <li class="about__feature">
+            <span class="about__check" aria-hidden="true">
+              <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-6"/></svg>
+            </span>
+            <p class="about__feature-text">{f}</p>
+          </li>
+        ))}
+      </ul>
+
+      <div class="about__buttons">
+        <CpaButton text={primaryButton.text} href={primaryButton.href} variant="dark" />
+        <CpaButton text={secondaryButton.text} href={secondaryButton.href} variant="outline" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .about { background: var(--cpa-surface, #f4f4ef); }
+  .about__inner {
+    display: flex;
+    align-items: center;
+    gap: 100px;
+    padding-block: 76px;
+  }
+
+  .about__media {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 624px;
+    background: #d9e0e8;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .about__media img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+
+  .about__content {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 40px;
+  }
+
+  .about__title { display: flex; flex-direction: column; gap: 20px; width: 100%; }
+  .about__eyebrow {
+    display: inline-flex;
+    align-self: flex-start;
+    align-items: center;
+    padding: 8px 16px;
+    border: 1px solid var(--cpa-red, #bc1a18);
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 16px;
+    text-transform: uppercase;
+    color: var(--cpa-red, #bc1a18);
+  }
+  .about__heading {
+    font-size: var(--cpa-fs-h2, 42px);
+    font-weight: 600;
+    line-height: var(--cpa-lh-h2, 54px);
+    color: var(--cpa-black, #000);
+    margin: 0;
+  }
+  .about__rule { display: block; height: 1px; width: 100%; background: var(--cpa-border, #d9d9d9); }
+  .about__lead {
+    font-family: var(--cpa-font-large, 'Poppins', sans-serif);
+    font-size: var(--cpa-fs-large, 18px);
+    font-weight: 400;
+    line-height: var(--cpa-lh-large, 28px);
+    color: var(--cpa-black, #000);
+    margin: 0;
+  }
+
+  .about__features { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 20px; }
+  .about__feature { display: flex; align-items: center; gap: 20px; }
+  .about__check {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background: var(--cpa-red, #bc1a18);
+    border-radius: 50%;
+  }
+  .about__feature-text {
+    font-family: var(--cpa-font-large, 'Poppins', sans-serif);
+    font-size: var(--cpa-fs-large, 18px);
+    font-weight: 500;
+    line-height: var(--cpa-lh-large, 28px);
+    color: var(--cpa-black, #000);
+    margin: 0;
+  }
+
+  .about__buttons { display: flex; flex-wrap: wrap; gap: 12px; }
+
+  @media (max-width: 1024px) {
+    .about__inner { gap: 48px; padding-block: 60px; }
+    .about__media { height: 520px; }
+  }
+  @media (max-width: 767px) {
+    .about__inner { flex-direction: column; gap: 36px; padding-block: 48px; }
+    .about__media { width: 100%; height: auto; aspect-ratio: 4 / 5; }
+    .about__buttons { width: 100%; }
+    .about__buttons :global(.cpa-btn) { flex: 1 1 auto; }
+  }
+</style>

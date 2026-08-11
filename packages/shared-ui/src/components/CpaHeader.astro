@@ -1,0 +1,292 @@
+---
+/**
+ * CpaHeader.astro
+ * ---------------
+ * Primary site header for the CPA template. Figma node 112:13601.
+ * Desktop: logo · horizontal nav · "Free Consultation" button.
+ * <=1024px: hamburger button toggles a sliding nav panel (vanilla JS, a11y).
+ */
+export interface CpaNavItem {
+  label: string;
+  href: string;
+  /** Render a dropdown caret next to the label (matches Figma "Services"). */
+  caret?: boolean;
+}
+
+export interface Props {
+  navigation: CpaNavItem[];
+  ctaText?: string;
+  ctaHref?: string;
+  /** Provided by CpaLayout. */
+  logoSrc?: string;
+  logoAlt?: string;
+  siteName?: string;
+}
+
+const {
+  navigation,
+  ctaText = 'Free Consultation',
+  ctaHref = '/contact/',
+  logoSrc,
+  logoAlt = 'Company logo',
+  siteName = 'Home',
+} = Astro.props;
+
+const currentPath = Astro.url.pathname;
+const isActive = (href: string) =>
+  href === '/' ? currentPath === '/' : currentPath === href || currentPath.startsWith(href);
+---
+
+<header class="site-header" role="banner">
+  <nav class="site-header__nav cpa-container" aria-label="Main navigation">
+    <a href="/" class="site-header__logo" aria-label={`${siteName} — Home`}>
+      <img src={logoSrc} alt={logoAlt} class="site-header__logo-img" width="263" height="60" />
+    </a>
+
+    <ul class="site-header__menu">
+      {navigation.map((item) => (
+        <li class="site-header__menu-item">
+          <a
+            href={item.href}
+            class:list={['site-header__menu-link', { 'is-active': isActive(item.href) }]}
+          >
+            {item.label}
+            {item.caret && (
+              <svg class="site-header__caret" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            )}
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    <a href={ctaHref} class="site-header__cta">
+      {ctaText}
+      <svg class="site-header__cta-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M4 10h11m0 0-4.5-4.5M15 10l-4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </a>
+
+    <button
+      type="button"
+      class="site-header__burger"
+      aria-label="Open navigation menu"
+      aria-expanded="false"
+      aria-controls="site-nav-panel"
+    >
+      <span class="site-header__burger-bar"></span>
+      <span class="site-header__burger-bar"></span>
+      <span class="site-header__burger-bar"></span>
+    </button>
+  </nav>
+
+  <!-- Mobile / tablet nav panel -->
+  <div id="site-nav-panel" class="site-header__panel" hidden>
+    <ul class="site-header__panel-list">
+      {navigation.map((item) => (
+        <li>
+          <a
+            href={item.href}
+            class:list={['site-header__panel-link', { 'is-active': isActive(item.href) }]}
+          >{item.label}</a>
+        </li>
+      ))}
+      <li>
+        <a href={ctaHref} class="site-header__cta site-header__cta--block">{ctaText}</a>
+      </li>
+    </ul>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    background: var(--cpa-white, #fff);
+    border-bottom: 1px solid var(--cpa-border, #d9d9d9);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .site-header__nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    min-height: 60px;
+    padding-block: 14px;
+  }
+
+  /* ===== Logo ===== */
+  .site-header__logo {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .site-header__logo-img {
+    height: 48px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  /* ===== Desktop menu ===== */
+  .site-header__menu {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .site-header__menu-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: var(--cpa-fs-body, 16px);
+    font-weight: 500;
+    line-height: var(--cpa-lh-body, 24px);
+    color: var(--cpa-black, #000);
+    white-space: nowrap;
+    transition: color 0.15s ease;
+  }
+  .site-header__menu-link:hover,
+  .site-header__menu-link.is-active {
+    color: var(--cpa-red, #bc1a18);
+  }
+  .site-header__caret { flex-shrink: 0; }
+
+  /* ===== CTA button ===== */
+  .site-header__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 60px;
+    padding: 14px 32px;
+    background: var(--cpa-red, #bc1a18);
+    color: var(--cpa-white, #fff);
+    font-size: var(--cpa-fs-large, 18px);
+    font-weight: 600;
+    line-height: 24px;
+    border-radius: var(--cpa-radius-btn, 4px);
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background-color 0.15s ease;
+  }
+  .site-header__cta:hover { background: #a01614; }
+  .site-header__cta-arrow { width: 20px; height: 20px; flex-shrink: 0; }
+  .site-header__cta--block { width: 100%; }
+
+  /* ===== Hamburger ===== */
+  .site-header__burger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .site-header__burger-bar {
+    display: block;
+    width: 24px;
+    height: 2px;
+    margin: 0 auto;
+    background: var(--cpa-black, #000);
+    border-radius: 2px;
+    transition: transform 0.3s ease, opacity 0.2s ease;
+  }
+  .site-header__burger[aria-expanded='true'] .site-header__burger-bar:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  .site-header__burger[aria-expanded='true'] .site-header__burger-bar:nth-child(2) {
+    opacity: 0;
+  }
+  .site-header__burger[aria-expanded='true'] .site-header__burger-bar:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  /* ===== Mobile panel ===== */
+  .site-header__panel {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.35s ease;
+    border-top: 1px solid var(--cpa-border, #d9d9d9);
+  }
+  .site-header__panel:not([hidden]).is-open {
+    max-height: 60vh;
+  }
+  .site-header__panel-list {
+    list-style: none;
+    margin: 0;
+    padding: 12px var(--cpa-gutter, 24px) 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .site-header__panel-link {
+    display: block;
+    padding: 12px 4px;
+    font-size: var(--cpa-fs-large, 18px);
+    font-weight: 500;
+    color: var(--cpa-black, #000);
+    border-bottom: 1px solid var(--cpa-bg-muted, #f2f2f2);
+  }
+  .site-header__panel-link:hover,
+  .site-header__panel-link.is-active { color: var(--cpa-red, #bc1a18); }
+  .site-header__panel-list > li:last-child { margin-top: 12px; }
+
+  /* ===== Tablet + mobile (<=1024px) ===== */
+  @media (max-width: 1024px) {
+    .site-header__menu,
+    .site-header__nav > .site-header__cta {
+      display: none;
+    }
+    .site-header__burger {
+      display: flex;
+    }
+  }
+</style>
+
+<script>
+  function initCpaHeader() {
+    const burger = document.querySelector('.site-header__burger');
+    const panel = document.getElementById('site-nav-panel');
+    if (!burger || !panel) return;
+
+    const open = () => {
+      panel.hidden = false;
+      // allow the browser to register the un-hidden state before transitioning
+      requestAnimationFrame(() => panel.classList.add('is-open'));
+      burger.setAttribute('aria-expanded', 'true');
+      burger.setAttribute('aria-label', 'Close navigation menu');
+    };
+    const close = () => {
+      panel.classList.remove('is-open');
+      burger.setAttribute('aria-expanded', 'false');
+      burger.setAttribute('aria-label', 'Open navigation menu');
+    };
+
+    burger.addEventListener('click', () => {
+      const expanded = burger.getAttribute('aria-expanded') === 'true';
+      expanded ? close() : open();
+    });
+
+    panel.addEventListener('transitionend', () => {
+      if (!panel.classList.contains('is-open')) panel.hidden = true;
+    });
+
+    // Close when a link is chosen or on Escape.
+    panel.querySelectorAll('a').forEach((a) => a.addEventListener('click', close));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && burger.getAttribute('aria-expanded') === 'true') close();
+    });
+  }
+
+  initCpaHeader();
+  document.addEventListener('astro:after-swap', initCpaHeader);
+</script>

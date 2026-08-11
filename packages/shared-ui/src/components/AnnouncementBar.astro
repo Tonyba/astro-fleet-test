@@ -1,0 +1,80 @@
+---
+/**
+ * AnnouncementBar.astro
+ * ---------------------
+ * Full-width red utility strip shown above the header.
+ * Figma node 187:22119 — "homepage / sections" (utility bar).
+ */
+export interface AnnouncementSegment {
+  /** Text to render. */
+  text: string;
+  /** Optional link target; when set the segment renders as an <a>. */
+  href?: string;
+  /** Underline the segment (matches Figma emphasis). */
+  underline?: boolean;
+}
+
+export interface Props {
+  segments: AnnouncementSegment[];
+}
+
+const { segments } = Astro.props;
+---
+
+<aside class="announcement" aria-label="Site announcement">
+  <p class="announcement__text">
+    {segments.map((seg) =>
+      seg.href ? (
+        <a
+          href={seg.href}
+          class:list={['announcement__link', { 'announcement__link--underline': seg.underline }]}
+        >{seg.text}</a>
+      ) : (
+        <span class:list={['announcement__part', { 'announcement__part--underline': seg.underline }]}>{seg.text}</span>
+      )
+    )}
+  </p>
+</aside>
+
+<style>
+  .announcement {
+    background: var(--cpa-red, #bc1a18);
+    padding: 14px var(--cpa-gutter, 24px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .announcement__text {
+    margin: 0;
+    color: var(--cpa-white, #fff);
+    font-family: var(--cpa-font-sans);
+    font-size: var(--cpa-fs-body, 16px);
+    font-weight: 600;
+    line-height: var(--cpa-lh-body, 24px);
+  }
+
+  .announcement__link {
+    color: inherit;
+    text-decoration: none;
+    transition: opacity 0.15s ease;
+  }
+
+  .announcement__link:hover {
+    opacity: 0.85;
+  }
+
+  .announcement__link--underline,
+  .announcement__part--underline {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  @media (max-width: 767px) {
+    .announcement__text {
+      font-size: var(--cpa-fs-small, 14px);
+      line-height: var(--cpa-lh-small, 20px);
+    }
+  }
+</style>

@@ -1,0 +1,47 @@
+# yaml-language-server: $schema=https://unpkg.com/@sveltia/cms/schema/sveltia-cms.json
+
+# ---------------------------------------------------------------------------
+# Backend
+# ---------------------------------------------------------------------------
+# Sveltia is a GIT-BASED CMS: it commits content straight back to your repo.
+# For production, switch to the github backend and point it at your repo. The
+# paths below are relative to the REPOSITORY ROOT — this is a monorepo, so every
+# path is prefixed with sites/test-7.com/.
+backend:
+  name: github
+  repo: tonyba/astro-fleet-test        # TODO: change to your real GitHub repo (only used for the remote/production backend)
+  branch: main
+
+# ---------------------------------------------------------------------------
+# Local development
+# ---------------------------------------------------------------------------
+# With this flag set, opening the admin on localhost lets you edit files
+# directly on disk via the File System Access API — no OAuth, no proxy server
+# (a Sveltia-only convenience over Decap/Netlify CMS). Works in Chrome/Edge.
+# When prompted, pick the MONOREPO ROOT folder (the one containing sites/).
+local_backend: true
+
+# ---------------------------------------------------------------------------
+# Media
+# ---------------------------------------------------------------------------
+media_folder: sites/test-7.com/public/media   # where uploads are stored (repo path)
+public_folder: /media                      # URL these files resolve to on the site
+
+# ---------------------------------------------------------------------------
+# Collections
+# ---------------------------------------------------------------------------
+collections:
+  - name: posts
+    label: Blog Posts
+    label_singular: Post
+    folder: sites/test-7.com/src/content/posts
+    create: true
+    slug: '{{fields.title | slugify}}'
+    extension: md
+    format: frontmatter
+    fields:
+      - { label: Title, name: title, widget: string }
+      - { label: Date, name: date, widget: datetime, format: 'YYYY-MM-DD', date_format: 'YYYY-MM-DD', time_format: false }
+      - { label: Description, name: description, widget: text, required: false }
+      - { label: Draft, name: draft, widget: boolean, default: false, required: false }
+      - { label: Body, name: body, widget: markdown }

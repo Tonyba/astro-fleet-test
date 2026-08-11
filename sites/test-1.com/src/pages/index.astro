@@ -1,0 +1,131 @@
+---
+import CpaLayout from '@astro-fleet/shared-ui/src/layouts/CpaLayout.astro';
+import CpaHero from '@astro-fleet/shared-ui/src/components/CpaHero.astro';
+import CpaFeatureStrip from '@astro-fleet/shared-ui/src/components/CpaFeatureStrip.astro';
+import CpaServices from '@astro-fleet/shared-ui/src/components/CpaServices.astro';
+import CpaAbout from '@astro-fleet/shared-ui/src/components/CpaAbout.astro';
+import CpaStatsBar from '@astro-fleet/shared-ui/src/components/CpaStatsBar.astro';
+import CpaTestimonials from '@astro-fleet/shared-ui/src/components/CpaTestimonials.astro';
+import CpaCtaBanner from '@astro-fleet/shared-ui/src/components/CpaCtaBanner.astro';
+import CpaFaq from '@astro-fleet/shared-ui/src/components/CpaFaq.astro';
+import CpaBlog from '@astro-fleet/shared-ui/src/components/CpaBlog.astro';
+import CpaContact from '@astro-fleet/shared-ui/src/components/CpaContact.astro';
+
+// All content is CMS-managed via Sveltia (see public/admin/config.yml).
+import settings from '../data/settings.json';
+import home from '../data/home.json';
+
+// Fixed brand-widget assets (not user content).
+const GOOGLE_G = '/images/home/google-g.svg';
+const TP_STARS = '/images/home/trustpilot-stars.svg';
+const TP_STAR = '/images/home/trustpilot-star.svg';
+
+const header = {
+  navigation: settings.header.nav,
+  ctaText: settings.header.ctaText,
+  ctaHref: settings.header.ctaHref,
+};
+---
+
+<CpaLayout
+  title={home.seo.title}
+  description={home.seo.description}
+  siteName={settings.site.name}
+  logoSrc={settings.site.logo}
+  logoAlt={settings.site.logoAlt}
+  announcement={settings.announcement}
+  header={header}
+  footer={settings.footer}
+  colors={settings.colors}
+  fonts={settings.fonts}
+>
+  <CpaHero
+    eyebrow={home.hero.eyebrow}
+    title={home.hero.title}
+    description={home.hero.description}
+    buttons={home.hero.buttons}
+    photoSrc={home.hero.photoSrc}
+    photoAlt={home.hero.photoAlt}
+    badgeSrc={home.hero.badgeSrc}
+    badgeAlt={home.hero.badgeAlt}
+    reviewCardSrc={home.hero.reviewCardSrc}
+    reviewCardAlt={home.hero.reviewCardAlt}
+    googleG={GOOGLE_G}
+    trustpilotStars={TP_STARS}
+    trustpilotStar={TP_STAR}
+    googleRating={home.hero.googleRating}
+    googleLabel={home.hero.googleLabel}
+    trustpilotLabel={home.hero.trustpilotLabel}
+    nameCard={{ name: home.hero.nameCardName, lines: home.hero.nameCardLines }}
+  />
+
+  <CpaFeatureStrip items={home.featureStrip.items} />
+
+  <CpaServices
+    eyebrow={home.services.eyebrow}
+    title={home.services.title}
+    subtitle={home.services.subtitle}
+    services={home.services.items}
+    ctaText={home.services.ctaText}
+    ctaHref={home.services.ctaHref}
+  />
+
+  <CpaAbout
+    eyebrow={home.about.eyebrow}
+    title={home.about.title}
+    description={home.about.description}
+    features={home.about.features}
+    imageSrc={home.about.imageSrc}
+    imageAlt={home.about.imageAlt}
+    primaryButton={home.about.primaryButton}
+    secondaryButton={home.about.secondaryButton}
+  />
+
+  <CpaStatsBar stats={home.stats} />
+
+  <CpaTestimonials
+    title={home.testimonials.title}
+    testimonials={home.testimonials.items}
+    googleG={GOOGLE_G}
+    googleRating={home.testimonials.googleRating}
+    googleLabel={home.testimonials.googleLabel}
+    reviewsLabel={home.testimonials.reviewsLabel}
+    ctaText={home.testimonials.ctaText}
+    ctaHref={home.testimonials.ctaHref}
+  />
+
+  <CpaCtaBanner
+    title={home.ctaBanner.title}
+    subtitle={home.ctaBanner.subtitle}
+    backgroundSrc={home.ctaBanner.backgroundSrc}
+    primaryButton={home.ctaBanner.primaryButton}
+    secondaryButton={home.ctaBanner.secondaryButton}
+  />
+
+  <CpaFaq
+    eyebrow={home.faq.eyebrow}
+    title={home.faq.title}
+    subtitle={home.faq.subtitle}
+    items={home.faq.items}
+    footerText={home.faq.footerText}
+    whatsapp={{ text: home.faq.whatsappText, href: home.faq.whatsappHref }}
+  />
+
+  <CpaBlog
+    eyebrow={home.blog.eyebrow}
+    title={home.blog.title}
+    posts={home.blog.posts}
+    viewAll={{ text: home.blog.viewAllText, href: home.blog.viewAllHref }}
+  />
+
+  <CpaContact
+    eyebrow={home.contact.eyebrow}
+    title={home.contact.title}
+    leadHtml={home.contact.leadHtml}
+    description={home.contact.description}
+    features={home.contact.features}
+    formTitle={home.contact.formTitle}
+    flagSrc={home.contact.flagSrc}
+    submitText={home.contact.submitText}
+  />
+</CpaLayout>

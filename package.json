@@ -1,0 +1,25 @@
+{
+  "name": "testing",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Multi-site Astro monorepo starter for agencies and multi-brand companies",
+  "license": "MIT",
+  "packageManager": "bun@1.3.6",
+  "workspaces": [
+    "packages/*",
+    "sites/*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "new-site": "./scripts/new-site.sh",
+    "setup-infra": "./scripts/setup-infra.sh"
+  },
+  "devDependencies": {
+    "turbo": "^2"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^7.0.5"
+  }
+}

@@ -1,0 +1,85 @@
+---
+/**
+ * CpaCtaBanner.astro
+ * ------------------
+ * Full-width dark CTA band with a dimmed background photo. Figma node 112:13607.
+ */
+import CpaButton from './CpaButton.astro';
+
+export interface Props {
+  title: string;
+  subtitle: string;
+  backgroundSrc: string;
+  primaryButton: { text: string; href: string };
+  secondaryButton: { text: string; href: string };
+}
+
+const { title, subtitle, backgroundSrc, primaryButton, secondaryButton } = Astro.props;
+---
+
+<section class="cta-banner" aria-label="Call to action">
+  <img src={backgroundSrc} alt="" class="cta-banner__bg" aria-hidden="true" loading="lazy" />
+  <div class="cta-banner__inner cpa-container">
+    <div class="cta-banner__title">
+      <h2 class="cta-banner__heading">{title}</h2>
+      <p class="cta-banner__sub">{subtitle}</p>
+    </div>
+    <div class="cta-banner__buttons">
+      <CpaButton text={primaryButton.text} href={primaryButton.href} variant="primary" size="big" />
+      <CpaButton text={secondaryButton.text} href={secondaryButton.href} variant="outline-light" size="big" />
+    </div>
+  </div>
+</section>
+
+<style>
+  .cta-banner {
+    position: relative;
+    isolation: isolate;
+    background: #131927;
+    overflow: hidden;
+  }
+  .cta-banner__bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.4;
+    z-index: -1;
+  }
+  .cta-banner__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 34px;
+    padding-block: 80px;
+  }
+  .cta-banner__title {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+    color: #fff;
+    width: 100%;
+  }
+  .cta-banner__heading {
+    font-size: var(--cpa-fs-h2, 42px);
+    font-weight: 600;
+    line-height: var(--cpa-lh-h2, 54px);
+    margin: 0;
+    color: #fff;
+  }
+  .cta-banner__sub {
+    font-size: var(--cpa-fs-subtitle, 20px);
+    font-weight: 600;
+    line-height: var(--cpa-lh-subtitle, 28px);
+    margin: 0;
+  }
+  .cta-banner__buttons { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+
+  @media (max-width: 767px) {
+    .cta-banner__inner { padding-block: 56px; }
+    .cta-banner__buttons { width: 100%; }
+    .cta-banner__buttons :global(.cpa-btn) { flex: 1 1 auto; }
+  }
+</style>

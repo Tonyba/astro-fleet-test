@@ -1,0 +1,96 @@
+{
+  "site": {
+    "name": "BACI & CO",
+    "logo": "/images/home/logo.png",
+    "logoAlt": "BACI & CO — Certified Public Accounting"
+  },
+  "colors": {
+    "red": "#bc1a18",
+    "black": "#000000",
+    "white": "#ffffff",
+    "muted": "#606060",
+    "surface": "#f4f4ef",
+    "surfaceDark": "#060f12",
+    "green": "#219653",
+    "border": "#d9d9d9",
+    "inputBg": "#f4f6f9",
+    "bgMuted": "#f9f9f9"
+  },
+  "fonts": {
+    "sans": "Instrument Sans",
+    "large": "Poppins"
+  },
+  "announcement": {
+    "segments": [
+      { "text": "Talk to a CPA today — ", "href": "", "underline": false },
+      { "text": "call (860) 801-1565", "href": "tel:+18608011565", "underline": true },
+      { "text": " or ", "href": "", "underline": false },
+      { "text": "Book a Free Consultation", "href": "/contact/", "underline": true }
+    ]
+  },
+  "header": {
+    "ctaText": "Free Consultation",
+    "ctaHref": "/contact/",
+    "nav": [
+      { "label": "Home", "href": "/", "caret": false },
+      { "label": "Services", "href": "/services/", "caret": true },
+      { "label": "About Us", "href": "/about/", "caret": false },
+      { "label": "Blog", "href": "/blog/", "caret": false },
+      { "label": "Contact Us", "href": "/contact/", "caret": false }
+    ]
+  },
+  "footer": {
+    "tagline": "Trusted accounting and advisory services for businesses and individuals.",
+    "followLabel": "Follow us",
+    "socials": [
+      { "platform": "facebook", "href": "#" },
+      { "platform": "twitter", "href": "#" },
+      { "platform": "linkedin", "href": "#" },
+      { "platform": "instagram", "href": "#" }
+    ],
+    "linkColumns": [
+      {
+        "title": "Accounting Services",
+        "muted": false,
+        "links": [
+          { "label": "Tax preparation & planning", "href": "/services/" },
+          { "label": "Bookkeeping & accounting", "href": "/services/" },
+          { "label": "Payroll services", "href": "/services/" },
+          { "label": "Fractional CFO", "href": "/services/" },
+          { "label": "Audit & IRS representation", "href": "/services/" },
+          { "label": "Business formation", "href": "/services/" }
+        ]
+      },
+      {
+        "title": "Company",
+        "muted": true,
+        "links": [
+          { "label": "Services", "href": "/services/" },
+          { "label": "About us", "href": "/about/" },
+          { "label": "Blog", "href": "/blog/" },
+          { "label": "Reviews", "href": "#reviews" }
+        ]
+      }
+    ],
+    "contact": {
+      "title": "Contact",
+      "intro": "Live chat available Monday–Friday, 9am–5pm, or reach out anytime via email.",
+      "phone": "1 (307) 555-0148",
+      "phoneHref": "tel:+13075550148",
+      "email": "info@abacpas.com",
+      "emailHref": "mailto:info@abacpas.com",
+      "addressLines": [
+        "The Corporate Center at Innovation Park",
+        "12345 West University Parkway Extension",
+        "Sector 7, North District, Springfield, IL 62704",
+        "United States"
+      ]
+    },
+    "copyright": "© 2026 Anderson, Blackwell & Associates CPAs, LLC. All rights reserved.",
+    "legalLinks": [
+      { "label": "Privacy Policy", "href": "#" },
+      { "label": "Terms & Conditions", "href": "#" },
+      { "label": "T&Cs", "href": "#" }
+    ]
+  }
+}

@@ -1,0 +1,157 @@
+---
+/**
+ * CpaFaq.astro
+ * ------------
+ * "Questions, answered" accordion. Figma node 112:13608.
+ * Native <details> rows; first item open on a surface panel, rest collapsed.
+ */
+import CpaSectionHeading from './CpaSectionHeading.astro';
+
+export interface FaqItem {
+  question: string;
+  /** Trusted static HTML answer (from the design). Omitted = header-only row. */
+  answerHtml?: string;
+  open?: boolean;
+}
+
+export interface Props {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  items: FaqItem[];
+  footerText: string;
+  whatsapp: { text: string; href: string };
+}
+
+const { eyebrow, title, subtitle, items, footerText, whatsapp } = Astro.props;
+---
+
+<section class="faq" aria-label="Frequently asked questions">
+  <div class="faq__inner cpa-container">
+    <CpaSectionHeading eyebrow={eyebrow} title={title} subtitle={subtitle} accent="black" />
+
+    <div class="faq__list">
+      {items.map((item) => (
+        <details class="faq__item" open={item.open}>
+          <summary class="faq__summary">
+            <span class="faq__question">{item.question}</span>
+            <span class="faq__icon" aria-hidden="true"></span>
+          </summary>
+          {item.answerHtml && <div class="faq__answer" set:html={item.answerHtml} />}
+        </details>
+      ))}
+    </div>
+
+    <div class="faq__foot">
+      <p class="faq__foot-text">{footerText}</p>
+      <a href={whatsapp.href} class="faq__whatsapp">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="#bc1a18" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.8 4.9-1.3A10 10 0 1 0 12 2zm0 18a8 8 0 0 1-4-1.1l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1 1 12 20zm4.4-5.6c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1l-.7.9c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.2-2.8c-.2-.4.2-.4.6-1.2.1-.1 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a1 1 0 0 0-.7.3c-.3.3-.9.9-.9 2.1s.9 2.5 1.1 2.6c.1.2 1.8 2.7 4.3 3.8 1.6.7 2.2.7 3 .6.5-.1 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1 0-.1-.2-.2-.4-.3z"/></svg>
+        {whatsapp.text}
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq { background: var(--cpa-white, #fff); }
+  .faq__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+    padding-block: 80px;
+  }
+
+  .faq__list { width: 100%; max-width: 1225px; display: flex; flex-direction: column; gap: 12px; }
+
+  .faq__item { border-bottom: 1px solid var(--cpa-border, #d9d9d9); }
+  .faq__item[open] {
+    background: var(--cpa-surface, #f4f4ef);
+    border-bottom: none;
+    padding: 0 50px;
+  }
+
+  .faq__summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 76px;
+    min-height: 80px;
+    padding-inline: 50px;
+  }
+  .faq__item[open] > .faq__summary { padding-inline: 0; padding-top: 34px; }
+  .faq__summary::-webkit-details-marker { display: none; }
+  .faq__question {
+    font-size: var(--cpa-fs-subtitle, 20px);
+    font-weight: 600;
+    line-height: var(--cpa-lh-subtitle, 28px);
+    color: var(--cpa-black, #000);
+  }
+
+  /* +/− icon in a red circle */
+  .faq__icon {
+    position: relative;
+    flex-shrink: 0;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: var(--cpa-red, #bc1a18);
+  }
+  .faq__icon::before,
+  .faq__icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 13px;
+    height: 2px;
+    background: #fff;
+    transform: translate(-50%, -50%);
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+  .faq__icon::after { transform: translate(-50%, -50%) rotate(90deg); }
+  .faq__item[open] .faq__icon::after { transform: translate(-50%, -50%) rotate(0); opacity: 0; }
+
+  .faq__answer {
+    padding-bottom: 40px;
+    font-size: var(--cpa-fs-body, 16px);
+    font-weight: 400;
+    line-height: var(--cpa-lh-body, 24px);
+    color: var(--cpa-black, #000);
+    animation: faq-fade 0.25s ease;
+  }
+  .faq__answer :global(p) { margin-bottom: 16px; }
+  .faq__answer :global(p:last-child) { margin-bottom: 0; }
+  .faq__answer :global(strong) { font-weight: 600; }
+  @keyframes faq-fade { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+  .faq__foot { display: flex; flex-direction: column; align-items: center; gap: 17px; }
+  .faq__foot-text { font-size: 16px; font-weight: 600; line-height: 24px; color: var(--cpa-black, #000); }
+  .faq__whatsapp {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 60px;
+    padding: 8px 24px;
+    border: 1px solid var(--cpa-red, #bc1a18);
+    border-radius: var(--cpa-radius-btn, 4px);
+    color: var(--cpa-black, #000);
+    font-size: var(--cpa-fs-large, 18px);
+    font-weight: 600;
+    line-height: 24px;
+    transition: background-color 0.15s ease;
+  }
+  .faq__whatsapp:hover { background: var(--cpa-surface, #f4f4ef); }
+
+  @media (max-width: 1024px) {
+    .faq__inner { padding-block: 60px; }
+  }
+  @media (max-width: 767px) {
+    .faq__inner { padding-block: 48px; gap: 32px; }
+    .faq__summary { gap: 20px; min-height: 68px; padding-inline: 20px; }
+    .faq__item[open] { padding-inline: 20px; }
+    .faq__question { font-size: 17px; line-height: 24px; }
+  }
+</style>

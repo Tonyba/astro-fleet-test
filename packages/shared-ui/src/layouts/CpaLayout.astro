@@ -1,0 +1,225 @@
+---
+/**
+ * CpaLayout.astro
+ * ---------------
+ * Document shell for the CPA-firm template (Figma: "homepage template").
+ * Emits self-hosted fonts (Instrument Sans + Poppins) via the Astro Fonts API,
+ * declares the design-token :root variables, a base reset, and composes the
+ * AnnouncementBar + CpaHeader (top) and CpaFooter (bottom) around a <main> slot.
+ */
+import { Font } from 'astro:assets';
+import SEOHead from '../components/SEOHead.astro';
+import AnnouncementBar from '../components/AnnouncementBar.astro';
+import CpaHeader from '../components/CpaHeader.astro';
+import CpaFooter from '../components/CpaFooter.astro';
+import type { Props as AnnouncementProps } from '../components/AnnouncementBar.astro';
+import type { Props as HeaderProps } from '../components/CpaHeader.astro';
+import type { Props as FooterProps } from '../components/CpaFooter.astro';
+
+export interface ThemeColors {
+  red?: string;
+  black?: string;
+  white?: string;
+  muted?: string;
+  surface?: string;
+  surfaceDark?: string;
+  green?: string;
+  border?: string;
+  inputBg?: string;
+  bgMuted?: string;
+}
+export interface ThemeFonts {
+  /** Family for headings + body (default Instrument Sans). */
+  sans?: string;
+  /** Family for large body copy (default Poppins). */
+  large?: string;
+}
+
+export interface Props {
+  title: string;
+  description: string;
+  keywords?: string[];
+  canonicalUrl?: string;
+  ogImage?: string;
+  siteName: string;
+  logoSrc: string;
+  logoAlt?: string;
+  announcement: AnnouncementProps;
+  header: HeaderProps;
+  footer: FooterProps;
+  /** CMS-editable global palette. */
+  colors?: ThemeColors;
+  /** CMS-editable global font families. */
+  fonts?: ThemeFonts;
+}
+
+const {
+  title,
+  description,
+  keywords,
+  canonicalUrl,
+  ogImage,
+  siteName,
+  logoSrc,
+  logoAlt = 'BACI & CO — Certified Public Accounting',
+  announcement,
+  header,
+  footer,
+  colors = {},
+  fonts = {},
+} = Astro.props;
+
+// ---- CMS-driven theme (colors + fonts) injected as :root overrides ----
+// Loaded webfonts (Astro Fonts API) map to CSS vars; a chosen family resolves
+// to its loaded var when available, otherwise falls back to a system font.
+const FONT_VARS: Record<string, string> = {
+  'Instrument Sans': 'var(--font-heading)',
+  Poppins: 'var(--font-large)',
+};
+const fontStack = (name: string | undefined, fallback: string) => {
+  const n = name || fallback;
+  const loaded = FONT_VARS[n];
+  return `${loaded ? loaded + ', ' : ''}'${n}', system-ui, sans-serif`;
+};
+
+const colorVarMap: Record<keyof ThemeColors, string> = {
+  red: '--cpa-red',
+  black: '--cpa-black',
+  white: '--cpa-white',
+  muted: '--cpa-muted',
+  surface: '--cpa-surface',
+  surfaceDark: '--cpa-surface-dark',
+  green: '--cpa-green',
+  border: '--cpa-border',
+  inputBg: '--cpa-input-bg',
+  bgMuted: '--cpa-bg-muted',
+};
+const colorDecls = (Object.keys(colorVarMap) as (keyof ThemeColors)[])
+  .filter((k) => colors[k])
+  .map((k) => `${colorVarMap[k]}: ${colors[k]};`)
+  .join(' ');
+
+const themeCss = `:root {
+  ${colorDecls}
+  --cpa-font-sans: ${fontStack(fonts.sans, 'Instrument Sans')};
+  --cpa-font-large: ${fontStack(fonts.large, 'Poppins')};
+}`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <SEOHead
+      title={title}
+      description={description}
+      keywords={keywords}
+      canonicalUrl={canonicalUrl}
+      ogImage={ogImage}
+      siteName={siteName}
+      logoUrl={logoSrc}
+    />
+    <Font cssVariable="--font-heading" preload />
+    <Font cssVariable="--font-body" />
+    <Font cssVariable="--font-large" preload />
+    <Font cssVariable="--font-script" />
+    <style is:global>
+      :root {
+        /* ===== Colors ===== */
+        --cpa-red: #bc1a18;
+        --cpa-black: #000000;
+        --cpa-white: #ffffff;
+        --cpa-muted: #606060;
+        --cpa-surface: #f4f4ef;
+        --cpa-surface-dark: #060f12;
+        --cpa-green: #219653;
+        --cpa-border: #d9d9d9;
+        --cpa-input-bg: #f4f6f9;
+        --cpa-bg-muted: #f9f9f9;
+
+        /* ===== Fonts ===== */
+        --cpa-font-sans: var(--font-heading, 'Instrument Sans', system-ui, sans-serif);
+        --cpa-font-large: var(--font-large, 'Poppins', system-ui, sans-serif);
+        --cpa-font-script: var(--font-script, 'Mr De Haviland', cursive);
+
+        /* ===== Type scale (px = Figma) ===== */
+        --cpa-fs-h1: 52px;   --cpa-lh-h1: 60px;
+        --cpa-fs-h2: 42px;   --cpa-lh-h2: 54px;
+        --cpa-fs-h4: 28px;   --cpa-lh-h4: 34px;
+        --cpa-fs-h5: 24px;   --cpa-lh-h5: 28px;
+        --cpa-fs-subtitle: 20px; --cpa-lh-subtitle: 28px;
+        --cpa-fs-large: 18px;    --cpa-lh-large: 28px;
+        --cpa-fs-body: 16px;     --cpa-lh-body: 24px;
+        --cpa-fs-small: 14px;    --cpa-lh-small: 20px;
+
+        /* ===== Radius ===== */
+        --cpa-radius: 16px;
+        --cpa-radius-btn: 4px;
+
+        /* ===== Layout ===== */
+        --cpa-container: 1448px;
+        --cpa-gutter: 24px;
+      }
+
+      *, *::before, *::after { box-sizing: border-box; }
+      * { margin: 0; }
+
+      html {
+        scroll-behavior: smooth;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+      }
+
+      body {
+        font-family: var(--cpa-font-sans);
+        color: var(--cpa-black);
+        background-color: var(--cpa-white);
+        line-height: 1.5;
+        min-height: 100svh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      img, svg, picture, video, canvas { display: block; max-width: 100%; }
+      input, button, textarea, select { font: inherit; }
+      a { color: inherit; text-decoration: none; }
+      h1, h2, h3, h4, h5, h6 { font-family: var(--cpa-font-sans); overflow-wrap: break-word; }
+      p { overflow-wrap: break-word; }
+      main { flex: 1 0 auto; }
+
+      :focus-visible { outline: 2px solid var(--cpa-red); outline-offset: 2px; }
+
+      /* ===== Shared layout helpers ===== */
+      .cpa-container {
+        width: 100%;
+        max-width: var(--cpa-container);
+        margin-inline: auto;
+        padding-inline: var(--cpa-gutter);
+      }
+
+      .cpa-skip-link {
+        position: absolute;
+        top: -100%;
+        left: 1rem;
+        padding: 0.75rem 1.5rem;
+        background: var(--cpa-red);
+        color: #fff;
+        font-weight: 600;
+        border-radius: 0 0 0.5rem 0.5rem;
+        z-index: 9999;
+      }
+      .cpa-skip-link:focus { top: 0; }
+    </style>
+    {/* CMS-editable palette + fonts — overrides the static defaults above. */}
+    <style is:global set:html={themeCss}></style>
+  </head>
+  <body>
+    <a href="#main-content" class="cpa-skip-link">Skip to main content</a>
+    <AnnouncementBar {...announcement} />
+    <CpaHeader {...header} logoSrc={logoSrc} logoAlt={logoAlt} siteName={siteName} />
+    <main id="main-content">
+      <slot />
+    </main>
+    <CpaFooter {...footer} logoSrc={logoSrc} logoAlt={logoAlt} />
+  </body>
+</html>

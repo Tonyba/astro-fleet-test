@@ -1,0 +1,79 @@
+---
+/**
+ * CpaSectionHeading.astro
+ * -----------------------
+ * Centered section heading used across the CPA template:
+ * pill eyebrow · H2 · optional subtitle. Figma nodes 37:5162 / 25:2045.
+ */
+export interface Props {
+  eyebrow: string;
+  title: string;
+  subtitle?: string;
+  /** Eyebrow/pill accent: 'red' (border+text red) or 'black'. */
+  accent?: 'red' | 'black';
+  /** Text colour theme for dark backgrounds. */
+  theme?: 'light' | 'dark';
+  align?: 'center' | 'start';
+}
+
+const { eyebrow, title, subtitle, accent = 'red', theme = 'light', align = 'center' } = Astro.props;
+---
+
+<div class:list={['sec-head', `sec-head--${align}`, { 'sec-head--dark': theme === 'dark' }]}>
+  <span class:list={['sec-head__eyebrow', `sec-head__eyebrow--${accent}`]}>{eyebrow}</span>
+  <h2 class="sec-head__title">{title}</h2>
+  {subtitle && <p class="sec-head__subtitle">{subtitle}</p>}
+</div>
+
+<style>
+  .sec-head {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    text-align: center;
+  }
+  .sec-head--start { align-items: flex-start; text-align: left; }
+
+  .sec-head__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 16px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .sec-head__eyebrow--red { border: 1px solid var(--cpa-red, #bc1a18); color: var(--cpa-red, #bc1a18); }
+  .sec-head__eyebrow--black { border: 1px solid var(--cpa-black, #000); color: var(--cpa-black, #000); }
+
+  .sec-head__title {
+    font-size: var(--cpa-fs-h2, 42px);
+    font-weight: 600;
+    line-height: var(--cpa-lh-h2, 54px);
+    color: var(--cpa-black, #000);
+    margin: 0;
+  }
+  .sec-head__subtitle {
+    font-family: var(--cpa-font-large, 'Poppins', sans-serif);
+    font-size: var(--cpa-fs-large, 18px);
+    font-weight: 400;
+    line-height: var(--cpa-lh-large, 28px);
+    color: var(--cpa-muted, #606060);
+    margin: 0;
+    max-width: 760px;
+  }
+
+  .sec-head--dark .sec-head__title { color: #fff; }
+  .sec-head--dark .sec-head__subtitle { color: rgba(255, 255, 255, 0.8); }
+  .sec-head--dark .sec-head__eyebrow--red { color: #fff; border-color: rgba(255, 255, 255, 0.5); }
+
+  @media (max-width: 1024px) {
+    .sec-head__title { font-size: 34px; line-height: 42px; }
+  }
+  @media (max-width: 767px) {
+    .sec-head__title { font-size: 28px; line-height: 36px; }
+  }
+</style>

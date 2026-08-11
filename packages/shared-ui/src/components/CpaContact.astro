@@ -1,0 +1,210 @@
+---
+/**
+ * CpaContact.astro
+ * ----------------
+ * Dark "Need to speak to an expert?" split with an accessible lead form.
+ * Figma node 112:13610.
+ */
+import CpaButton from './CpaButton.astro';
+
+export interface Props {
+  eyebrow: string;
+  title: string;
+  /** Trusted static HTML for the emphasised lead line (contains the red phone span). */
+  leadHtml: string;
+  description: string;
+  features: string[];
+  formTitle: string;
+  flagSrc: string;
+  submitText?: string;
+}
+
+const { eyebrow, title, leadHtml, description, features, formTitle, flagSrc, submitText = 'Submit' } = Astro.props;
+---
+
+<section class="contact" aria-label="Contact us">
+  <div class="contact__inner cpa-container">
+    <div class="contact__text">
+      <div class="contact__title">
+        <span class="contact__eyebrow">{eyebrow}</span>
+        <h2 class="contact__heading">{title}</h2>
+      </div>
+      <p class="contact__lead" set:html={leadHtml}></p>
+      <p class="contact__desc">{description}</p>
+      <ul class="contact__features">
+        {features.map((f) => (
+          <li class="contact__feature">
+            <span class="contact__check" aria-hidden="true">
+              <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-6"/></svg>
+            </span>
+            <p class="contact__feature-text">{f}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <form class="contact__form" action="#" method="post" novalidate>
+      <p class="contact__form-title">{formTitle}</p>
+      <span class="contact__form-rule" aria-hidden="true"></span>
+
+      <div class="contact__row">
+        <div class="field">
+          <label class="field__label" for="c-first">First Name</label>
+          <input class="field__input" id="c-first" name="first_name" type="text" placeholder="First Name" autocomplete="given-name" />
+        </div>
+        <div class="field">
+          <label class="field__label" for="c-last">Last Name</label>
+          <input class="field__input" id="c-last" name="last_name" type="text" placeholder="Last Name" autocomplete="family-name" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="c-phone">Phone Number*</label>
+        <div class="field__phone">
+          <span class="field__flag">
+            <img src={flagSrc} alt="United States" width="25" height="25" />
+            <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 4.5 6 7.5 9 4.5" stroke="#606060" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <input class="field__input field__input--phone" id="c-phone" name="phone" type="tel" placeholder="+1" autocomplete="tel" required />
+        </div>
+        <p class="field__hint">Format: (201) 555-0123</p>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="c-email">Email Address*</label>
+        <input class="field__input" id="c-email" name="email" type="email" placeholder="Email Address" autocomplete="email" required />
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="c-message">Your Message</label>
+        <textarea class="field__input field__textarea" id="c-message" name="message" placeholder="Example: I need help with U.S. tax filing as an expat. Please contact me."></textarea>
+      </div>
+
+      <CpaButton text={submitText} href="#" variant="primary" class="contact__submit" />
+    </form>
+  </div>
+</section>
+
+<style>
+  .contact { background: var(--cpa-surface-dark, #060f12); }
+  .contact__inner {
+    display: flex;
+    align-items: center;
+    gap: 52px;
+    padding-block: 68px;
+  }
+
+  /* ===== Left text ===== */
+  .contact__text { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 50px; align-items: flex-start; color: #fff; }
+  .contact__title { display: flex; flex-direction: column; gap: 12px; }
+  .contact__eyebrow {
+    display: inline-flex;
+    align-self: flex-start;
+    align-items: center;
+    padding: 8px 16px;
+    border: 1px solid var(--cpa-red, #bc1a18);
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 16px;
+    text-transform: uppercase;
+    color: var(--cpa-red, #bc1a18);
+  }
+  .contact__heading {
+    font-size: var(--cpa-fs-h1, 52px);
+    font-weight: 600;
+    line-height: var(--cpa-lh-h1, 60px);
+    color: #fff;
+    margin: 0;
+  }
+  .contact__lead {
+    font-size: var(--cpa-fs-h4, 28px);
+    font-weight: 600;
+    line-height: var(--cpa-lh-h4, 34px);
+    color: #fff;
+    margin: 0;
+  }
+  .contact__lead :global(.contact__phone) { color: var(--cpa-red, #bc1a18); }
+  .contact__desc {
+    font-family: var(--cpa-font-large, 'Poppins', sans-serif);
+    font-size: var(--cpa-fs-large, 18px);
+    font-weight: 400;
+    line-height: var(--cpa-lh-large, 28px);
+    color: #fff;
+    margin: 0;
+  }
+  .contact__features { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 20px; }
+  .contact__feature { display: flex; align-items: center; gap: 20px; }
+  .contact__check {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 25px;
+    height: 25px;
+    background: var(--cpa-red, #bc1a18);
+    border-radius: 50%;
+  }
+  .contact__feature-text {
+    font-family: var(--cpa-font-large, 'Poppins', sans-serif);
+    font-size: var(--cpa-fs-large, 18px);
+    font-weight: 500;
+    line-height: var(--cpa-lh-large, 28px);
+    color: #fff;
+    margin: 0;
+  }
+
+  /* ===== Form card ===== */
+  .contact__form {
+    flex: 1 1 0;
+    min-width: 0;
+    background: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .contact__form-title {
+    font-size: var(--cpa-fs-h5, 24px);
+    font-weight: 600;
+    line-height: 28px;
+    color: var(--cpa-black, #000);
+    text-align: center;
+  }
+  .contact__form-rule { display: block; height: 1px; background: var(--cpa-border, #d9d9d9); }
+
+  .contact__row { display: flex; gap: 12px; }
+  .field { display: flex; flex-direction: column; gap: 8px; flex: 1 1 0; min-width: 0; }
+  .field__label { font-size: 16px; font-weight: 500; line-height: 24px; color: var(--cpa-black, #000); }
+  .field__input {
+    width: 100%;
+    height: 50px;
+    padding: 8px 12px;
+    background: var(--cpa-input-bg, #f4f6f9);
+    border: 1px solid transparent;
+    border-radius: 3px;
+    font-size: 16px;
+    line-height: 24px;
+    color: var(--cpa-black, #000);
+  }
+  .field__input::placeholder { color: var(--cpa-muted, #606060); }
+  .field__input:focus-visible { outline: none; border-color: var(--cpa-red, #bc1a18); }
+  .field__textarea { height: 120px; padding: 12px; resize: vertical; font-family: var(--cpa-font-sans); }
+
+  .field__phone { display: flex; align-items: stretch; gap: 0; background: var(--cpa-input-bg, #f4f6f9); border-radius: 3px; overflow: hidden; }
+  .field__flag { display: flex; align-items: center; gap: 6px; padding: 0 10px; }
+  .field__flag img { width: 25px; height: 25px; border-radius: 50%; object-fit: cover; }
+  .field__input--phone { background: transparent; height: 50px; padding-left: 0; }
+  .field__hint { font-size: 14px; font-weight: 400; line-height: 20px; color: var(--cpa-muted, #606060); }
+
+  .contact__submit { width: 100%; margin-top: 4px; }
+
+  @media (max-width: 1024px) {
+    .contact__inner { flex-direction: column; align-items: stretch; gap: 40px; padding-block: 56px; }
+    .contact__text { gap: 32px; }
+  }
+  @media (max-width: 767px) {
+    .contact__row { flex-direction: column; }
+  }
+</style>

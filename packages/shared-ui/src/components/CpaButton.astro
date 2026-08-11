@@ -1,0 +1,72 @@
+---
+/**
+ * CpaButton.astro
+ * ---------------
+ * Shared button for the CPA template. Figma "Button" component (node 341:6862).
+ * h60 · px32 py14 · radius 4 · Instrument Sans SemiBold 18/24 · right arrow.
+ */
+export interface Props {
+  text: string;
+  href: string;
+  /** primary = red · outline = black border · white = white fill · dark = black fill · outline-light = white border on dark */
+  variant?: 'primary' | 'outline' | 'white' | 'dark' | 'outline-light';
+  /** default = h60 · big = h70 */
+  size?: 'default' | 'big';
+  /** Show the trailing arrow icon (default true). */
+  arrow?: boolean;
+  class?: string;
+}
+
+const { text, href, variant = 'primary', size = 'default', arrow = true, class: className } = Astro.props;
+---
+
+<a href={href} class:list={['cpa-btn', `cpa-btn--${variant}`, `cpa-btn--${size}`, className]}>
+  <span class="cpa-btn__label">{text}</span>
+  {arrow && (
+    <svg class="cpa-btn__arrow" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path d="M4 10h11m0 0-4.5-4.5M15 10l-4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  )}
+</a>
+
+<style>
+  .cpa-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 60px;
+    padding: 14px 32px;
+    border-radius: var(--cpa-radius-btn, 4px);
+    font-family: var(--cpa-font-sans);
+    font-size: var(--cpa-fs-large, 18px);
+    font-weight: 600;
+    line-height: 24px;
+    white-space: nowrap;
+    border: 1px solid transparent;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+  .cpa-btn__arrow { width: 20px; height: 20px; flex-shrink: 0; }
+
+  .cpa-btn--primary { background: var(--cpa-red, #bc1a18); color: #fff; }
+  .cpa-btn--primary:hover { background: #a01614; }
+
+  .cpa-btn--outline { background: transparent; color: var(--cpa-black, #000); border-color: var(--cpa-black, #000); }
+  .cpa-btn--outline:hover { background: var(--cpa-black, #000); color: #fff; }
+
+  .cpa-btn--white { background: #fff; color: var(--cpa-black, #000); }
+  .cpa-btn--white:hover { background: #f0f0ec; }
+
+  .cpa-btn--dark { background: var(--cpa-black, #000); color: #fff; }
+  .cpa-btn--dark:hover { background: #1a1a1a; }
+
+  .cpa-btn--outline-light { background: transparent; color: #fff; border-color: #fff; }
+  .cpa-btn--outline-light:hover { background: rgba(255, 255, 255, 0.12); }
+
+  .cpa-btn--big { height: 70px; padding: 16px 32px; }
+
+  @media (max-width: 767px) {
+    .cpa-btn { height: 54px; padding: 12px 24px; font-size: 16px; }
+    .cpa-btn--big { height: 60px; padding: 14px 28px; }
+  }
+</style>

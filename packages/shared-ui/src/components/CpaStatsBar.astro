@@ -1,0 +1,83 @@
+---
+/**
+ * CpaStatsBar.astro
+ * -----------------
+ * Full-width red stats band. Figma node 112:13605.
+ * Four stats (big number + uppercase label) split by thin vertical rules.
+ */
+export interface StatItem {
+  value: string;
+  label: string;
+}
+
+export interface Props {
+  stats: StatItem[];
+}
+
+const { stats } = Astro.props;
+---
+
+<section class="stats" aria-label="Key figures">
+  <div class="stats__inner cpa-container">
+    {stats.map((s, i) => (
+      <>
+        {i > 0 && <span class="stats__divider" aria-hidden="true"></span>}
+        <div class="stats__item">
+          <p class="stats__value">{s.value}</p>
+          <p class="stats__label">{s.label}</p>
+        </div>
+      </>
+    ))}
+  </div>
+</section>
+
+<style>
+  .stats { background: var(--cpa-red, #bc1a18); }
+  .stats__inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 98px;
+    padding-block: 23px;
+  }
+  .stats__item {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #fff;
+  }
+  .stats__value {
+    font-size: var(--cpa-fs-h1, 52px);
+    font-weight: 600;
+    line-height: var(--cpa-lh-h1, 60px);
+    white-space: nowrap;
+  }
+  .stats__label {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 16px;
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+  .stats__divider {
+    flex-shrink: 0;
+    width: 1px;
+    height: 94px;
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  @media (max-width: 1024px) {
+    .stats__inner { gap: 32px; flex-wrap: wrap; }
+    .stats__item { flex-basis: 40%; }
+    .stats__value { font-size: 42px; line-height: 50px; }
+    .stats__divider { display: none; }
+  }
+  @media (max-width: 767px) {
+    .stats__inner { gap: 28px; }
+    .stats__item { flex-basis: 100%; }
+  }
+</style>

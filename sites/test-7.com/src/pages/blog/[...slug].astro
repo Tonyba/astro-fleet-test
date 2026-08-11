@@ -1,0 +1,188 @@
+---
+import BaseLayout from '@astro-fleet/shared-ui/src/layouts/BaseLayout.astro';
+import Breadcrumb from '@astro-fleet/shared-ui/src/components/Breadcrumb.astro';
+import { CORPORATE } from '@astro-fleet/config/tokens';
+import { getCollection, render } from 'astro:content';
+import {
+  SITE_NAME,
+  TAGLINE,
+  LOGO_SRC,
+  navigation,
+  footerColumns,
+  contactInfo,
+  socialLinks,
+} from '../../lib/site-config';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+const dateFmt = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<BaseLayout
+  title={`${post.data.title} — ${SITE_NAME}`}
+  description={post.data.description ?? `${post.data.title} — ${SITE_NAME}`}
+  {navigation}
+  footerColumns={footerColumns}
+  {contactInfo}
+  {socialLinks}
+  siteName={SITE_NAME}
+  tagline={TAGLINE}
+  logoSrc={LOGO_SRC}
+  ctaText="Get Started"
+  ctaHref="/contact/"
+  designTokens={CORPORATE}
+>
+  <div class="container">
+    <Breadcrumb
+      items={[
+        { label: 'Home', href: '/' },
+        { label: 'Blog', href: '/blog/' },
+        { label: post.data.title },
+      ]}
+    />
+  </div>
+
+  <article class="section post">
+    <div class="container post__inner">
+      <header class="post__header">
+        <time class="post__date" datetime={post.data.date.toISOString()}>
+          {dateFmt.format(post.data.date)}
+        </time>
+        <h1 class="post__title">{post.data.title}</h1>
+        {post.data.description && (
+          <p class="post__lead">{post.data.description}</p>
+        )}
+      </header>
+
+      <div class="post__prose">
+        <Content />
+      </div>
+
+      <footer class="post__footer">
+        <a class="post__back" href="/blog/">← Back to blog</a>
+      </footer>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .post__inner {
+    max-width: 720px;
+  }
+
+  .post__header {
+    margin-bottom: 2rem;
+  }
+
+  .post__date {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 0.75rem;
+  }
+
+  .post__title {
+    font-size: clamp(1.875rem, 4vw, 2.75rem);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    color: var(--color-primary, #1e3a5f);
+    margin-bottom: 1rem;
+  }
+
+  .post__lead {
+    font-size: 1.1875rem;
+    color: #475569;
+    line-height: 1.7;
+  }
+
+  .post__prose {
+    color: #334155;
+    line-height: 1.8;
+  }
+
+  .post__prose :global(h2) {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-primary, #1e3a5f);
+    margin: 2rem 0 0.75rem;
+  }
+
+  .post__prose :global(h3) {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-primary, #1e3a5f);
+    margin: 1.75rem 0 0.5rem;
+  }
+
+  .post__prose :global(p) {
+    margin-bottom: 1.25rem;
+  }
+
+  .post__prose :global(ul),
+  .post__prose :global(ol) {
+    margin: 0 0 1.25rem 1.25rem;
+  }
+
+  .post__prose :global(li) {
+    margin-bottom: 0.5rem;
+  }
+
+  .post__prose :global(a) {
+    color: var(--color-cta, #2563eb);
+    text-decoration: underline;
+  }
+
+  .post__prose :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+  }
+
+  .post__prose :global(pre) {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 1rem 1.25rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin-bottom: 1.25rem;
+  }
+
+  .post__prose :global(code) {
+    font-size: 0.9375em;
+  }
+
+  .post__prose :global(blockquote) {
+    border-left: 3px solid #cbd5e1;
+    padding-left: 1rem;
+    color: #64748b;
+    margin: 0 0 1.25rem;
+  }
+
+  .post__footer {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .post__back {
+    font-weight: 600;
+    color: var(--color-cta, #2563eb);
+  }
+</style>
