@@ -10,7 +10,7 @@
 backend:
   name: github
   repo: tonyba/astro-fleet-test        # TODO: change to your real GitHub repo (only used for the remote/production backend)
-  branch: staging
+  branch: main
 
 # ---------------------------------------------------------------------------
 # Local development
