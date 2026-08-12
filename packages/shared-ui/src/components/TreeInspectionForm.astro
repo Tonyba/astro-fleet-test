@@ -6,6 +6,7 @@
  * Dark brand-strong band with a decorative tree illustration background,
  * a left copy column and a white form card (reuses TreeQuoteForm, plain variant).
  */
+import TreePicture from './TreePicture.astro';
 import TreeQuoteForm from './TreeQuoteForm.astro';
 import type { Props as QuoteProps } from './TreeQuoteForm.astro';
 
@@ -24,13 +25,23 @@ const {
     'Fill out the form below and our team will review your request and get back to you with a fast, no-obligation estimate.',
     'We provide safe, reliable, and professional tree services for residential and commercial properties across Connecticut — always focused on safety, efficiency, and quality results.',
   ],
-  backgroundImage = '/media/photos/inspection-bg.png',
+  backgroundImage = '/src/assets/graphics/inspection-bg.jpg',
   quote,
 } = Astro.props;
 ---
 
 <section class="tree-inspection" id="free-inspection">
-  <img class="tree-inspection__bg" src={backgroundImage} alt="" aria-hidden="true" width="1919" height="783" loading="lazy" decoding="async" />
+  <TreePicture
+    class="tree-inspection__bg"
+    src={backgroundImage}
+    alt=""
+    ariaHidden
+    width={1919}
+    height={783}
+    variant="hero"
+    loading="lazy"
+    decoding="async"
+  />
   <div class="tree-container tree-inspection__inner">
     <div class="tree-inspection__copy">
       <h2 class="tree-inspection__heading">{heading}</h2>
@@ -51,7 +62,10 @@ const {
     overflow: hidden;
     background: var(--color-bg-brand-strong, #1e372e);
   }
-  .tree-inspection__bg {
+  /* <Picture /> wraps the background in <picture>; that inline box would add a
+     stray line box to the section, so take it out of flow entirely. */
+  .tree-inspection > :global(picture) { display: contents; }
+  .tree-inspection :global(.tree-inspection__bg) {
     position: absolute; inset: 0; z-index: -1;
     width: 100%; height: 100%; object-fit: cover; object-position: center bottom;
   }

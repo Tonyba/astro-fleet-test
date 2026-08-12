@@ -42,9 +42,9 @@ const {
   areas = ['Norwalk', 'Stamford', 'Fairfield', 'Bridgeport', 'Westport', 'surrounding areas in Connecticut'],
   ctaText = 'Get free quote now',
   ctaHref = '#quote',
-  imageSrc = '/media/photos/areas-coverage.png',
+  imageSrc = '/src/assets/photos/areas-coverage.jpg',
   imageAlt = "Erick's Tree Service crew and wood chipper working on a residential street",
-  awardSrc = '/media/photos/areas-five-star-award.png',
+  awardSrc = '/src/assets/badges/five-star-award.png',
   awardAlt = '5-Star Rating on Google',
 } = Astro.props;
 ---
@@ -92,8 +92,10 @@ const {
         alt={imageAlt}
         width={611}
         height={560}
+        variant="inline"
         class="tree-service-areas__photo"
         loading="lazy"
+        decoding="async"
         sizes="(max-width: 767px) 100vw, 611px"
       />
       <div class="tree-service-areas__award">
@@ -102,8 +104,10 @@ const {
           alt={awardAlt}
           width={181}
           height={181}
+          variant="fixed"
           class="tree-service-areas__award-img"
           loading="lazy"
+          decoding="async"
         />
       </div>
     </figure>

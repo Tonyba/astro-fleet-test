@@ -39,7 +39,7 @@ const {
   steps = [
     {
       number: '01',
-      icon: '/media/photos/process-appointment.png',
+      icon: '/src/assets/graphics/process-appointment.png',
       iconAlt: 'Appointment calendar',
       title: 'Book your request',
       description:
@@ -47,7 +47,7 @@ const {
     },
     {
       number: '02',
-      icon: '/media/photos/process-checked.png',
+      icon: '/src/assets/graphics/process-checked.png',
       iconAlt: 'Checklist with magnifier',
       title: 'On-Site Evaluation',
       description:
@@ -55,7 +55,7 @@ const {
     },
     {
       number: '03',
-      icon: '/media/photos/process-chainsaw.png',
+      icon: '/src/assets/graphics/process-chainsaw.png',
       iconAlt: 'Chainsaw',
       title: 'Professional Service Execution',
       description:
@@ -63,7 +63,7 @@ const {
     },
     {
       number: '04',
-      icon: '/media/photos/process-broom.png',
+      icon: '/src/assets/graphics/process-broom.png',
       iconAlt: 'Broom',
       title: 'Cleanup & Final Inspection',
       description:
@@ -95,7 +95,7 @@ const {
           <div class="tree-process__icon-group">
             <img class="tree-process__circle" src="/media/icons/process-circle.svg" alt="" width="100" height="100" aria-hidden="true" />
             <span class="tree-process__icon">
-              <TreePicture src={step.icon} alt={step.iconAlt} width={44} height={44} loading="lazy" />
+              <TreePicture src={step.icon} alt={step.iconAlt} width={44} height={44} variant="fixed" loading="lazy" decoding="async" />
             </span>
             <span class="tree-process__badge">{step.number}</span>
           </div>

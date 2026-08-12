@@ -1,0 +1,266 @@
+---
+/**
+ * TreePageHero.astro
+ * ------------------
+ * Interior-page hero for the tree-care template. Figma node 123:3201
+ * (desktop · 02 Services — Commercial) / 123:5308 (mobile).
+ * Dark brand-strong panel on the left carrying the title, supporting copy and
+ * a two-button CTA row ("Get free quote now"  or  "Call …"); a full-bleed
+ * photograph fills the right side and bleeds past the right edge of the page.
+ * An 8px action-hover green rule runs along the bottom of the section, behind
+ * the photo — so it only reads under the dark panel, matching the design.
+ *
+ * Everything is prop-driven (title, copy, both CTAs, photo) so the section can
+ * be reused by any interior page and edited from the CMS.
+ */
+import TreePicture from './TreePicture.astro';
+
+export interface Props {
+  title: string;
+  description?: string;
+  /** Solid accent button. */
+  primaryCta?: { label: string; href: string };
+  /** Word rendered between the two buttons ("or"). Set to '' to drop it. */
+  separator?: string;
+  /** Outlined button — renders a tel: link built from `number`. */
+  phoneCta?: { label: string; number: string };
+  image: string;
+  imageAlt: string;
+  /**
+   * Where the photo starts on desktop, as a percentage of the viewport.
+   * Commercial hero (Figma 123:3215) is 1032/1920; residential (123:2777) is
+   * anchored right at 836px wide, i.e. 1089/1920.
+   */
+  imageSplit?: string;
+}
+
+const {
+  title,
+  description,
+  primaryCta,
+  separator = 'or',
+  phoneCta,
+  image,
+  imageAlt,
+  imageSplit = '53.75%',
+} = Astro.props;
+
+const telHref = phoneCta ? `tel:${phoneCta.number.replace(/[^\d+]/g, '')}` : undefined;
+---
+
+<section class="tree-page-hero" style={`--tree-page-hero-split-desktop: ${imageSplit};`}>
+  <div class="tree-container tree-page-hero__inner">
+    <div class="tree-page-hero__copy">
+      <h1 class="tree-page-hero__title">{title}</h1>
+      {description && <p class="tree-page-hero__desc">{description}</p>}
+
+      {(primaryCta || phoneCta) && (
+        <div class="tree-page-hero__actions">
+          {primaryCta && (
+            <a href={primaryCta.href} class="tree-page-hero__btn tree-page-hero__btn--solid">
+              {primaryCta.label}
+            </a>
+          )}
+          {primaryCta && phoneCta && separator && (
+            <span class="tree-page-hero__or">{separator}</span>
+          )}
+          {phoneCta && (
+            <a href={telHref} class="tree-page-hero__btn tree-page-hero__btn--outline">
+              <img
+                class="tree-page-hero__btn-icon"
+                src="/media/icons/cta-phone.svg"
+                alt=""
+                width="21"
+                height="21"
+                aria-hidden="true"
+              />
+              <span>{phoneCta.label}</span>
+            </a>
+          )}
+        </div>
+      )}
+    </div>
+  </div>
+
+  <TreePicture
+    class="tree-page-hero__img"
+    pictureClass="tree-page-hero__picture"
+    src={image}
+    alt={imageAlt}
+    width={915}
+    height={576}
+    variant="hero"
+    sizes="(max-width: 767px) 100vw, (max-width: 1024px) 38vw, 47vw"
+    loading="eager"
+    fetchpriority="high"
+    decoding="async"
+  />
+</section>
+
+<style>
+  .tree-page-hero {
+    position: relative;
+    isolation: isolate;
+    min-height: 551px;
+    display: flex;
+    align-items: center;
+    background: var(--color-bg-brand-strong, #1e372e);
+    /* Where the photo starts. The photo claims every pixel from here to the
+       right edge (see .tree-page-hero__img). The per-page desktop value comes
+       in as an inline `--tree-page-hero-split-desktop`; the breakpoints below
+       override the resolved variable, which an inline value could not. */
+    --tree-page-hero-split: var(--tree-page-hero-split-desktop, 53.75%);
+  }
+
+  /* 8px rule along the bottom edge (Figma 123:3202) — sits behind the photo. */
+  .tree-page-hero::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 8px;
+    background: var(--color-bg-action-hover, #368a2a);
+    z-index: 0;
+  }
+
+  .tree-page-hero__inner {
+    position: relative;
+    z-index: 2;
+    padding-block: 93px;
+  }
+
+  .tree-page-hero__copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 30px;
+    max-width: 729px;
+  }
+
+  .tree-page-hero__title {
+    font-size: 42px;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--color-text-inverse, #fff);
+  }
+
+  .tree-page-hero__desc {
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.8;
+    color: var(--color-text-inverse, #fff);
+  }
+
+  .tree-page-hero__actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+  }
+
+  .tree-page-hero__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 11px;
+    height: 60px;
+    padding-inline: 20px;
+    border-radius: var(--tree-radius-btn, 6px);
+    font-size: 18px;
+    line-height: 1.8;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+
+  .tree-page-hero__btn--solid {
+    flex: 0 0 311px;
+    font-weight: 700;
+    text-transform: capitalize;
+    background: var(--color-bg-accent, #c8f08f);
+    color: var(--color-text-primary, #013b2d);
+  }
+  .tree-page-hero__btn--solid:hover {
+    background: var(--color-bg-action-hover, #368a2a);
+    color: var(--color-text-inverse, #fff);
+  }
+
+  .tree-page-hero__btn--outline {
+    flex: 1 1 0;
+    min-width: 0;
+    font-weight: 600;
+    text-transform: uppercase;
+    border: 1px solid var(--color-border-inverse, #fff);
+    color: var(--color-text-inverse, #fff);
+  }
+  .tree-page-hero__btn--outline:hover {
+    background: var(--color-text-inverse, #fff);
+    color: var(--color-text-primary, #013b2d);
+  }
+
+  .tree-page-hero__btn-icon {
+    width: 21.316px;
+    height: 21.316px;
+    flex-shrink: 0;
+  }
+
+  .tree-page-hero__or {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-text-inverse, #fff);
+  }
+
+  /* Photo: full-bleed right half, running past the right edge of the page.
+     <Picture /> wraps the <img> in a <picture>; that inline box would add a
+     stray line box to the section, so take it out of flow entirely. */
+  .tree-page-hero > :global(picture) { display: contents; }
+  /* An absolutely positioned replaced element takes its width from the
+     intrinsic aspect ratio, not from `left`/`right` — so the width has to be
+     stated outright or the photo stops short of the right edge. */
+  .tree-page-hero :global(.tree-page-hero__img) {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: var(--tree-page-hero-split);
+    width: calc(100% - var(--tree-page-hero-split));
+    height: 100%;
+    max-width: none;
+    object-fit: cover;
+  }
+
+  /* ===== Tablet (<=1024px) — keep the split, tighten type ===== */
+  @media (max-width: 1024px) {
+    .tree-page-hero { min-height: 440px; }
+    .tree-page-hero__inner { padding-block: 60px; }
+    .tree-page-hero__copy { gap: 24px; max-width: 60%; }
+    .tree-page-hero__title { font-size: 34px; }
+    .tree-page-hero__desc { font-size: 16px; line-height: 1.7; }
+    .tree-page-hero__actions { flex-wrap: wrap; gap: 12px; }
+    .tree-page-hero__btn { height: 54px; font-size: 16px; }
+    .tree-page-hero__btn--solid { flex: 0 0 auto; padding-inline: 28px; }
+    .tree-page-hero__btn--outline { flex: 0 0 auto; padding-inline: 24px; }
+    .tree-page-hero { --tree-page-hero-split: 62%; }
+  }
+
+  /* ===== Mobile (<=767px) — photo on top, copy stacked beneath ===== */
+  @media (max-width: 767px) {
+    .tree-page-hero {
+      display: block;
+      min-height: 0;
+      padding-top: 278px; /* room for the photo band above the copy (Figma 123:6069) */
+    }
+    .tree-page-hero__inner { padding-block: 50px 62px; }
+    .tree-page-hero__copy { max-width: none; gap: 20px; }
+    .tree-page-hero__title { font-size: 30px; }
+    .tree-page-hero__desc { font-size: 15px; }
+    .tree-page-hero__actions { flex-direction: column; align-items: stretch; gap: 12px; }
+    .tree-page-hero__btn { width: 100%; height: 52px; }
+    .tree-page-hero__btn--solid,
+    .tree-page-hero__btn--outline { flex: 0 0 auto; }
+    /* The mobile design drops the "or" and just stacks the two buttons
+       (Figma 123:6060 has no separator node). */
+    .tree-page-hero__or { display: none; }
+    .tree-page-hero { --tree-page-hero-split: 0%; }
+    .tree-page-hero :global(.tree-page-hero__img) {
+      top: 0;
+      height: 278px;
+    }
+  }
+</style>

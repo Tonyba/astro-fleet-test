@@ -2,7 +2,7 @@
 title: "Storm Season Prep: Protecting Your Property From Falling Trees"
 date: 2026-02-10
 description: "A single weak limb can cause thousands in damage during a Connecticut storm. Proactive inspection, cabling, and selective removal dramatically reduce the risk before severe weather hits."
-image: /media/photos/services-storm.png
+image: /src/assets/photos/services-storm.jpg
 imageAlt: "Storm-damaged tree being cleared from a property"
 draft: false
 ---

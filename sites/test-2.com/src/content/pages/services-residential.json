@@ -1,0 +1,202 @@
+{
+  "seo": {
+    "title": "Residential Tree Services in Connecticut — Erick's Tree Service",
+    "description": "Expert tree removal, pruning, stump grinding, and storm cleanup for Connecticut homes — plus snow plowing, masonry, walkways, patios, and paving. Free estimates.",
+    "keywords": [
+      "residential tree service",
+      "tree removal",
+      "tree pruning",
+      "stump grinding",
+      "snow plowing",
+      "masonry",
+      "patio",
+      "paving",
+      "Connecticut"
+    ]
+  },
+  "hero": {
+    "title": "Trusted Tree Care Services for Residential Properties Across Connecticut",
+    "description": "Erick's Tree Services is a tree service company that helps customers maintain beautiful, healthy trees and shrubs. At the heart of our success are our arborists, experts who know and champion every tree, no matter the species.",
+    "primaryCta": {
+      "label": "Get free quote now",
+      "href": "#free-inspection"
+    },
+    "separator": "or",
+    "phoneCta": {
+      "label": "Call (203) 367-8219",
+      "number": "(203) 367-8219"
+    },
+    "image": "/src/assets/photos/residential-hero.jpg",
+    "imageAlt": "Arborist roping down a large limb above a residential property",
+    "imageSplit": "56.72%"
+  },
+  "stats": [
+    { "value": "25+", "label": "Years Experience" },
+    { "value": "1,000+", "label": "Projects Completed" },
+    { "value": "24/7", "label": "Emergency Services" },
+    { "value": "100%", "label": "Commitment to Safety" }
+  ],
+  "services": {
+    "heading": "Expert tree services for your home",
+    "items": [
+      {
+        "title": "Tree Removal",
+        "description": "Safe and efficient removal of hazardous, damaged, fallen, or unwanted trees for residential and commercial properties.",
+        "image": "/src/assets/photos/services-tree-removal.jpg",
+        "icon": "/media/icons/svc-wood.png",
+        "href": "/services/tree-removal/"
+      },
+      {
+        "title": "Tree Pruning & Trimming",
+        "description": "Professional trimming and pruning services designed to improve tree health, appearance, and overall property safety.",
+        "image": "/src/assets/photos/services-pruning.jpg",
+        "icon": "/media/icons/svc-tree.png",
+        "href": "/services/tree-trimming/"
+      },
+      {
+        "title": "Stump Grinding",
+        "description": "Remove unwanted stumps quickly and efficiently to create a cleaner, safer, and more functional outdoor space",
+        "image": "/src/assets/photos/services-stump.jpg",
+        "icon": "/media/icons/svc-stump.png",
+        "href": "/services/stump-grinding/"
+      },
+      {
+        "title": "Land Clearing & Lot Cleaning",
+        "description": "Reliable land and lot clearing solutions for construction projects, comamercial developments, and property improvements.",
+        "image": "/src/assets/photos/services-land-clearing.jpg",
+        "icon": "/media/icons/svc-earth.png",
+        "href": "/services/land-clearing/"
+      },
+      {
+        "title": "Storm Damage Cleanup",
+        "description": "Fast-response emergency services for fallen trees, storm damage, and hazardous situations requiring immediate attention.",
+        "image": "/src/assets/photos/services-storm.jpg",
+        "icon": "/media/icons/svc-weather.png",
+        "href": "/services/storm-damage/"
+      },
+      {
+        "title": "Cabling & Bracing",
+        "description": "Protect weakened or vulnerable trees with professional support systems designed to improve stability, reduce risk, and help preserve long-term tree health.",
+        "image": "/src/assets/photos/services-cabling.jpg",
+        "icon": "/media/icons/svc-wire.png",
+        "href": "/services/cabling-bracing/"
+      }
+    ]
+  },
+  "outdoor": {
+    "heading": "Professional Outdoor Solutions Designed for Functionality & Curb Appeal",
+    "items": [
+      {
+        "title": "Snow Plowing",
+        "description": "Reliable snow plowing services designed to keep residential and commercial properties safe, accessible, and operational during winter weather conditions.",
+        "image": "/src/assets/photos/outdoor-snow-plowing.jpg",
+        "icon": "/media/icons/svc-snowflake.png",
+        "href": "/services/snow-plowing/"
+      },
+      {
+        "title": "General Masonry",
+        "description": "Quality masonry solutions tailored to enhance the durability, functionality, and appearance of residential and commercial outdoor spaces.",
+        "image": "/src/assets/photos/outdoor-general-masonry.jpg",
+        "icon": "/media/icons/svc-tools.png",
+        "href": "/services/general-masonry/"
+      },
+      {
+        "title": "Stone Wall",
+        "description": "Custom stone wall installations built for long-lasting strength, natural beauty, and improved property definition and landscaping.",
+        "image": "/src/assets/photos/outdoor-stone-wall.jpg",
+        "icon": "/media/icons/svc-rock.png",
+        "href": "/services/stone-wall/"
+      },
+      {
+        "title": "Walkways",
+        "description": "Professionally designed walkways that improve accessibility, safety, and curb appeal while complementing your outdoor environment.",
+        "image": "/src/assets/photos/outdoor-walkways.jpg",
+        "icon": "/media/icons/svc-earth.png",
+        "href": "/services/walkways/"
+      },
+      {
+        "title": "Steps",
+        "description": "Durable and professionally crafted outdoor steps designed for safe access, functionality, and seamless integration with your property.",
+        "image": "/src/assets/photos/outdoor-steps.jpg",
+        "icon": "/media/icons/svc-ladder.png",
+        "href": "/services/steps/"
+      },
+      {
+        "title": "patio",
+        "description": "Custom patio installations that create comfortable and attractive outdoor spaces for relaxation, entertainment, and everyday use.",
+        "image": "/src/assets/photos/outdoor-patio.jpg",
+        "icon": "/media/icons/svc-chairs.png",
+        "href": "/services/patio/"
+      },
+      {
+        "title": "Paving",
+        "description": "Professional paving solutions for driveways, walkways, and outdoor surfaces, delivering clean finishes, durability, and long-term performance.",
+        "image": "/src/assets/photos/outdoor-paving.jpg",
+        "icon": "/media/icons/svc-wire.png",
+        "href": "/services/paving/"
+      }
+    ]
+  },
+  "emergency": {
+    "heading": "TREE EMERGENCY? WE'RE READY TO HELP.",
+    "subtext": "24/7 Service For Emergency. Fast response. Safe removal. Peace of mind.",
+    "phoneLabel": "Call emergency line",
+    "phoneNumber": "(203) 650-8519"
+  },
+  "projects": {
+    "eyebrow": "Proyects",
+    "heading": "Real Projects, Real Results",
+    "description": "Explore our recent tree care projects across Connecticut, including tree removals, trimming, stump grinding, and emergency storm cleanup.",
+    "items": [
+      { "image": "/src/assets/photos/project-1.jpg", "alt": "Tall tree removal in progress" },
+      { "image": "/src/assets/photos/project-2.jpg", "alt": "Storm-damaged tree cleanup" },
+      { "image": "/src/assets/photos/project-3.jpg", "alt": "Crane-assisted tree removal" },
+      { "image": "/src/assets/photos/project-4.jpg", "alt": "Completed tree care project" },
+      { "image": "/src/assets/photos/project-5.jpg", "alt": "Professional tree service work" }
+    ]
+  },
+  "faq": {
+    "eyebrow": "Common Questions",
+    "titleLead": "Questions?",
+    "titleRest": "We're here to help",
+    "subtitle": "Everything you need to know about our tree removal Connecticut services.",
+    "items": [
+      {
+        "question": "How much does tree removal cost?",
+        "answer": "The cost of tree removal depends on factors such as tree size, location, and job complexity. We offer free, personalized estimates for every customer. Contact us today for a no-obligation quote."
+      },
+      {
+        "question": "What method do you use for stump removal?",
+        "answer": "We use professional stump grinding equipment to grind the stump several inches below grade, then clean up the debris so the area is ready for grass, mulch, or replanting."
+      },
+      {
+        "question": "Do you provide 24/7 emergency services?",
+        "answer": "Yes. Storms and fallen limbs never wait for business hours, so our emergency crew is on call around the clock to make your property safe as quickly as possible."
+      },
+      {
+        "question": "Are you licensed and insured?",
+        "answer": "Absolutely. We are fully licensed and carry comprehensive liability and workers' compensation insurance, so you are protected on every job we perform."
+      },
+      {
+        "question": "What method do you use for stump removal?",
+        "answer": "For most residential jobs we grind the stump, but for larger commercial sites we can fully excavate the root ball when the space needs to be completely cleared."
+      },
+      {
+        "question": "How long does it take to remove or prune a tree?",
+        "answer": "Most standard removals and pruning jobs are completed within a single day. Larger or more complex trees near structures or power lines may take longer, and we will give you a clear timeline up front."
+      },
+      {
+        "question": "Do you offer any discounts?",
+        "answer": "We offer seasonal promotions as well as discounts for seniors, veterans, and repeat customers. Ask us about current offers when you request your free quote."
+      }
+    ]
+  },
+  "inspection": {
+    "heading": "Get A Free Tree Inspection. No call out fee!",
+    "lead": "Need professional tree removal, trimming, stump grinding, or emergency storm cleanup?",
+    "paragraphs": [
+      "Fill out the form below and our team will review your request and get back to you with a fast, no-obligation estimate.",
+      "We provide safe, reliable, and professional tree services for residential and commercial properties across Connecticut — always focused on safety, efficiency, and quality results."
+    ]
+  }
+}

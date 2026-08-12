@@ -53,7 +53,7 @@ const {
         'Our certified arborists provide expert solutions to help protect your trees, landscape, and property investment.',
     },
   ],
-  imageSrc = '/media/photos/why-photo.png',
+  imageSrc = '/src/assets/photos/why-photo.jpg',
   imageAlt = 'Certified arborist rigging and removing a large tree',
 } = Astro.props;
 ---
@@ -85,8 +85,10 @@ const {
         alt={imageAlt}
         width={530}
         height={875}
+        variant="inline"
         class="tree-why__image"
         loading="lazy"
+        decoding="async"
       />
     </figure>
   </div>

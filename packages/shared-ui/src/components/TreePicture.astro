@@ -2,57 +2,220 @@
 /**
  * TreePicture.astro
  * -----------------
- * Renders a <picture> with an AVIF source (produced by
- * scripts/optimize-images.mjs) and the original raster as a fallback, so
- * markup works before optimization runs and serves AVIF once it exists.
+ * The single entry point for every photograph on the site.
  *
- * Pass the ORIGINAL path (e.g. /media/photos/hero.jpg); the AVIF sibling
- * (/media/photos/hero.avif) is derived automatically.
+ * Wraps Astro's `<Picture />` so each slot gets the right responsive ladder:
+ * AVIF + WebP `<source>`s over a JPEG fallback (PNG when the source keeps real
+ * transparency), quality 90, intrinsic `width`/`height` always emitted so the
+ * box is reserved before the bytes land.
+ *
+ * `src` accepts either an imported asset or the string path Sveltia writes into
+ * the content JSON (`/src/assets/photos/hero-bg.jpg`) — see utils/images.ts.
+ * Anything that is not a `src/assets` raster (an SVG served from public/, a
+ * remote URL) degrades to a plain `<img>` rather than failing the build.
+ *
+ * Pass `mobileSrc` when the design art-directs a different crop below the
+ * breakpoint (the hero does). `<Picture />` cannot express art direction, so
+ * that path builds the same AVIF/WebP/fallback ladder through `getImage()` and
+ * emits the `<picture>` by hand — one component, identical output contract.
  */
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
+import type { ImageMetadata } from 'astro';
+import { getImage, Picture } from 'astro:assets';
+import { resolveImage, peek } from '../utils/images';
+
+/** Where the image sits in the layout — decides the srcset ladder. */
+export type PictureVariant = 'hero' | 'card' | 'inline' | 'fixed';
 
 export interface Props {
-  src: string;
+  src: string | ImageMetadata;
   alt: string;
-  width?: number;
-  height?: number;
+  /** Layout box in CSS pixels. Both are required — they become the intrinsic attrs. */
+  width: number;
+  height: number;
+  variant?: PictureVariant;
   class?: string;
+  pictureClass?: string;
   loading?: 'lazy' | 'eager';
   fetchpriority?: 'high' | 'low' | 'auto';
+  decoding?: 'async' | 'sync' | 'auto';
   sizes?: string;
+  /** Set on the <img> when the image is purely decorative. */
+  ariaHidden?: boolean;
+  /** Art direction: alternate source used below `mobileMedia`. */
+  mobileSrc?: string | ImageMetadata;
+  mobileWidth?: number;
+  mobileHeight?: number;
+  mobileMedia?: string;
+  mobileVariant?: PictureVariant;
 }
+
+/** Widths rendered per slot. Astro clamps these to the source width — never upscales. */
+const VARIANT_WIDTHS: Record<Exclude<PictureVariant, 'fixed'>, number[]> = {
+  hero: [640, 1024, 1440, 1920],
+  card: [400, 800],
+  inline: [600, 1200],
+};
+
+const FORMATS = ['avif', 'webp'] as const;
+const QUALITY = 90;
 
 const {
   src,
   alt,
   width,
   height,
+  variant = 'inline',
   class: className,
+  pictureClass,
   loading = 'lazy',
   fetchpriority,
+  decoding = 'async',
   sizes,
-} = Astro.props;
+  ariaHidden,
+  mobileSrc,
+  mobileWidth,
+  mobileHeight,
+  mobileMedia = '(max-width: 1024px)',
+  mobileVariant,
+  ...rest
+} = Astro.props as Props & Record<string, unknown>;
 
-const avif = src.replace(/\.(png|jpe?g)$/i, '.avif');
-// Only emit the AVIF <source> when the optimized file actually exists in the
-// site's public/ dir — a <source> that 404s does NOT fall back to <img>, so an
-// unbuilt AVIF would show a broken image. Falls back to the original until then.
-const hasAvif =
-  avif !== src && src.startsWith('/') && existsSync(join(process.cwd(), 'public', avif));
+// This component's root is a conditional, so Astro cannot hoist the caller's
+// scoped-style id onto it automatically. Forward it by hand, otherwise scoped
+// selectors in the parent stop matching the rendered <picture>/<img>.
+const cidAttrs = Object.fromEntries(
+  Object.entries(rest).filter(([key]) => key.startsWith('data-astro-cid'))
+);
+
+/** `fixed` slots (badges, step icons) only ever need 1x/2x of their box. */
+const widthsFor = (v: PictureVariant, w: number) =>
+  v === 'fixed' ? [w, w * 2] : VARIANT_WIDTHS[v];
+
+const sizesFor = (v: PictureVariant, w: number) =>
+  ({
+    hero: '100vw',
+    card: `(max-width: 767px) 100vw, ${w}px`,
+    inline: `(max-width: 1024px) 100vw, ${w}px`,
+    fixed: `${w}px`,
+  })[v];
+
+// PNG sources are only kept when the alpha channel is load-bearing, so they must
+// not fall back to JPEG. Everything else gets the JPEG fallback.
+const fallbackFor = (image: ImageMetadata) => (peek(image).format === 'png' ? 'png' : 'jpeg');
+
+const image = resolveImage(src);
+const widths = widthsFor(variant, width);
+const resolvedSizes = sizes ?? sizesFor(variant, width);
+
+// ---- art-directed branch --------------------------------------------------
+const mobileImage = mobileSrc ? resolveImage(mobileSrc) : undefined;
+const artDirected = Boolean(image && mobileImage);
+
+const mWidth = mobileWidth ?? width;
+const mHeight = mobileHeight ?? height;
+const mVariant = mobileVariant ?? variant;
+const mSizes = sizesFor(mVariant, mWidth);
+
+const buildSources = async (
+  img: ImageMetadata,
+  w: number,
+  h: number,
+  v: PictureVariant,
+  formats: readonly string[] = FORMATS
+) =>
+  Promise.all(
+    formats.map(async (format) => {
+      const built = await getImage({
+        src: img,
+        width: w,
+        height: h,
+        widths: widthsFor(v, w),
+        format: format as 'avif',
+        quality: QUALITY,
+      });
+      return { srcset: built.srcSet.attribute, type: `image/${format}` };
+    })
+  );
+
+// The mobile branch carries its own fallback format — the <img> below only ever
+// holds the desktop crop, so without it a no-AVIF/WebP browser would fall back
+// to the wrong art direction.
+const mobileSources = artDirected
+  ? await buildSources(mobileImage!, mWidth, mHeight, mVariant, [
+      ...FORMATS,
+      fallbackFor(mobileImage!),
+    ])
+  : [];
+const desktopSources = artDirected ? await buildSources(image!, width, height, variant) : [];
+
+const fallback = artDirected
+  ? await getImage({
+      src: image!,
+      width,
+      height,
+      widths,
+      format: fallbackFor(image!),
+      quality: QUALITY,
+    })
+  : null;
 ---
 
-<picture>
-  {hasAvif && <source srcset={avif} type="image/avif" />}
-  <img
-    src={src}
-    alt={alt}
-    width={width}
-    height={height}
-    class={className}
-    loading={loading}
-    fetchpriority={fetchpriority}
-    sizes={sizes}
-    decoding="async"
-  />
-</picture>
+{
+  artDirected ? (
+    <picture class={pictureClass} {...cidAttrs}>
+      {mobileSources.map((s) => (
+        <source media={mobileMedia} srcset={s.srcset} type={s.type} sizes={mSizes} />
+      ))}
+      {desktopSources.map((s) => (
+        <source srcset={s.srcset} type={s.type} sizes={resolvedSizes} />
+      ))}
+      <img
+        src={fallback!.src}
+        srcset={fallback!.srcSet.attribute || undefined}
+        sizes={resolvedSizes}
+        alt={alt}
+        width={width}
+        height={height}
+        class={className}
+        loading={loading}
+        fetchpriority={fetchpriority}
+        decoding={decoding}
+        aria-hidden={ariaHidden ? 'true' : undefined}
+        {...cidAttrs}
+      />
+    </picture>
+  ) : image ? (
+    <Picture
+      {...cidAttrs}
+      src={image}
+      alt={alt}
+      width={width}
+      height={height}
+      widths={widths}
+      sizes={resolvedSizes}
+      formats={['avif', 'webp']}
+      fallbackFormat={fallbackFor(image)}
+      quality={QUALITY}
+      class={className}
+      pictureAttributes={pictureClass ? { class: pictureClass } : undefined}
+      loading={loading}
+      fetchpriority={fetchpriority}
+      decoding={decoding}
+      aria-hidden={ariaHidden ? 'true' : undefined}
+    />
+  ) : (
+    <img
+      src={typeof src === 'string' ? src : undefined}
+      alt={alt}
+      width={width}
+      height={height}
+      class={className}
+      loading={loading}
+      fetchpriority={fetchpriority}
+      decoding={decoding}
+      sizes={sizes}
+      aria-hidden={ariaHidden ? 'true' : undefined}
+      {...cidAttrs}
+    />
+  )
+}

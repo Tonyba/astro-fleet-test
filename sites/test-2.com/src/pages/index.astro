@@ -19,10 +19,15 @@ import TreeBlogPreview from '@astro-fleet/shared-ui/src/components/TreeBlogPrevi
 import TreeInspectionForm from '@astro-fleet/shared-ui/src/components/TreeInspectionForm.astro';
 
 import { getCollection } from 'astro:content';
+import { getForm } from '../lib/forms';
 
 // CMS-editable content (Sveltia commits these JSON files; the build imports them).
 import site from '../content/settings/site.json';
 import home from '../content/homepage/home.json';
+
+// Forms are their own content model — the same definition is reused by the hero
+// card and the closing inspection section.
+const quoteForm = await getForm('quote');
 
 // Blog preview — pulled from the CMS `posts` collection (latest 3, non-draft).
 const dateFmt = (d: Date) =>
@@ -35,7 +40,7 @@ const blogPosts = (await getCollection('posts', ({ data }) => !data.draft))
     excerpt: post.data.description ?? '',
     date: dateFmt(post.data.date),
     href: `/blog/${post.id.replace(/\.md$/, '')}/`,
-    image: post.data.image ?? '/media/photos/blog-tree-power-lines.jpg',
+    image: post.data.image ?? '/src/assets/photos/blog-tree-power-lines.jpg',
     imageAlt: post.data.imageAlt ?? post.data.title,
   }));
 ---
@@ -51,7 +56,7 @@ const blogPosts = (await getCollection('posts', ({ data }) => !data.draft))
   colors={site.theme.colors}
   fonts={site.theme.fonts}
 >
-  <TreeHero {...home.hero} quote={site.forms.quote} />
+  <TreeHero {...home.hero} quote={quoteForm} />
   <TreeTrustBar />
   <TreeServices eyebrow={home.services.eyebrow} heading={home.services.heading} services={home.services.items} />
   <TreeWhyChoose eyebrow={home.whyChoose.eyebrow} heading={home.whyChoose.heading} items={home.whyChoose.items} />
@@ -73,5 +78,5 @@ const blogPosts = (await getCollection('posts', ({ data }) => !data.draft))
   />
   <TreeFaq eyebrow={home.faq.eyebrow} titleLead={home.faq.titleLead} titleRest={home.faq.titleRest} faqs={home.faq.items} />
   <TreeBlogPreview eyebrow={home.blog.eyebrow} title={home.blog.title} posts={blogPosts.length ? blogPosts : undefined} />
-  <TreeInspectionForm heading={home.inspection.heading} lead={home.inspection.lead} paragraphs={home.inspection.paragraphs} quote={site.forms.quote} />
+  <TreeInspectionForm heading={home.inspection.heading} lead={home.inspection.lead} paragraphs={home.inspection.paragraphs} quote={quoteForm} />
 </TreeLayout>

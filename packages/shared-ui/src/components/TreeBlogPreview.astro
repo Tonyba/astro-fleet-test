@@ -16,7 +16,7 @@ export interface TreeBlogPost {
   excerpt: string;
   date: string;
   href: string;
-  /** Original raster path (e.g. /media/photos/blog-*.jpg). */
+  /** Original raster path (e.g. /src/assets/photos/blog-*.jpg). */
   image: string;
   imageAlt: string;
 }
@@ -37,7 +37,7 @@ const defaultPost: TreeBlogPost = {
     "When you hire someone to care for your trees, you're trusting them with living things that can take decades to grow, and that can cause serious damage if managed incorrectly. When a tree care...",
   date: '21/04/2026',
   href: '#',
-  image: '/media/photos/blog-tree-power-lines.jpg',
+  image: '/src/assets/photos/blog-tree-power-lines.jpg',
   imageAlt: 'Arborist pruning a tree near power lines',
 };
 
@@ -68,7 +68,9 @@ const {
               class="tree-blog__img"
               width={454}
               height={292}
+              variant="card"
               loading="lazy"
+              decoding="async"
             />
             <span class="tree-blog__date">
               <img

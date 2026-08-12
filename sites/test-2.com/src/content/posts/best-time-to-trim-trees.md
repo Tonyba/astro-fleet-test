@@ -2,7 +2,7 @@
 title: "When Is the Best Time to Trim Your Trees in Connecticut?"
 date: 2026-03-15
 description: "Timing matters more than most homeowners realize. Pruning at the wrong point in the season can stress a tree, invite disease, or reduce next year's growth. Here's how we schedule trimming for healthy, resilient trees."
-image: /media/photos/services-pruning.png
+image: /src/assets/photos/services-pruning.jpg
 imageAlt: "Arborist trimming a tree with a pole saw"
 draft: false
 ---

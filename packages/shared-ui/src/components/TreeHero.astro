@@ -7,8 +7,6 @@
  * eyebrow/headline/reviews/bullets/badges/CTAs, and the TreeQuoteForm on the
  * right.
  */
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
 import TreePicture from './TreePicture.astro';
 import TreeQuoteForm from './TreeQuoteForm.astro';
 import type { Props as QuoteProps } from './TreeQuoteForm.astro';
@@ -41,38 +39,37 @@ const {
     '1 year workmanship warranty',
   ],
   badges = [
-    { src: '/media/badges/hero-bbb.png', alt: 'BBB Accredited Business A+ rating', width: 112, height: 82 },
-    { src: '/media/badges/hero-guaranteed.png', alt: '100% Service Guaranteed', width: 108, height: 108 },
-    { src: '/media/badges/hero-247.png', alt: '24/7 Emergency Service', width: 82, height: 82 },
+    { src: '/src/assets/badges/bbb.png', alt: 'BBB Accredited Business A+ rating', width: 112, height: 82 },
+    { src: '/src/assets/badges/guaranteed.png', alt: '100% Service Guaranteed', width: 108, height: 108 },
+    { src: '/src/assets/badges/emergency-247.png', alt: '24/7 Emergency Service', width: 82, height: 82 },
   ],
   primaryCta = { label: 'Get Free Estimate', sublabel: 'Fast & Easy Quote', href: '#quote' },
   phone = { label: 'Call US', number: '(203) 367-8219' },
-  backgroundImage = '/media/photos/hero-bg.png',
-  backgroundImageMobile = '/media/photos/hero-bg-mobile.png',
+  backgroundImage = '/src/assets/photos/hero-bg.jpg',
+  backgroundImageMobile = '/src/assets/photos/hero-bg-mobile.jpg',
   quote,
 } = Astro.props;
 
 const telHref = `tel:${phone.number.replace(/[^\d+]/g, '')}`;
-
-// AVIF sibling helpers (a <source> that 404s does not fall back, so only emit
-// the AVIF source when the optimized file actually exists).
-const avifOf = (p: string) => p.replace(/\.(png|jpe?g)$/i, '.avif');
-const hasAvif = (p: string) => {
-  const a = avifOf(p);
-  return a !== p && p.startsWith('/') && existsSync(join(process.cwd(), 'public', a));
-};
 ---
 
 <section class="tree-hero">
   <div class="tree-hero__bg" aria-hidden="true">
-    <picture>
-      {hasAvif(backgroundImageMobile) && (
-        <source media="(max-width: 1024px)" srcset={avifOf(backgroundImageMobile)} type="image/avif" />
-      )}
-      <source media="(max-width: 1024px)" srcset={backgroundImageMobile} />
-      {hasAvif(backgroundImage) && <source srcset={avifOf(backgroundImage)} type="image/avif" />}
-      <img src={backgroundImage} alt="" class="tree-hero__bg-img" width={1920} height={867} loading="eager" fetchpriority="high" decoding="async" />
-    </picture>
+    <TreePicture
+      src={backgroundImage}
+      mobileSrc={backgroundImageMobile}
+      mobileWidth={393}
+      mobileHeight={1256}
+      mobileMedia="(max-width: 1024px)"
+      alt=""
+      class="tree-hero__bg-img"
+      width={1920}
+      height={867}
+      variant="hero"
+      loading="eager"
+      fetchpriority="high"
+      decoding="async"
+    />
     <span class="tree-hero__overlay"></span>
   </div>
 
@@ -102,7 +99,7 @@ const hasAvif = (p: string) => {
 
       <div class="tree-hero__badges">
         {badges.map((b) => (
-          <TreePicture src={b.src} alt={b.alt} width={b.width} height={b.height} loading="eager" class="tree-hero__badge" />
+          <TreePicture src={b.src} alt={b.alt} width={b.width} height={b.height} variant="fixed" loading="eager" class="tree-hero__badge" />
         ))}
       </div>
 

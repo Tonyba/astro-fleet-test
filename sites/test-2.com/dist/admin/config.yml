@@ -24,19 +24,31 @@ local_backend: true
 # ---------------------------------------------------------------------------
 # Media
 # ---------------------------------------------------------------------------
-media_folder: sites/test-2.com/public/media   # where uploads are stored (repo path)
-public_folder: /media                      # URL these files resolve to on the site
+# Photographs are BUILD INPUTS, not static files: they land in src/assets so
+# Astro's <Picture /> (see TreePicture.astro) can emit AVIF + WebP + a JPEG
+# fallback at the widths each slot needs. public/ is copied verbatim and is
+# therefore reserved for SVG icons and the logo, which have their own
+# media_folder overrides on the fields below.
+#
+# The stored value is `/src/assets/<file>`; TreePicture resolves that string to
+# the imported asset, so a CMS upload renders through exactly the same pipeline
+# as a hand-placed photo.
+media_folder: sites/test-2.com/src/assets   # where uploads are stored (repo path)
+public_folder: /src/assets                  # the path written into content
 
 media_libraries:
   all:
-    max_file_size: 125829120
+    # 1 MB is the repo budget enforced by scripts/check-file-sizes.mjs. Uploads
+    # are transcoded and capped below before they are committed, so an oversized
+    # camera original cannot land in the repo and break the build.
+    max_file_size: 8388608
     slugify_filename: true
     transformations:
       raster_image: # original format
         format: webp # new format, only `webp` is supported
-        quality: 90 # default: 85
-        width: 2048 # default: original size
-        height: 2048 # default: original size
+        quality: 90 # matches the quality <Picture /> renders at
+        width: 1920 # widest slot in the design (full-bleed hero)
+        height: 1920
       svg:
         optimize: true
 
@@ -56,8 +68,14 @@ collections:
         label: Site
         file: sites/test-2.com/src/content/settings/site.json
         fields:
+          # Single source of truth for the domain. astro.config.mjs reads it into
+          # `site`, so canonical, og:url, the sitemap and robots.txt all follow.
+          # Changing it requires a rebuild (or a dev-server restart).
+          - { label: Site URL, name: siteUrl, widget: string, pattern: ['^https?://[^/]+$', 'Full origin with no trailing slash, e.g. https://www.example.com'] }
           - { label: Site Name, name: siteName, widget: string }
-          - { label: Logo, name: logo, widget: image }
+          # Logos and icons stay in public/ as-is: they are vectors (or flat
+          # raster marks), not photographs, and never go through <Picture />.
+          - { label: Logo, name: logo, widget: image, media_folder: /sites/test-2.com/public/media, public_folder: /media }
           - label: Theme
             name: theme
             widget: object
@@ -79,28 +97,6 @@ collections:
                 widget: object
                 fields:
                   - { label: Font Family, name: sans, widget: string }
-          - label: Forms
-            name: forms
-            widget: object
-            fields:
-              - label: Quote Form
-                name: quote
-                widget: object
-                fields:
-                  - { label: Title, name: title, widget: string }
-                  - { label: Subtitle, name: subtitle, widget: text }
-                  - { label: Submit Button Text, name: submitText, widget: string }
-                  - { label: Action / Endpoint, name: action, widget: string }
-                  - label: Fields
-                    name: fields
-                    widget: list
-                    fields:
-                      - { label: Field Name (key), name: name, widget: string }
-                      - { label: Type, name: type, widget: select, options: [text, email, tel, textarea, select, radio], default: text }
-                      - { label: Label, name: label, widget: string, required: false }
-                      - { label: Placeholder, name: placeholder, widget: string, required: false }
-                      - { label: Required, name: required, widget: boolean, default: false, required: false }
-                      - { label: Options (select/radio), name: options, widget: list, required: false, hint: 'Only applies to select and radio field types.', field: { label: Option, name: option, widget: string } }
           - label: Header
             name: header
             widget: object
@@ -139,7 +135,7 @@ collections:
                 fields:
                   - { label: Platform, name: platform, widget: string }
                   - { label: URL, name: url, widget: string }
-                  - { label: Icon, name: icon, widget: image }
+                  - { label: Icon, name: icon, widget: image, media_folder: /sites/test-2.com/public/media/icons, public_folder: /media/icons }
               - label: Link Columns
                 name: columns
                 widget: list
@@ -235,7 +231,7 @@ collections:
                   - { label: Title, name: title, widget: string }
                   - { label: Description, name: description, widget: text }
                   - { label: Photo, name: image, widget: image }
-                  - { label: Icon, name: icon, widget: image }
+                  - { label: Icon, name: icon, widget: image, media_folder: /sites/test-2.com/public/media/icons, public_folder: /media/icons }
                   - { label: Link, name: href, widget: string }
           - label: Why Choose Us
             name: whyChoose
@@ -247,7 +243,8 @@ collections:
                 name: items
                 widget: list
                 fields:
-                  - { label: Icon, name: icon, widget: image }
+                  # Rendered as a CSS mask-image — must resolve to a public URL.
+                  - { label: Icon, name: icon, widget: image, media_folder: /sites/test-2.com/public/media/icons, public_folder: /media/icons }
                   - { label: Title, name: title, widget: string }
                   - { label: Description, name: description, widget: text }
           - label: Stats Bar
@@ -363,6 +360,45 @@ collections:
               - { label: Heading, name: heading, widget: string }
               - { label: Lead, name: lead, widget: text }
               - { label: Paragraphs, name: paragraphs, widget: list, field: { label: Paragraph, name: p, widget: text } }
+
+  # -------------------------------------------------------------------------
+  # Forms — a content model of their own, so a form can be authored once and
+  # reused on any page. One JSON file per form; the FILENAME is the id a page
+  # looks it up by (quote.json → getForm('quote') in src/lib/forms.ts), so
+  # renaming a form's title never breaks a page. Editors can add new forms and
+  # edit every field's label, placeholder and type.
+  # -------------------------------------------------------------------------
+  - name: forms
+    label: Forms
+    label_singular: Form
+    folder: sites/test-2.com/src/content/forms
+    create: true
+    delete: true
+    extension: json
+    format: json
+    # Filename is generated from the form name on creation only — Sveltia keeps
+    # the original slug when the name is edited later, so ids stay stable.
+    slug: '{{fields.name | slugify}}'
+    identifier_field: name
+    summary: '{{fields.name}} → {{fields.action}}'
+    editor: { preview: false }
+    fields:
+      - { label: Form Name, name: name, widget: string, hint: 'Internal label — also becomes the file name for a new form.' }
+      - { label: Title, name: title, widget: string, hint: 'Heading shown above the form.' }
+      - { label: Subtitle, name: subtitle, widget: text, required: false }
+      - { label: Submit Button Text, name: submitText, widget: string }
+      - { label: Action / Endpoint, name: action, widget: string, default: /api/quote, hint: 'Where submissions are posted. Leads land in Form Submissions.' }
+      - label: Fields
+        name: fields
+        widget: list
+        summary: '{{fields.label}} ({{fields.type}})'
+        fields:
+          - { label: Field Name (key), name: name, widget: string, hint: 'Key the value is submitted under — e.g. full_name.' }
+          - { label: Type, name: type, widget: select, options: [text, email, tel, textarea, select, radio], default: text, hint: 'tel fields get country detection and phone validation automatically.' }
+          - { label: Label, name: label, widget: string, required: false }
+          - { label: Placeholder, name: placeholder, widget: string, required: false }
+          - { label: Required, name: required, widget: boolean, default: false, required: false }
+          - { label: Options (select/radio), name: options, widget: list, required: false, hint: 'Only applies to select and radio field types.', field: { label: Option, name: option, widget: string } }
 
   # -------------------------------------------------------------------------
   # Form submissions (leads) — written by the /api/quote function. Read-only.

@@ -30,23 +30,23 @@
       "label": "Call US",
       "number": "(203) 367-8219"
     },
-    "backgroundImage": "/media/photos/hero-bg.png",
-    "backgroundImageMobile": "/media/photos/hero-bg-mobile.png",
+    "backgroundImage": "/src/assets/photos/hero-bg.jpg",
+    "backgroundImageMobile": "/src/assets/photos/hero-bg-mobile.jpg",
     "badges": [
       {
-        "src": "/media/badges/hero-bbb.png",
+        "src": "/src/assets/badges/bbb.png",
         "alt": "BBB Accredited Business A+ rating",
         "width": 112,
         "height": 82
       },
       {
-        "src": "/media/badges/hero-guaranteed.png",
+        "src": "/src/assets/badges/guaranteed.png",
         "alt": "100% Service Guaranteed",
         "width": 108,
         "height": 108
       },
       {
-        "src": "/media/items.webp",
+        "src": "/src/assets/badges/emergency-247.png",
         "alt": "24/7 Emergency Service",
         "width": 82,
         "height": 82
@@ -60,42 +60,42 @@
       {
         "title": "Tree Removal",
         "description": "Safe and efficient removal of hazardous, damaged, fallen, or unwanted trees for residential and commercial properties.",
-        "image": "/media/photos/services-tree-removal.png",
+        "image": "/src/assets/photos/services-tree-removal.jpg",
         "icon": "/media/icons/svc-wood.png",
         "href": "/services/tree-removal/"
       },
       {
         "title": "Tree Pruning & Trimming",
         "description": "Professional trimming and pruning services designed to improve tree health, appearance, and overall property safety.",
-        "image": "/media/photos/services-pruning.png",
+        "image": "/src/assets/photos/services-pruning.jpg",
         "icon": "/media/icons/svc-tree.png",
         "href": "/services/tree-trimming/"
       },
       {
         "title": "Stump Grinding",
         "description": "Remove unwanted stumps quickly and efficiently to create a cleaner, safer, and more functional outdoor space",
-        "image": "/media/photos/services-stump.png",
+        "image": "/src/assets/photos/services-stump.jpg",
         "icon": "/media/icons/svc-stump.png",
         "href": "/services/stump-grinding/"
       },
       {
         "title": "Land Clearing & Lot Cleaning",
         "description": "Reliable land and lot clearing solutions for construction projects, comamercial developments, and property improvements.",
-        "image": "/media/photos/services-land-clearing.png",
+        "image": "/src/assets/photos/services-land-clearing.jpg",
         "icon": "/media/icons/svc-earth.png",
         "href": "/services/land-clearing/"
       },
       {
         "title": "Storm Damage Cleanup",
         "description": "Fast-response emergency services for fallen trees, storm damage, and hazardous situations requiring immediate attention.",
-        "image": "/media/photos/services-storm.png",
+        "image": "/src/assets/photos/services-storm.jpg",
         "icon": "/media/icons/svc-weather.png",
         "href": "/services/storm-damage/"
       },
       {
         "title": "Cabling & Bracing",
         "description": "Protect weakened or vulnerable trees with professional support systems designed to improve stability, reduce risk, and help preserve long-term tree health.",
-        "image": "/media/photos/services-cabling.png",
+        "image": "/src/assets/photos/services-cabling.jpg",
         "icon": "/media/icons/svc-wire.png",
         "href": "/services/cabling-bracing/"
       }
@@ -161,23 +161,23 @@
     "description": "Explore our recent tree care projects across Connecticut, including tree removals, trimming, stump grinding, and emergency storm cleanup.",
     "items": [
       {
-        "image": "/media/photos/project-1.png",
+        "image": "/src/assets/photos/project-1.jpg",
         "alt": "Tall tree removal in progress"
       },
       {
-        "image": "/media/photos/project-2.png",
+        "image": "/src/assets/photos/project-2.jpg",
         "alt": "Storm-damaged tree cleanup"
       },
       {
-        "image": "/media/photos/project-3.png",
+        "image": "/src/assets/photos/project-3.jpg",
         "alt": "Crane-assisted tree removal"
       },
       {
-        "image": "/media/photos/project-4.png",
+        "image": "/src/assets/photos/project-4.jpg",
         "alt": "Completed tree care project"
       },
       {
-        "image": "/media/photos/project-5.png",
+        "image": "/src/assets/photos/project-5.jpg",
         "alt": "Professional tree service work"
       }
     ]
@@ -195,28 +195,28 @@
     "steps": [
       {
         "number": "01",
-        "icon": "/media/photos/process-appointment.png",
+        "icon": "/src/assets/graphics/process-appointment.png",
         "iconAlt": "Appointment calendar",
         "title": "Book your request",
         "description": "Contact our team by phone or online form. We'll gather basic details about your project and schedule a convenient time for an assessment."
       },
       {
         "number": "02",
-        "icon": "/media/photos/process-checked.png",
+        "icon": "/src/assets/graphics/process-checked.png",
         "iconAlt": "Checklist with magnifier",
         "title": "On-Site Evaluation",
         "description": "Our experts visit your property to evaluate the situation, identify risks, and determine the best and safest approach for the work required."
       },
       {
         "number": "03",
-        "icon": "/media/photos/process-chainsaw.png",
+        "icon": "/src/assets/graphics/process-chainsaw.png",
         "iconAlt": "Chainsaw",
         "title": "Professional Service Execution",
         "description": "Our trained crew completes the job using professional equipment and strict safety standards, ensuring efficient and precise results."
       },
       {
         "number": "04",
-        "icon": "/media/photos/process-broom.png",
+        "icon": "/src/assets/graphics/process-broom.png",
         "iconAlt": "Broom",
         "title": "Cleanup & Final Inspection",
         "description": "We thoroughly clean the site and perform a final inspection to make sure everything is safe, clear, and left in excellent condition."

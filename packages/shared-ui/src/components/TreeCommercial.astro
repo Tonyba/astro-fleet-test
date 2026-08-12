@@ -14,8 +14,7 @@
  * Every string/image is a prop with a Figma-verbatim default, so it renders
  * fully without props and stays CMS-editable.
  */
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
+import TreePicture from './TreePicture.astro';
 
 export interface TreeCommercialCta {
   text: string;
@@ -45,22 +44,26 @@ const {
   primaryCta = { text: 'Get free quote now', href: '#quote' },
   secondaryCta = { text: 'See all services', href: '#services' },
   photo = {
-    src: '/media/photos/commercial-arborist.png',
+    src: '/src/assets/photos/commercial-arborist.jpg',
     alt: 'Professional arborist climbing a tree with rigging ropes and a chainsaw',
   },
 } = Astro.props;
 
-// Use the photo as a CSS background (matches the design's full-bleed panel).
-// Prefer the optimized AVIF sibling when it exists, falling back to the original.
-const avif = photo.src.replace(/\.(png|jpe?g)$/i, '.avif');
-const hasAvif = avif !== photo.src && existsSync(join(process.cwd(), 'public', avif));
-const bgImage = hasAvif
-  ? `image-set(url("${avif}") type("image/avif"), url("${photo.src}"))`
-  : `url("${photo.src}")`;
 ---
 
 <section class="tree-commercial" aria-labelledby="tree-commercial-heading">
-  <div class="tree-commercial__media" role="img" aria-label={photo.alt} style={`background-image: ${bgImage};`}></div>
+  <TreePicture
+    src={photo.src}
+    alt={photo.alt}
+    width={1600}
+    height={1065}
+    variant="hero"
+    pictureClass="tree-commercial__media"
+    class="tree-commercial__media-img"
+    sizes="(max-width: 767px) 100vw, 50vw"
+    loading="lazy"
+    decoding="async"
+  />
 
   <div class="tree-commercial__inner tree-container">
     <div class="tree-commercial__body">
@@ -96,11 +99,18 @@ const bgImage = hasAvif
   /* Full-section background photo (Figma node 123:57), fading to the surface
      colour on the right so the copy stays legible. */
   .tree-commercial__media {
+    display: block;
     position: absolute;
     inset: 0;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    overflow: hidden;
+  }
+
+  .tree-commercial :global(.tree-commercial__media-img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
   }
 
   .tree-commercial__inner {
@@ -210,7 +220,6 @@ const bgImage = hasAvif
       margin-left: calc(50% - 50vw);
       height: 287px;
       margin-top: 48px;
-      background-position: center;
     }
     .tree-commercial__body { width: 100%; padding: 0; background: transparent; }
     .tree-commercial__eyebrow { font-size: 14px; }

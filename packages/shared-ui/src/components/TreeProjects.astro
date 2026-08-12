@@ -26,11 +26,11 @@ const {
   primaryCta = { text: 'Get a Free Estimate', href: '#quote' },
   secondaryCta = { text: 'View all proyects', href: '/projects/' },
   projects = [
-    { image: '/media/photos/project-1.png', alt: 'Tall tree removal in progress' },
-    { image: '/media/photos/project-2.png', alt: 'Storm-damaged tree cleanup' },
-    { image: '/media/photos/project-3.png', alt: 'Crane-assisted tree removal' },
-    { image: '/media/photos/project-4.png', alt: 'Completed tree care project' },
-    { image: '/media/photos/project-5.png', alt: 'Professional tree service work' },
+    { image: '/src/assets/photos/project-1.jpg', alt: 'Tall tree removal in progress' },
+    { image: '/src/assets/photos/project-2.jpg', alt: 'Storm-damaged tree cleanup' },
+    { image: '/src/assets/photos/project-3.jpg', alt: 'Crane-assisted tree removal' },
+    { image: '/src/assets/photos/project-4.jpg', alt: 'Completed tree care project' },
+    { image: '/src/assets/photos/project-5.jpg', alt: 'Professional tree service work' },
   ],
 } = Astro.props;
 ---
@@ -61,7 +61,7 @@ const {
           <div class="tree-projects__container">
             {projects.map((p, i) => (
               <div class:list={['tree-projects__slide', { 'is-active': i === 0 }]}>
-                <TreePicture src={p.image} alt={p.alt} width={510} height={544} class="tree-projects__img" loading="lazy" />
+                <TreePicture src={p.image} alt={p.alt} width={510} height={544} variant="card" class="tree-projects__img" loading="lazy" decoding="async" />
               </div>
             ))}
           </div>
@@ -73,7 +73,7 @@ const {
           <div class="tree-projects__thumbs-container">
             {projects.map((p, i) => (
               <button type="button" class="tree-projects__thumb" data-thumb-index={i} aria-label={`Go to project ${i + 1}`}>
-                <TreePicture src={p.image} alt="" width={96} height={82} class="tree-projects__thumb-img" loading="lazy" />
+                <TreePicture src={p.image} alt="" width={96} height={82} variant="fixed" class="tree-projects__thumb-img" loading="lazy" decoding="async" />
               </button>
             ))}
           </div>

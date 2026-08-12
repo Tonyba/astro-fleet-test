@@ -24,7 +24,7 @@ export interface Props {
 }
 
 const {
-  iconSrc = '/media/photos/emergency-alert.png',
+  iconSrc = '/src/assets/graphics/emergency-alert.png',
   iconAlt = 'Emergency alert',
   heading = "TREE EMERGENCY? WE'RE READY TO HELP.",
   subtext = '24/7 Service For Emergency. Fast response. Safe removal. Peace of mind.',
@@ -39,7 +39,7 @@ const telHref = `tel:${phoneNumber.replace(/[^\d+]/g, '')}`;
   <div class="tree-emergency__inner tree-container">
     <div class="tree-emergency__lead">
       <span class="tree-emergency__icon">
-        <TreePicture src={iconSrc} alt={iconAlt} width={80} height={80} loading="lazy" />
+        <TreePicture src={iconSrc} alt={iconAlt} width={80} height={80} variant="fixed" loading="lazy" decoding="async" />
       </span>
       <div class="tree-emergency__text">
         <h2 id="tree-emergency-heading" class="tree-emergency__heading">{heading}</h2>

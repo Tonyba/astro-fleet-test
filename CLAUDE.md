@@ -11,6 +11,7 @@ Astro Fleet is a multi-site Astro monorepo for agencies and multi-brand companie
 **CMS:** Sveltia CMS
 
 ## Main development rules
+- use figma-design-to-code skill if necessary
 - Use figma mcp and figma skills if necessary
 - Use Brave as default browser
 - if you need to check browser limit yourself to 1 dev instance and if you dont know what port to open in localhost tell me
@@ -60,6 +61,15 @@ Astro Fleet is a multi-site Astro monorepo for agencies and multi-brand companie
 - skip build and lint
 - when asked for corrections or edits remember that you must follow figma design if links provided, IT MUST BE RESPONSIVE and also FOCUS ONLY IN MENTIONED SECTIONS OR UI ELEMENTS IF MENTIONED
 
+## Images
+- **Photos never travel Figma → repo. Figma exports vectors only; photographs enter through the image pipeline.**
+- Photographs live in `sites/<domain>/src/assets/` (never `public/`) and render through `TreePicture.astro`, which wraps Astro's `<Picture />`: AVIF + WebP `<source>`s over a JPEG fallback at quality 90.
+- Import every photograph with `bun run import-photo <file> --out sites/<domain>/src/assets/photos [--max-width N]`. It re-encodes to JPEG q90 (PNG, or lossy WebP when large, if the alpha channel is load-bearing) and downscales it under budget.
+- `public/media/` is for SVG icons and the logo only — it is copied verbatim and nothing in it is optimized.
+- Widths per slot, set with the `variant` prop: `hero` full-bleed 640/1024/1440/1920w, `card` (service + project) 400/800w, `inline` photos 600/1200w, `fixed` (badges, step icons) 1x/2x. Always pass `width`/`height` so no layout shift is possible.
+- The hero image is `loading="eager"` + `fetchpriority="high"`. Everything below the fold is `loading="lazy"` + `decoding="async"`.
+- No image file in the repo or in `dist/` may exceed 1 MB — `bun run check:sizes` enforces this on every build and in CI.
+
 ## Carousels
 - Use Embla Carousel for carousels
 
@@ -70,13 +80,6 @@ Astro Fleet is a multi-site Astro monorepo for agencies and multi-brand companie
 - all other fields must be validated according to its type (email, number, etc).
 - all forms and their fields must be editable from crm and also resuable through pages and if it's posible make forms a content model in cms
 - In Form fields you should be able to edit label, placeholder and field type
-
-## Images
-- all images must be optimized when uploaded with shortpixel and output image must be avif
-- if image is bigger, similar or same size as original after being processed by shortpixel then use original image
-- you can process images with shortpixel in background and replace images after process is done
-- if shortpixel api request fails then just use original image
-**Shortpixel API key**: HboXFLdoxxZa95UO2i1A
 
 
 ## Commands
@@ -93,6 +96,10 @@ bun run build --filter=<domain>                # single site
 
 # Lint
 bun run lint
+
+# Images
+bun run import-photo <file...> --out sites/<domain>/src/assets/photos --max-width 1920
+bun run check:sizes                            # fail if any repo/dist file > 1 MB
 
 # Scaffold a new site
 ./scripts/new-site.sh <domain> [corporate|saas|warm]

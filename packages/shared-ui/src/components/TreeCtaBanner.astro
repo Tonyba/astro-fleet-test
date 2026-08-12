@@ -37,8 +37,8 @@ const {
   phoneNumber = '(203) 367-8219',
   phoneHref,
   phoneIconSrc = '/media/icons/cta-phone.svg',
-  treeArtDesktopSrc = '/media/photos/cta-trees-desktop.png',
-  treeArtMobileSrc = '/media/photos/cta-trees-mobile.png',
+  treeArtDesktopSrc = '/src/assets/graphics/cta-trees-desktop.jpg',
+  treeArtMobileSrc = '/src/assets/graphics/cta-trees-mobile.jpg',
 } = Astro.props;
 
 const telHref = phoneHref ?? `tel:${phoneNumber.replace(/[^\d+]/g, '')}`;
@@ -46,7 +46,7 @@ const telHref = phoneHref ?? `tel:${phoneNumber.replace(/[^\d+]/g, '')}`;
 
 <section class="tree-cta-banner" aria-label="Request a free estimate">
   <div class="tree-cta-banner__art tree-cta-banner__art--desktop">
-    <TreePicture src={treeArtDesktopSrc} alt="" width={357} height={141} loading="lazy" />
+    <TreePicture src={treeArtDesktopSrc} alt="" width={357} height={141} variant="fixed" loading="lazy" decoding="async" ariaHidden />
   </div>
 
   <div class="tree-cta-banner__inner tree-container">
@@ -75,7 +75,7 @@ const telHref = phoneHref ?? `tel:${phoneNumber.replace(/[^\d+]/g, '')}`;
     </div>
 
     <div class="tree-cta-banner__art tree-cta-banner__art--mobile">
-      <TreePicture src={treeArtMobileSrc} alt="" width={393} height={191} loading="lazy" />
+      <TreePicture src={treeArtMobileSrc} alt="" width={393} height={191} variant="fixed" loading="lazy" decoding="async" ariaHidden />
     </div>
   </div>
 </section>

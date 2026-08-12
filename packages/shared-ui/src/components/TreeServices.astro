@@ -23,6 +23,26 @@ export interface Props {
   services?: ServiceItem[];
   viewAllLabel?: string;
   viewAllHref?: string;
+  /**
+   * Header alignment. 'center' is the homepage block (Figma 123:382);
+   * 'left' is the services page's "Expert tree services for your business"
+   * variant (Figma 123:2780), which also drops the eyebrow.
+   */
+  align?: 'center' | 'left';
+  /** The mobile-only "View All Services" button — off on the services page itself. */
+  showViewAll?: boolean;
+  /**
+   * Vertical rhythm. 'default' is a standalone section (90px block padding).
+   * Use the group values when two grids share one section, as on the
+   * residential page (Figma 123:2243): 80px outer, 68px between the two.
+   */
+  spacing?: 'default' | 'group-start' | 'group-end';
+  /**
+   * Measure the heading wraps at. 758px matches the tree-services heading
+   * (Figma 123:2245); the outdoor-solutions heading is set to 1029px
+   * (Figma 123:2329) so it breaks over two lines rather than three.
+   */
+  headingWidth?: string;
 }
 
 const {
@@ -30,46 +50,50 @@ const {
   heading = 'Professional Tree Services for Residential & Commercial Properties',
   viewAllLabel = 'View All Services',
   viewAllHref = '/services/',
+  align = 'center',
+  showViewAll = true,
+  spacing = 'default',
+  headingWidth = '758px',
   services = [
     {
       title: 'Tree Removal',
       description: 'Safe and efficient removal of hazardous, damaged, fallen, or unwanted trees for residential and commercial properties.',
-      image: '/media/photos/services-tree-removal.png',
+      image: '/src/assets/photos/services-tree-removal.jpg',
       icon: '/media/icons/svc-wood.png',
       href: '/services/tree-removal/',
     },
     {
       title: 'Tree Pruning & Trimming',
       description: 'Professional trimming and pruning services designed to improve tree health, appearance, and overall property safety.',
-      image: '/media/photos/services-pruning.png',
+      image: '/src/assets/photos/services-pruning.jpg',
       icon: '/media/icons/svc-tree.png',
       href: '/services/tree-trimming/',
     },
     {
       title: 'Stump Grinding',
       description: 'Remove unwanted stumps quickly and efficiently to create a cleaner, safer, and more functional outdoor space',
-      image: '/media/photos/services-stump.png',
+      image: '/src/assets/photos/services-stump.jpg',
       icon: '/media/icons/svc-stump.png',
       href: '/services/stump-grinding/',
     },
     {
       title: 'Land Clearing & Lot Cleaning',
       description: 'Reliable land and lot clearing solutions for construction projects, comamercial developments, and property improvements.',
-      image: '/media/photos/services-land-clearing.png',
+      image: '/src/assets/photos/services-land-clearing.jpg',
       icon: '/media/icons/svc-earth.png',
       href: '/services/land-clearing/',
     },
     {
       title: 'Storm Damage Cleanup',
       description: 'Fast-response emergency services for fallen trees, storm damage, and hazardous situations requiring immediate attention.',
-      image: '/media/photos/services-storm.png',
+      image: '/src/assets/photos/services-storm.jpg',
       icon: '/media/icons/svc-weather.png',
       href: '/services/storm-damage/',
     },
     {
       title: 'Cabling & Bracing',
       description: 'Protect weakened or vulnerable trees with professional support systems designed to improve stability, reduce risk, and help preserve long-term tree health.',
-      image: '/media/photos/services-cabling.png',
+      image: '/src/assets/photos/services-cabling.jpg',
       icon: '/media/icons/svc-wire.png',
       href: '/services/cabling-bracing/',
     },
@@ -77,10 +101,13 @@ const {
 } = Astro.props;
 ---
 
-<section class="tree-services">
+<section class:list={['tree-services', `tree-services--${spacing}`]}>
   <div class="tree-container">
-    <header class="tree-services__header">
-      <p class="tree-services__eyebrow">{eyebrow}</p>
+    <header
+      class:list={['tree-services__header', `tree-services__header--${align}`]}
+      style={`--tree-services-heading-width: ${headingWidth};`}
+    >
+      {eyebrow && <p class="tree-services__eyebrow">{eyebrow}</p>}
       <h2 class="tree-services__heading">{heading}</h2>
     </header>
 
@@ -89,7 +116,7 @@ const {
         <li>
           <article class="tree-services__card">
             <div class="tree-services__media">
-              <TreePicture src={s.image} alt={s.title} width={430} height={240} class="tree-services__img" loading="lazy" />
+              <TreePicture src={s.image} alt={s.title} width={430} height={240} variant="card" class="tree-services__img" loading="lazy" decoding="async" />
               <span class="tree-services__icon">
                 <img src={s.icon} alt="" width="42" height="42" loading="lazy" />
               </span>
@@ -109,21 +136,26 @@ const {
       ))}
     </ul>
 
-    <a href={viewAllHref} class="tree-services__view-all">{viewAllLabel}</a>
+    {showViewAll && <a href={viewAllHref} class="tree-services__view-all">{viewAllLabel}</a>}
   </div>
 </section>
 
 <style>
   .tree-services { padding-block: 90px; background: var(--color-bg-surface, #fff); }
+  /* Two grids sharing one section: 80px outer, 34px + 34px = 68px between. */
+  .tree-services--group-start { padding-block: 80px 34px; }
+  .tree-services--group-end { padding-block: 34px 80px; }
 
   .tree-services__header {
-    text-align: center;
-    max-width: 758px;
-    margin: 0 auto 45px;
+    max-width: var(--tree-services-heading-width, 758px);
+    margin-bottom: 45px;
     display: flex;
     flex-direction: column;
     gap: 12px;
   }
+  .tree-services__header--center { text-align: center; margin-inline: auto; }
+  /* Services page: flush left, no eyebrow, 45px to the grid (Figma 123:2780). */
+  .tree-services__header--left { text-align: left; margin-inline: 0; }
   .tree-services__eyebrow {
     font-size: 16px; font-weight: 600; line-height: 1.8; text-transform: uppercase;
     color: var(--color-text-primary, #013b2d);
@@ -189,6 +221,8 @@ const {
 
   @media (max-width: 1024px) {
     .tree-services { padding-block: 64px; }
+    .tree-services--group-start { padding-block: 56px 24px; }
+    .tree-services--group-end { padding-block: 24px 56px; }
     .tree-services__grid { grid-template-columns: repeat(2, 1fr); }
     .tree-services__heading { font-size: 34px; }
   }

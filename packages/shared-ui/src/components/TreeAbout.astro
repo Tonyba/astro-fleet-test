@@ -61,7 +61,7 @@ const {
   primaryCta = { text: 'Get free quote now', href: '#quote' },
   secondaryCta = { text: 'Learn more about us', href: '#about' },
   photo = {
-    src: '/media/photos/about-arborist-tree.png',
+    src: '/src/assets/photos/about-arborist-tree.jpg',
     alt: 'Certified arborist harnessed to a tall pine, pruning branches with a chainsaw',
     width: 616,
     height: 566,
@@ -69,7 +69,7 @@ const {
   review = {
     name: 'Fabien Cutillo',
     quote: 'Used Erik twice. Excellent service. Will use him again. Does a great job',
-    avatarSrc: '/media/photos/about-reviewer.png',
+    avatarSrc: '/src/assets/photos/about-reviewer.png',
     avatarAlt: 'Fabien Cutillo',
     starsSrc: '/media/icons/about-stars.svg',
     verifiedSrc: '/media/icons/about-verified.svg',
@@ -107,14 +107,16 @@ const {
           alt={photo.alt}
           width={photo.width}
           height={photo.height}
+          variant="inline"
           loading="lazy"
+          decoding="async"
         />
       </figure>
 
       <article class="tree-about__review" aria-label={`Review by ${review.name}`}>
         <img class="tree-about__review-source" src={review.sourceSrc} alt={review.sourceAlt} width="30" height="30" loading="lazy" />
         <div class="tree-about__review-head">
-          <img class="tree-about__review-avatar" src={review.avatarSrc} alt={review.avatarAlt} width="43" height="43" loading="lazy" />
+          <TreePicture class="tree-about__review-avatar" src={review.avatarSrc} alt={review.avatarAlt} width={43} height={43} variant="fixed" loading="lazy" decoding="async" />
           <div class="tree-about__review-meta">
             <p class="tree-about__review-name">{review.name}</p>
             <div class="tree-about__review-rating">
@@ -256,6 +258,11 @@ const {
     align-items: center;
     gap: 10px;
   }
+  /* <Picture /> wraps the avatar in <picture>; keep the <img> as the flex item. */
+  .tree-about__review-head :global(picture) {
+    display: contents;
+  }
+
   .tree-about__review-avatar {
     width: 43px;
     height: 43px;

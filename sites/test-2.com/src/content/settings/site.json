@@ -1,4 +1,5 @@
 {
+  "siteUrl": "https://www.test-2.com",
   "siteName": "Erick's Tree Service",
   "logo": "/media/logo.png",
   "theme": {
@@ -14,70 +15,6 @@
     },
     "fonts": {
       "sans": "Libre Franklin"
-    }
-  },
-  "forms": {
-    "quote": {
-      "title": "Get Your Free Quote",
-      "subtitle": "Tell us about your project and we'll get back to you within 24 hours.",
-      "submitText": "Get Free Quote Now",
-      "action": "/api/quote",
-      "fields": [
-        {
-          "name": "full_name",
-          "type": "text",
-          "label": "Full Name",
-          "placeholder": "Full Name*",
-          "required": true
-        },
-        {
-          "name": "email",
-          "type": "email",
-          "label": "Email Address",
-          "placeholder": "Email Adress*",
-          "required": true
-        },
-        {
-          "name": "phone",
-          "type": "tel",
-          "label": "Phone Number",
-          "placeholder": "Phone Number*",
-          "required": true
-        },
-        {
-          "name": "project_type",
-          "type": "radio",
-          "label": "Proyect Type",
-          "placeholder": "",
-          "required": false,
-          "options": [
-            "Residential",
-            "Commercial"
-          ]
-        },
-        {
-          "name": "service",
-          "type": "select",
-          "label": "What service do you need?",
-          "placeholder": "",
-          "required": false,
-          "options": [
-            "Tree Removal Services",
-            "Tree Trimming & Pruning",
-            "Stump Grinding",
-            "Land Clearing & Lot Cleaning",
-            "Storm Damage Cleanup",
-            "Cabling & Bracing"
-          ]
-        },
-        {
-          "name": "message",
-          "type": "textarea",
-          "label": "Project details",
-          "placeholder": "Tell us about your project...",
-          "required": false
-        }
-      ]
     }
   },
   "header": {
@@ -120,13 +57,13 @@
     "description": "Safe, reliable, and professional tree removal, trimming, stump grinding, and emergency storm cleanup for residential and commercial properties.",
     "badges": [
       {
-        "src": "/media/badges/bbb.png",
+        "src": "/src/assets/badges/bbb.png",
         "alt": "BBB Accredited Business A+ rating",
         "width": 106,
         "height": 77
       },
       {
-        "src": "/media/badges/guaranteed.png",
+        "src": "/src/assets/badges/guaranteed.png",
         "alt": "100% Service Guaranteed",
         "width": 77,
         "height": 77
