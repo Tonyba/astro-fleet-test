@@ -30,7 +30,7 @@
       },
       {
         "label": "Commercial",
-        "href": "/services/",
+        "href": "/services/commercial/",
         "caret": true
       },
       {
@@ -100,11 +100,11 @@
           },
           {
             "label": "Residential Services",
-            "href": "/residential/"
+            "href": "/services/residential/"
           },
           {
             "label": "Commercial Services",
-            "href": "/commercial/"
+            "href": "/services/commercial/"
           },
           {
             "label": "Projects",

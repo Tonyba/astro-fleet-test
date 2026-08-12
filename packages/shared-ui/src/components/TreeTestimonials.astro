@@ -5,6 +5,11 @@
  * "What Our Customers Are Saying" reviews carousel. Figma node 123:575.
  * Subtle-grey section, heading + rating badge, an Embla carousel of soft-green
  * review cards, and prev/next arrows.
+ *
+ * The badge has two variants in the design, both 160x142 on brand green:
+ *   - with a score — homepage (123:575): logo, "4.8", "Based on 14.000 reviews"
+ *   - without one  — service detail (123:3853): logo + "Based on true reviews"
+ * Omit `rating.score` to get the second.
  */
 export interface Review {
   title: string;
@@ -16,7 +21,8 @@ export interface Props {
   eyebrow?: string;
   heading?: string;
   description?: string;
-  rating?: { score: string; caption: string };
+  /** Omit `score` for the compact service-detail badge (Figma 123:3853). */
+  rating?: { score?: string; caption: string };
   reviews?: Review[];
 }
 
@@ -69,9 +75,9 @@ const {
   </div>
 
   <div class="tree-container tree-testimonials__foot">
-    <div class="tree-testimonials__rating">
+    <div class:list={['tree-testimonials__rating', { 'tree-testimonials__rating--compact': !rating.score }]}>
       <img src="/media/icons/rev-google-word.png" alt="Google" width="77" height="26" />
-      <span class="tree-testimonials__score">{rating.score}</span>
+      {rating.score && <span class="tree-testimonials__score">{rating.score}</span>}
       <span class="tree-testimonials__caption">{rating.caption}</span>
     </div>
     <div class="tree-testimonials__arrows">
@@ -111,10 +117,19 @@ const {
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
     padding: 16px; text-align: center;
   }
-  .tree-testimonials__foot { position: relative; }
+  /* NB: no `position` here. The rating badge lives in this row in the markup
+     but is positioned against the SECTION (top-right, over the header). Making
+     this row a containing block would anchor the badge to the bottom of the
+     section instead, pushing it past the edge where `overflow: hidden` clips
+     it away entirely on desktop. */
   .tree-testimonials__rating img { height: 26px; width: auto; }
   .tree-testimonials__score { font-size: 37px; font-weight: 700; letter-spacing: -1.5px; color: var(--color-text-inverse, #fff); }
   .tree-testimonials__caption { font-size: 16px; font-weight: 500; line-height: 1; color: var(--color-text-inverse, #fff); }
+
+  /* Service-detail variant (Figma 123:3853): no score, wider 10px gap, and the
+     caption wraps over two centred lines inside the same 160x142 card. */
+  .tree-testimonials__rating--compact { gap: 10px; }
+  .tree-testimonials__rating--compact .tree-testimonials__caption { line-height: 1.25; }
 
   .tree-testimonials__viewport { overflow: hidden; }
   .tree-testimonials__container { display: flex; gap: 12px; }

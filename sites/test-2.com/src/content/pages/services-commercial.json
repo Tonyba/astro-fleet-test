@@ -28,57 +28,25 @@
     "imageAlt": "Log loader stacking freshly cut timber at a commercial tree removal site"
   },
   "stats": [
-    { "value": "25+", "label": "Years Experience" },
-    { "value": "1,000+", "label": "Projects Completed" },
-    { "value": "24/7", "label": "Emergency Services" },
-    { "value": "100%", "label": "Commitment to Safety" }
+    {
+      "value": "25+",
+      "label": "Years Experience"
+    },
+    {
+      "value": "1,000+",
+      "label": "Projects Completed"
+    },
+    {
+      "value": "24/7",
+      "label": "Emergency Services"
+    },
+    {
+      "value": "100%",
+      "label": "Commitment to Safety"
+    }
   ],
   "services": {
-    "heading": "Expert tree services for your business",
-    "items": [
-      {
-        "title": "Tree Removal",
-        "description": "Safe and efficient removal of hazardous, damaged, fallen, or unwanted trees for residential and commercial properties.",
-        "image": "/src/assets/photos/services-tree-removal.jpg",
-        "icon": "/media/icons/svc-wood.png",
-        "href": "/services/tree-removal/"
-      },
-      {
-        "title": "Tree Pruning & Trimming",
-        "description": "Professional trimming and pruning services designed to improve tree health, appearance, and overall property safety.",
-        "image": "/src/assets/photos/services-pruning.jpg",
-        "icon": "/media/icons/svc-tree.png",
-        "href": "/services/tree-trimming/"
-      },
-      {
-        "title": "Stump Grinding",
-        "description": "Remove unwanted stumps quickly and efficiently to create a cleaner, safer, and more functional outdoor space",
-        "image": "/src/assets/photos/services-stump.jpg",
-        "icon": "/media/icons/svc-stump.png",
-        "href": "/services/stump-grinding/"
-      },
-      {
-        "title": "Land Clearing & Lot Cleaning",
-        "description": "Reliable land and lot clearing solutions for construction projects, comamercial developments, and property improvements.",
-        "image": "/src/assets/photos/services-land-clearing.jpg",
-        "icon": "/media/icons/svc-earth.png",
-        "href": "/services/land-clearing/"
-      },
-      {
-        "title": "Storm Damage Cleanup",
-        "description": "Fast-response emergency services for fallen trees, storm damage, and hazardous situations requiring immediate attention.",
-        "image": "/src/assets/photos/services-storm.jpg",
-        "icon": "/media/icons/svc-weather.png",
-        "href": "/services/storm-damage/"
-      },
-      {
-        "title": "Cabling & Bracing",
-        "description": "Protect weakened or vulnerable trees with professional support systems designed to improve stability, reduce risk, and help preserve long-term tree health.",
-        "image": "/src/assets/photos/services-cabling.jpg",
-        "icon": "/media/icons/svc-wire.png",
-        "href": "/services/cabling-bracing/"
-      }
-    ]
+    "heading": "Expert tree services for your business"
   },
   "emergency": {
     "heading": "TREE EMERGENCY? WE'RE READY TO HELP.",
@@ -91,11 +59,26 @@
     "heading": "Real Projects, Real Results",
     "description": "Explore our recent tree care projects across Connecticut, including tree removals, trimming, stump grinding, and emergency storm cleanup.",
     "items": [
-      { "image": "/src/assets/photos/project-1.jpg", "alt": "Tall tree removal in progress" },
-      { "image": "/src/assets/photos/project-2.jpg", "alt": "Storm-damaged tree cleanup" },
-      { "image": "/src/assets/photos/project-3.jpg", "alt": "Crane-assisted tree removal" },
-      { "image": "/src/assets/photos/project-4.jpg", "alt": "Completed tree care project" },
-      { "image": "/src/assets/photos/project-5.jpg", "alt": "Professional tree service work" }
+      {
+        "image": "/src/assets/photos/project-1.jpg",
+        "alt": "Tall tree removal in progress"
+      },
+      {
+        "image": "/src/assets/photos/project-2.jpg",
+        "alt": "Storm-damaged tree cleanup"
+      },
+      {
+        "image": "/src/assets/photos/project-3.jpg",
+        "alt": "Crane-assisted tree removal"
+      },
+      {
+        "image": "/src/assets/photos/project-4.jpg",
+        "alt": "Completed tree care project"
+      },
+      {
+        "image": "/src/assets/photos/project-5.jpg",
+        "alt": "Professional tree service work"
+      }
     ]
   },
   "faq": {

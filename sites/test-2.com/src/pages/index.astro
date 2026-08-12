@@ -20,6 +20,7 @@ import TreeInspectionForm from '@astro-fleet/shared-ui/src/components/TreeInspec
 
 import { getCollection } from 'astro:content';
 import { getForm } from '../lib/forms';
+import { getServiceCards } from '../lib/services';
 
 // CMS-editable content (Sveltia commits these JSON files; the build imports them).
 import site from '../content/settings/site.json';
@@ -28,6 +29,10 @@ import home from '../content/homepage/home.json';
 // Forms are their own content model — the same definition is reused by the hero
 // card and the closing inspection section.
 const quoteForm = await getForm('quote');
+
+// The homepage grid shows the core tree-care services from the Single Service
+// collection — same source as both /services/ pages.
+const homeServices = await getServiceCards({ group: 'tree-care' });
 
 // Blog preview — pulled from the CMS `posts` collection (latest 3, non-draft).
 const dateFmt = (d: Date) =>
@@ -58,7 +63,7 @@ const blogPosts = (await getCollection('posts', ({ data }) => !data.draft))
 >
   <TreeHero {...home.hero} quote={quoteForm} />
   <TreeTrustBar />
-  <TreeServices eyebrow={home.services.eyebrow} heading={home.services.heading} services={home.services.items} />
+  <TreeServices eyebrow={home.services.eyebrow} heading={home.services.heading} services={homeServices} viewAllHref="/services/residential/" />
   <TreeWhyChoose eyebrow={home.whyChoose.eyebrow} heading={home.whyChoose.heading} items={home.whyChoose.items} />
   <TreeCtaBanner {...home.ctaBanner} />
   <TreeAbout />

@@ -1,0 +1,164 @@
+---
+/**
+ * TreeServiceProse.astro
+ * ----------------------
+ * Long-form body of a service detail page. Figma nodes 123:3756 (photo, 631px,
+ * left) + 123:3745 (prose, 764px, right) with a 50px gutter.
+ * The prose itself is the entry's markdown body, passed through the default
+ * slot, so editors write it as rich text in the CMS rather than as fixed
+ * fields. An optional accent CTA closes the column.
+ * <=1024px the photo moves above the prose.
+ */
+import TreePicture from './TreePicture.astro';
+
+export interface Props {
+  image?: string;
+  imageAlt?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+}
+
+const { image, imageAlt = '', ctaLabel, ctaHref = '#free-inspection' } = Astro.props;
+---
+
+<section class="tree-service-prose">
+  <div class="tree-container tree-service-prose__inner">
+    {image && (
+      <div class="tree-service-prose__media">
+        <TreePicture
+          class="tree-service-prose__img"
+          src={image}
+          alt={imageAlt}
+          width={631}
+          height={1258}
+          variant="inline"
+          sizes="(max-width: 1024px) 100vw, 631px"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    )}
+
+    <div class="tree-service-prose__body">
+      <div class="tree-service-prose__rte">
+        <slot />
+      </div>
+      {ctaLabel && <a href={ctaHref} class="tree-service-prose__cta">{ctaLabel}</a>}
+    </div>
+  </div>
+</section>
+
+<style>
+  .tree-service-prose { padding-block: 86px; background: var(--color-bg-surface, #fff); }
+
+  .tree-service-prose__inner {
+    display: grid;
+    grid-template-columns: 631px minmax(0, 1fr);
+    gap: 50px;
+    align-items: start;
+  }
+
+  .tree-service-prose__media {
+    position: relative;
+    /* The Figma photo is a tall 631x1258 panel beside the copy; sticking it
+       keeps it in view while the longer prose column scrolls past. */
+    position: sticky;
+    top: 24px;
+    aspect-ratio: 631 / 1258;
+  }
+  .tree-service-prose__media > :global(picture) { display: contents; }
+  .tree-service-prose__media :global(.tree-service-prose__img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--tree-radius-card, 12px);
+  }
+
+  .tree-service-prose__body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 30px;
+  }
+
+  /* Markdown body — headings and paragraphs come from the entry's content. */
+  .tree-service-prose__rte :global(h2) {
+    font-size: 42px;
+    font-weight: 500;
+    line-height: 1.1;
+    text-transform: capitalize;
+    color: var(--color-bg-brand-strong, #1e372e);
+  }
+  .tree-service-prose__rte :global(h3) {
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--color-bg-brand-strong, #1e372e);
+  }
+  .tree-service-prose__rte :global(h2 + p),
+  .tree-service-prose__rte :global(h3 + p) { margin-top: 30px; }
+  .tree-service-prose__rte :global(p) {
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--color-text-secondary, #373434);
+  }
+  .tree-service-prose__rte :global(p + p) { margin-top: 1.6em; }
+  .tree-service-prose__rte :global(p + h2),
+  .tree-service-prose__rte :global(p + h3) { margin-top: 60px; }
+  .tree-service-prose__rte :global(ul),
+  .tree-service-prose__rte :global(ol) {
+    margin-top: 1.6em;
+    padding-left: 1.4em;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6em;
+  }
+  .tree-service-prose__rte :global(li) {
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--color-text-secondary, #373434);
+  }
+  .tree-service-prose__rte :global(a) {
+    color: var(--color-bg-action, #2f8328);
+    text-decoration: underline;
+  }
+  .tree-service-prose__rte :global(strong) { color: var(--color-text-primary, #013b2d); }
+
+  .tree-service-prose__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 286px;
+    height: 60px;
+    padding-inline: 24px;
+    border-radius: var(--tree-radius-btn, 6px);
+    background: var(--color-bg-accent, #c8f08f);
+    color: var(--color-text-primary, #013b2d);
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.8;
+    text-transform: capitalize;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+  .tree-service-prose__cta:hover {
+    background: var(--color-bg-action-hover, #368a2a);
+    color: var(--color-text-inverse, #fff);
+  }
+
+  @media (max-width: 1024px) {
+    .tree-service-prose { padding-block: 56px; }
+    .tree-service-prose__inner { grid-template-columns: 1fr; gap: 36px; }
+    .tree-service-prose__media { position: static; aspect-ratio: 16 / 10; }
+    .tree-service-prose__rte :global(h2) { font-size: 34px; }
+    .tree-service-prose__rte :global(p + h2) { margin-top: 44px; }
+  }
+
+  @media (max-width: 767px) {
+    .tree-service-prose { padding-block: 40px; }
+    .tree-service-prose__rte :global(h2) { font-size: 26px; }
+    .tree-service-prose__rte :global(h3) { font-size: 21px; }
+    .tree-service-prose__rte :global(p),
+    .tree-service-prose__rte :global(li) { font-size: 15px; }
+    .tree-service-prose__cta { min-width: 0; width: 100%; height: 52px; font-size: 16px; }
+  }
+</style>

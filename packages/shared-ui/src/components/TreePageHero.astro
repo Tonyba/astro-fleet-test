@@ -32,6 +32,11 @@ export interface Props {
    * anchored right at 836px wide, i.e. 1089/1920.
    */
   imageSplit?: string;
+  /**
+   * Short 240px band carrying just a title — the projects page (Figma
+   * 123:4218). The full-height variant is 551px with copy and CTAs.
+   */
+  compact?: boolean;
 }
 
 const {
@@ -43,12 +48,16 @@ const {
   image,
   imageAlt,
   imageSplit = '53.75%',
+  compact = false,
 } = Astro.props;
 
 const telHref = phoneCta ? `tel:${phoneCta.number.replace(/[^\d+]/g, '')}` : undefined;
 ---
 
-<section class="tree-page-hero" style={`--tree-page-hero-split-desktop: ${imageSplit};`}>
+<section
+  class:list={['tree-page-hero', { 'tree-page-hero--compact': compact }]}
+  style={`--tree-page-hero-split-desktop: ${imageSplit};`}
+>
   <div class="tree-container tree-page-hero__inner">
     <div class="tree-page-hero__copy">
       <h1 class="tree-page-hero__title">{title}</h1>
@@ -127,6 +136,10 @@ const telHref = phoneCta ? `tel:${phoneCta.number.replace(/[^\d+]/g, '')}` : und
     z-index: 2;
     padding-block: 93px;
   }
+
+  /* Title-only band (Figma 123:4218): 240px tall, copy vertically centred. */
+  .tree-page-hero--compact { min-height: 240px; }
+  .tree-page-hero--compact .tree-page-hero__inner { padding-block: 0; }
 
   .tree-page-hero__copy {
     display: flex;
@@ -240,6 +253,10 @@ const telHref = phoneCta ? `tel:${phoneCta.number.replace(/[^\d+]/g, '')}` : und
   }
 
   /* ===== Mobile (<=767px) — photo on top, copy stacked beneath ===== */
+  @media (max-width: 1024px) {
+    .tree-page-hero--compact { min-height: 190px; }
+  }
+
   @media (max-width: 767px) {
     .tree-page-hero {
       display: block;
@@ -247,6 +264,9 @@ const telHref = phoneCta ? `tel:${phoneCta.number.replace(/[^\d+]/g, '')}` : und
       padding-top: 278px; /* room for the photo band above the copy (Figma 123:6069) */
     }
     .tree-page-hero__inner { padding-block: 50px 62px; }
+    .tree-page-hero--compact { padding-top: 180px; }
+    .tree-page-hero--compact .tree-page-hero__inner { padding-block: 28px 32px; }
+    .tree-page-hero--compact :global(.tree-page-hero__img) { height: 180px; }
     .tree-page-hero__copy { max-width: none; gap: 20px; }
     .tree-page-hero__title { font-size: 30px; }
     .tree-page-hero__desc { font-size: 15px; }

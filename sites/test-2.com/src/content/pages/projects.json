@@ -1,70 +1,56 @@
 {
   "seo": {
-    "title": "Residential Tree Services in Connecticut — Erick's Tree Service",
-    "description": "Expert tree removal, pruning, stump grinding, and storm cleanup for Connecticut homes — plus snow plowing, masonry, walkways, patios, and paving. Free estimates.",
+    "title": "Photo Gallery — Erick's Tree Service",
+    "description": "Browse recent tree removals, trimming, stump grinding, and storm cleanup projects completed across Connecticut by Erick’s Tree Services.",
     "keywords": [
-      "residential tree service",
-      "tree removal",
-      "tree pruning",
-      "stump grinding",
-      "snow plowing",
-      "masonry",
-      "patio",
-      "paving",
-      "Connecticut"
+      "tree service projects",
+      "photo gallery",
+      "tree removal Connecticut",
+      "storm cleanup"
     ]
   },
   "hero": {
-    "title": "Trusted Tree Care Services for Residential Properties Across Connecticut",
-    "description": "Erick's Tree Services is a tree service company that helps customers maintain beautiful, healthy trees and shrubs. At the heart of our success are our arborists, experts who know and champion every tree, no matter the species.",
-    "primaryCta": {
-      "label": "Get free quote now",
-      "href": "#free-inspection"
-    },
-    "separator": "or",
-    "phoneCta": {
-      "label": "Call (203) 367-8219",
-      "number": "(203) 367-8219"
-    },
-    "image": "/src/assets/photos/residential-hero.jpg",
-    "imageAlt": "Arborist roping down a large limb above a residential property",
-    "imageSplit": "56.72%"
+    "title": "Photo Gallery",
+    "image": "/src/assets/photos/projects-hero.jpg",
+    "imageAlt": "Arborist working high in a tree canopy",
+    "imageSplit": "56.98%"
   },
-  "stats": [
-    {
-      "value": "25+",
-      "label": "Years Experience"
-    },
-    {
-      "value": "1,000+",
-      "label": "Projects Completed"
-    },
-    {
-      "value": "24/7",
-      "label": "Emergency Services"
-    },
-    {
-      "value": "100%",
-      "label": "Commitment to Safety"
-    }
-  ],
-  "services": {
-    "heading": "Expert tree services for your home"
-  },
-  "outdoor": {
-    "heading": "Professional Outdoor Solutions Designed for Functionality & Curb Appeal"
-  },
-  "emergency": {
-    "heading": "TREE EMERGENCY? WE'RE READY TO HELP.",
-    "subtext": "24/7 Service For Emergency. Fast response. Safe removal. Peace of mind.",
-    "phoneLabel": "Call emergency line",
-    "phoneNumber": "(203) 650-8519"
-  },
-  "projects": {
-    "eyebrow": "Proyects",
-    "heading": "Real Projects, Real Results",
-    "description": "Explore our recent tree care projects across Connecticut, including tree removals, trimming, stump grinding, and emergency storm cleanup.",
+  "gallery": {
+    "initialCount": 8,
+    "loadMoreLabel": "Load More",
     "items": [
+      {
+        "image": "/src/assets/photos/gallery-01.jpg",
+        "alt": "Crew clearing storm-felled timber"
+      },
+      {
+        "image": "/src/assets/photos/gallery-02.jpg",
+        "alt": "Arborist rigging a large limb"
+      },
+      {
+        "image": "/src/assets/photos/gallery-03.jpg",
+        "alt": "Tree removal beside a residential roofline"
+      },
+      {
+        "image": "/src/assets/photos/gallery-04.jpg",
+        "alt": "Chipper loading branches on site"
+      },
+      {
+        "image": "/src/assets/photos/gallery-05.jpg",
+        "alt": "Stump ground flush with the lawn"
+      },
+      {
+        "image": "/src/assets/photos/gallery-06.jpg",
+        "alt": "Climber topping a mature conifer"
+      },
+      {
+        "image": "/src/assets/photos/gallery-07.jpg",
+        "alt": "Cut logs stacked for removal"
+      },
+      {
+        "image": "/src/assets/photos/gallery-08.jpg",
+        "alt": "Finished site after a full clearance"
+      },
       {
         "image": "/src/assets/photos/project-1.jpg",
         "alt": "Tall tree removal in progress"

@@ -362,6 +362,232 @@ collections:
               - { label: Paragraphs, name: paragraphs, widget: list, field: { label: Paragraph, name: p, widget: text } }
 
   # -------------------------------------------------------------------------
+  # Services page — per-section editable content for /services/.
+  # Reuses the same section components as the homepage (services grid,
+  # emergency banner, projects carousel, FAQ, inspection form), but keeps its
+  # own copy so the commercial page can diverge from the homepage.
+  # -------------------------------------------------------------------------
+  - name: services_page
+    label: Services Page
+    editor: { preview: false }
+    files:
+      - name: services
+        label: Services
+        file: sites/test-2.com/src/content/pages/services.json
+        fields:
+          - label: SEO
+            name: seo
+            widget: object
+            fields:
+              - { label: Title, name: title, widget: string }
+              - { label: Description, name: description, widget: text }
+              - { label: Keywords, name: keywords, widget: list, field: { label: Keyword, name: keyword, widget: string } }
+          - label: Page Hero
+            name: hero
+            widget: object
+            fields:
+              - { label: Title, name: title, widget: string }
+              - { label: Description, name: description, widget: text }
+              - label: Primary Button
+                name: primaryCta
+                widget: object
+                fields:
+                  - { label: Label, name: label, widget: string }
+                  - { label: Link, name: href, widget: string }
+              - { label: Separator Word, name: separator, widget: string, required: false, hint: 'Rendered between the two buttons — leave blank to hide.' }
+              - label: Phone Button
+                name: phoneCta
+                widget: object
+                fields:
+                  - { label: Label, name: label, widget: string }
+                  - { label: Number, name: number, widget: string, hint: 'Dialled number — the button links to tel: with this value.' }
+              - { label: Photo, name: image, widget: image }
+              - { label: Photo Alt Text, name: imageAlt, widget: string }
+          - label: Stats Row
+            name: stats
+            widget: list
+            fields:
+              - { label: Value, name: value, widget: string }
+              - { label: Label, name: label, widget: string }
+          - label: Services
+            name: services
+            widget: object
+            fields:
+              - { label: Heading, name: heading, widget: string }
+              - label: Service Cards
+                name: items
+                widget: list
+                fields:
+                  - { label: Title, name: title, widget: string }
+                  - { label: Description, name: description, widget: text }
+                  - { label: Photo, name: image, widget: image }
+                  - { label: Icon, name: icon, widget: image, media_folder: /sites/test-2.com/public/media/icons, public_folder: /media/icons }
+                  - { label: Link, name: href, widget: string }
+          - label: Emergency Banner
+            name: emergency
+            widget: object
+            fields:
+              - { label: Heading, name: heading, widget: string }
+              - { label: Subtext, name: subtext, widget: text }
+              - { label: Phone Label, name: phoneLabel, widget: string }
+              - { label: Phone Number, name: phoneNumber, widget: string }
+          - label: Projects
+            name: projects
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Heading, name: heading, widget: string }
+              - { label: Description, name: description, widget: text }
+              - label: Project Photos
+                name: items
+                widget: list
+                fields:
+                  - { label: Photo, name: image, widget: image }
+                  - { label: Alt Text, name: alt, widget: string }
+          - label: FAQ
+            name: faq
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Title (bold line), name: titleLead, widget: string }
+              - { label: Title (second line), name: titleRest, widget: string }
+              - { label: Subtitle, name: subtitle, widget: text, required: false }
+              - label: Questions
+                name: items
+                widget: list
+                summary: '{{fields.question}}'
+                fields:
+                  - { label: Question, name: question, widget: string }
+                  - { label: Answer, name: answer, widget: text }
+          - label: Inspection Form Section
+            name: inspection
+            widget: object
+            fields:
+              - { label: Heading, name: heading, widget: string }
+              - { label: Lead, name: lead, widget: text }
+              - { label: Paragraphs, name: paragraphs, widget: list, field: { label: Paragraph, name: p, widget: text } }
+
+  # -------------------------------------------------------------------------
+  # Residential Services page — /services/residential/.
+  # Same section components as the commercial page, plus a second card grid
+  # ("Professional Outdoor Solutions") that only this page carries.
+  # -------------------------------------------------------------------------
+  - name: services_residential_page
+    label: Residential Services Page
+    editor: { preview: false }
+    files:
+      - name: services_residential
+        label: Residential Services
+        file: sites/test-2.com/src/content/pages/services-residential.json
+        fields:
+          - label: SEO
+            name: seo
+            widget: object
+            fields:
+              - { label: Title, name: title, widget: string }
+              - { label: Description, name: description, widget: text }
+              - { label: Keywords, name: keywords, widget: list, field: { label: Keyword, name: keyword, widget: string } }
+          - label: Page Hero
+            name: hero
+            widget: object
+            fields:
+              - { label: Title, name: title, widget: string }
+              - { label: Description, name: description, widget: text }
+              - label: Primary Button
+                name: primaryCta
+                widget: object
+                fields:
+                  - { label: Label, name: label, widget: string }
+                  - { label: Link, name: href, widget: string }
+              - { label: Separator Word, name: separator, widget: string, required: false, hint: 'Shown between the two buttons on desktop only — leave blank to hide.' }
+              - label: Phone Button
+                name: phoneCta
+                widget: object
+                fields:
+                  - { label: Label, name: label, widget: string }
+                  - { label: Number, name: number, widget: string, hint: 'Dialled number — the button links to tel: with this value.' }
+              - { label: Photo, name: image, widget: image }
+              - { label: Photo Alt Text, name: imageAlt, widget: string }
+              - { label: Photo Start (desktop), name: imageSplit, widget: string, required: false, hint: 'How far across the hero the photo begins, e.g. 56.72%. Leave blank for the 53.75% default.' }
+          - label: Stats Row
+            name: stats
+            widget: list
+            fields:
+              - { label: Value, name: value, widget: string }
+              - { label: Label, name: label, widget: string }
+          - label: Tree Services Grid
+            name: services
+            widget: object
+            fields:
+              - { label: Heading, name: heading, widget: string }
+              - label: Service Cards
+                name: items
+                widget: list
+                fields:
+                  - { label: Title, name: title, widget: string }
+                  - { label: Description, name: description, widget: text }
+                  - { label: Photo, name: image, widget: image }
+                  - { label: Icon, name: icon, widget: image, media_folder: /sites/test-2.com/public/media/icons, public_folder: /media/icons }
+                  - { label: Link, name: href, widget: string }
+          - label: Outdoor Solutions Grid
+            name: outdoor
+            widget: object
+            fields:
+              - { label: Heading, name: heading, widget: string }
+              - label: Service Cards
+                name: items
+                widget: list
+                fields:
+                  - { label: Title, name: title, widget: string }
+                  - { label: Description, name: description, widget: text }
+                  - { label: Photo, name: image, widget: image }
+                  - { label: Icon, name: icon, widget: image, media_folder: /sites/test-2.com/public/media/icons, public_folder: /media/icons }
+                  - { label: Link, name: href, widget: string }
+          - label: Emergency Banner
+            name: emergency
+            widget: object
+            fields:
+              - { label: Heading, name: heading, widget: string }
+              - { label: Subtext, name: subtext, widget: text }
+              - { label: Phone Label, name: phoneLabel, widget: string }
+              - { label: Phone Number, name: phoneNumber, widget: string }
+          - label: Projects
+            name: projects
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Heading, name: heading, widget: string }
+              - { label: Description, name: description, widget: text }
+              - label: Project Photos
+                name: items
+                widget: list
+                fields:
+                  - { label: Photo, name: image, widget: image }
+                  - { label: Alt Text, name: alt, widget: string }
+          - label: FAQ
+            name: faq
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Title (bold line), name: titleLead, widget: string }
+              - { label: Title (second line), name: titleRest, widget: string }
+              - { label: Subtitle, name: subtitle, widget: text, required: false }
+              - label: Questions
+                name: items
+                widget: list
+                summary: '{{fields.question}}'
+                fields:
+                  - { label: Question, name: question, widget: string }
+                  - { label: Answer, name: answer, widget: text }
+          - label: Inspection Form Section
+            name: inspection
+            widget: object
+            fields:
+              - { label: Heading, name: heading, widget: string }
+              - { label: Lead, name: lead, widget: text }
+              - { label: Paragraphs, name: paragraphs, widget: list, field: { label: Paragraph, name: p, widget: text } }
+
+  # -------------------------------------------------------------------------
   # Forms — a content model of their own, so a form can be authored once and
   # reused on any page. One JSON file per form; the FILENAME is the id a page
   # looks it up by (quote.json → getForm('quote') in src/lib/forms.ts), so

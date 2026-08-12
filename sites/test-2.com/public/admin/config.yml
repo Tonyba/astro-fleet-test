@@ -224,15 +224,8 @@ collections:
             fields:
               - { label: Eyebrow, name: eyebrow, widget: string }
               - { label: Heading, name: heading, widget: string }
-              - label: Service Cards
-                name: items
-                widget: list
-                fields:
-                  - { label: Title, name: title, widget: string }
-                  - { label: Description, name: description, widget: text }
-                  - { label: Photo, name: image, widget: image }
-                  - { label: Icon, name: icon, widget: image, media_folder: /sites/test-2.com/public/media/icons, public_folder: /media/icons }
-                  - { label: Link, name: href, widget: string }
+              # Service cards are generated from the Single Service collection below —
+              # edit a card by editing its service there, not here.
           - label: Why Choose Us
             name: whyChoose
             widget: object
@@ -317,6 +310,13 @@ collections:
                 fields:
                   - { label: Score, name: score, widget: string }
                   - { label: Caption, name: caption, widget: string }
+              - label: Service Pages Badge
+                name: serviceRating
+                widget: object
+                hint: 'The reviews badge shown on service detail pages.'
+                fields:
+                  - { label: Score, name: score, widget: string, required: false, hint: 'Leave blank for the logo-and-caption-only badge.' }
+                  - { label: Caption, name: caption, widget: string }
               - label: Reviews
                 name: reviews
                 widget: list
@@ -362,18 +362,18 @@ collections:
               - { label: Paragraphs, name: paragraphs, widget: list, field: { label: Paragraph, name: p, widget: text } }
 
   # -------------------------------------------------------------------------
-  # Services page — per-section editable content for /services/.
+  # Commercial Services page — /services/commercial/.
   # Reuses the same section components as the homepage (services grid,
   # emergency banner, projects carousel, FAQ, inspection form), but keeps its
   # own copy so the commercial page can diverge from the homepage.
   # -------------------------------------------------------------------------
-  - name: services_page
-    label: Services Page
+  - name: services_commercial_page
+    label: Commercial Services Page
     editor: { preview: false }
     files:
-      - name: services
-        label: Services
-        file: sites/test-2.com/src/content/pages/services.json
+      - name: services_commercial
+        label: Commercial Services
+        file: sites/test-2.com/src/content/pages/services-commercial.json
         fields:
           - label: SEO
             name: seo
@@ -414,15 +414,8 @@ collections:
             widget: object
             fields:
               - { label: Heading, name: heading, widget: string }
-              - label: Service Cards
-                name: items
-                widget: list
-                fields:
-                  - { label: Title, name: title, widget: string }
-                  - { label: Description, name: description, widget: text }
-                  - { label: Photo, name: image, widget: image }
-                  - { label: Icon, name: icon, widget: image, media_folder: /sites/test-2.com/public/media/icons, public_folder: /media/icons }
-                  - { label: Link, name: href, widget: string }
+              # Service cards are generated from the Single Service collection below —
+              # edit a card by editing its service there, not here.
           - label: Emergency Banner
             name: emergency
             widget: object
@@ -520,29 +513,15 @@ collections:
             widget: object
             fields:
               - { label: Heading, name: heading, widget: string }
-              - label: Service Cards
-                name: items
-                widget: list
-                fields:
-                  - { label: Title, name: title, widget: string }
-                  - { label: Description, name: description, widget: text }
-                  - { label: Photo, name: image, widget: image }
-                  - { label: Icon, name: icon, widget: image, media_folder: /sites/test-2.com/public/media/icons, public_folder: /media/icons }
-                  - { label: Link, name: href, widget: string }
+              # Service cards are generated from the Single Service collection below —
+              # edit a card by editing its service there, not here.
           - label: Outdoor Solutions Grid
             name: outdoor
             widget: object
             fields:
               - { label: Heading, name: heading, widget: string }
-              - label: Service Cards
-                name: items
-                widget: list
-                fields:
-                  - { label: Title, name: title, widget: string }
-                  - { label: Description, name: description, widget: text }
-                  - { label: Photo, name: image, widget: image }
-                  - { label: Icon, name: icon, widget: image, media_folder: /sites/test-2.com/public/media/icons, public_folder: /media/icons }
-                  - { label: Link, name: href, widget: string }
+              # Service cards are generated from the Single Service collection below —
+              # edit a card by editing its service there, not here.
           - label: Emergency Banner
             name: emergency
             widget: object
@@ -586,6 +565,197 @@ collections:
               - { label: Heading, name: heading, widget: string }
               - { label: Lead, name: lead, widget: text }
               - { label: Paragraphs, name: paragraphs, widget: list, field: { label: Paragraph, name: p, widget: text } }
+
+  # -------------------------------------------------------------------------
+  # Projects page — /projects/. A masonry photo gallery plus the shared FAQ and
+  # inspection-form sections.
+  # -------------------------------------------------------------------------
+  - name: projects_page
+    label: Projects Page
+    editor: { preview: false }
+    files:
+      - name: projects
+        label: Projects
+        file: sites/test-2.com/src/content/pages/projects.json
+        fields:
+          - label: SEO
+            name: seo
+            widget: object
+            fields:
+              - { label: Title, name: title, widget: string }
+              - { label: Description, name: description, widget: text }
+              - { label: Keywords, name: keywords, widget: list, field: { label: Keyword, name: keyword, widget: string } }
+          - label: Page Hero
+            name: hero
+            widget: object
+            fields:
+              - { label: Title, name: title, widget: string }
+              - { label: Photo, name: image, widget: image }
+              - { label: Photo Alt Text, name: imageAlt, widget: string }
+              - { label: Photo Start (desktop), name: imageSplit, widget: string, required: false, hint: 'e.g. 56.98%. Leave blank for the 53.75% default.' }
+          - label: Gallery
+            name: gallery
+            widget: object
+            fields:
+              - { label: Photos Before "Load More", name: initialCount, widget: number, value_type: int, default: 8, hint: 'Set to 0 to show every photo with no button.' }
+              - { label: Load More Button Label, name: loadMoreLabel, widget: string }
+              - label: Photos
+                name: items
+                widget: list
+                summary: '{{fields.alt}}'
+                fields:
+                  - { label: Photo, name: image, widget: image }
+                  - { label: Alt Text, name: alt, widget: string }
+          - label: FAQ
+            name: faq
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Title (bold line), name: titleLead, widget: string }
+              - { label: Title (second line), name: titleRest, widget: string }
+              - { label: Subtitle, name: subtitle, widget: text, required: false }
+              - label: Questions
+                name: items
+                widget: list
+                summary: '{{fields.question}}'
+                fields:
+                  - { label: Question, name: question, widget: string }
+                  - { label: Answer, name: answer, widget: text }
+          - label: Inspection Form Section
+            name: inspection
+            widget: object
+            fields:
+              - { label: Heading, name: heading, widget: string }
+              - { label: Lead, name: lead, widget: text }
+              - { label: Paragraphs, name: paragraphs, widget: list, field: { label: Paragraph, name: p, widget: text } }
+
+  # -------------------------------------------------------------------------
+  # Single Service — the source of truth for every service on the site.
+  # One entry per service. The FILENAME is the slug its detail page is built at
+  # (tree-removal.md -> /service/tree-removal/), and every services grid on the
+  # site (homepage, /services/commercial/, /services/residential/) is generated
+  # from this collection, so a card and its page can never drift apart.
+  #
+  # Taxonomy: `categories` places a service under Residential and/or Commercial;
+  # `group` picks which of the two grids it lands in on the residential page.
+  # Keep in sync with the `services` collection in src/content.config.ts.
+  # -------------------------------------------------------------------------
+  - name: services
+    label: Single Service
+    label_singular: Service
+    folder: sites/test-2.com/src/content/services
+    create: true
+    slug: '{{fields.title | slugify}}'
+    extension: md
+    format: frontmatter
+    summary: '{{fields.title}} — {{fields.group}}'
+    sortable_fields: [order, title]
+    view_groups:
+      - { label: Group, field: group }
+    editor: { preview: false }
+    fields:
+      - { label: Title, name: title, widget: string, hint: 'Also becomes the URL slug for a new service, e.g. Tree Removal -> /service/tree-removal/.' }
+      - { label: Order, name: order, widget: number, default: 0, value_type: int, hint: 'Ascending — controls position within a services grid.' }
+      - label: Categories
+        name: categories
+        widget: select
+        multiple: true
+        default: [residential]
+        options:
+          - { label: Residential, value: residential }
+          - { label: Commercial, value: commercial }
+        hint: 'Which services pages this service appears on. Pick both if it applies to both.'
+      - label: Grid
+        name: group
+        widget: select
+        default: tree-care
+        options:
+          - { label: Tree Services, value: tree-care }
+          - { label: Outdoor Solutions, value: outdoor-solutions }
+        hint: 'Which grid the card sits in on the Residential Services page.'
+      - { label: Draft, name: draft, widget: boolean, default: false, required: false, hint: 'Hides the service from every grid and unpublishes its page.' }
+
+      - label: Card
+        name: card
+        widget: object
+        hint: 'How this service appears in the services grids.'
+        fields:
+          - { label: Description, name: description, widget: text }
+          - { label: Photo, name: image, widget: image }
+          - { label: Icon, name: icon, widget: image, media_folder: /sites/test-2.com/public/media/icons, public_folder: /media/icons }
+
+      - label: SEO
+        name: seo
+        widget: object
+        required: false
+        collapsed: true
+        fields:
+          - { label: Title, name: title, widget: string }
+          - { label: Description, name: description, widget: text }
+          - { label: Keywords, name: keywords, widget: list, required: false, field: { label: Keyword, name: keyword, widget: string } }
+
+      - label: Page Hero
+        name: hero
+        widget: object
+        required: false
+        collapsed: true
+        fields:
+          - { label: Title, name: title, widget: string }
+          - { label: Description, name: description, widget: text, required: false }
+          - { label: Photo, name: image, widget: image }
+          - { label: Photo Alt Text, name: imageAlt, widget: string }
+          - { label: Photo Start (desktop), name: imageSplit, widget: string, required: false, hint: 'e.g. 56.72%. Leave blank for the 53.75% default.' }
+
+      - label: Intro Block
+        name: intro
+        widget: object
+        required: false
+        collapsed: true
+        fields:
+          - { label: Heading, name: heading, widget: string }
+          - { label: Paragraphs, name: paragraphs, widget: list, field: { label: Paragraph, name: p, widget: text } }
+          - { label: Button Label, name: ctaLabel, widget: string, required: false }
+          - { label: Button Link, name: ctaHref, widget: string, required: false }
+          - { label: Photo, name: image, widget: image }
+          - { label: Photo Alt Text, name: imageAlt, widget: string }
+
+      - { label: Why Choose Us Heading, name: whyChooseHeading, widget: string, required: false, hint: 'Overrides the site-wide heading on this page only.' }
+
+      - label: What We Can Do For You
+        name: capabilities
+        widget: object
+        required: false
+        collapsed: true
+        fields:
+          - { label: Heading, name: heading, widget: string }
+          - { label: Intro, name: intro, widget: text, required: false }
+          - { label: Bullets, name: bullets, widget: list, required: false, field: { label: Bullet, name: b, widget: text } }
+          - { label: Button Label, name: ctaLabel, widget: string, required: false }
+          - { label: Button Link, name: ctaHref, widget: string, required: false }
+          - label: Chips
+            name: chips
+            widget: list
+            required: false
+            summary: '{{fields.label}}'
+            fields:
+              - { label: Icon, name: icon, widget: image, media_folder: /sites/test-2.com/public/media/icons, public_folder: /media/icons }
+              - { label: Label, name: label, widget: string }
+
+      - label: Criteria Checklist
+        name: checklist
+        widget: object
+        required: false
+        collapsed: true
+        fields:
+          - { label: Heading, name: heading, widget: string }
+          - { label: Intro, name: intro, widget: text, required: false }
+          - { label: Items, name: items, widget: list, required: false, field: { label: Item, name: i, widget: string } }
+
+      - { label: Body Photo, name: bodyImage, widget: image, required: false, hint: 'Tall photo shown beside the article body below.' }
+      - { label: Body Photo Alt Text, name: bodyImageAlt, widget: string, required: false }
+      - { label: Body Button Label, name: bodyCtaLabel, widget: string, required: false }
+      - { label: Body Button Link, name: bodyCtaHref, widget: string, required: false }
+      - { label: Body, name: body, widget: markdown, required: false, hint: 'Long-form content. Use H2 for the section headings.' }
 
   # -------------------------------------------------------------------------
   # Forms — a content model of their own, so a form can be authored once and

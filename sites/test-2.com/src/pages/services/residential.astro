@@ -10,6 +10,7 @@ import TreeFaq from '@astro-fleet/shared-ui/src/components/TreeFaq.astro';
 import TreeInspectionForm from '@astro-fleet/shared-ui/src/components/TreeInspectionForm.astro';
 
 import { getForm } from '../../lib/forms';
+import { getServiceCards } from '../../lib/services';
 
 // CMS-editable content (Sveltia commits these JSON files; the build imports them).
 import site from '../../content/settings/site.json';
@@ -17,6 +18,10 @@ import page from '../../content/pages/services-residential.json';
 
 // Same form model the rest of the site uses — one definition, reused per page.
 const quoteForm = await getForm('quote');
+
+// Both grids come from the Single Service collection, filtered by taxonomy.
+const treeCare = await getServiceCards({ category: 'residential', group: 'tree-care' });
+const outdoor = await getServiceCards({ category: 'residential', group: 'outdoor-solutions' });
 ---
 
 <TreeLayout
@@ -40,7 +45,7 @@ const quoteForm = await getForm('quote');
   */}
   <TreeServices
     heading={page.services.heading}
-    services={page.services.items}
+    services={treeCare}
     eyebrow=""
     align="left"
     showViewAll={false}
@@ -48,7 +53,7 @@ const quoteForm = await getForm('quote');
   />
   <TreeServices
     heading={page.outdoor.heading}
-    services={page.outdoor.items}
+    services={outdoor}
     eyebrow=""
     align="left"
     showViewAll={false}

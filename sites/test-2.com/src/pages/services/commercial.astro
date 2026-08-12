@@ -1,5 +1,5 @@
 ---
-import '../styles/global.css';
+import '../../styles/global.css';
 import TreeLayout from '@astro-fleet/shared-ui/src/layouts/TreeLayout.astro';
 import TreePageHero from '@astro-fleet/shared-ui/src/components/TreePageHero.astro';
 import TreeStatsRow from '@astro-fleet/shared-ui/src/components/TreeStatsRow.astro';
@@ -9,14 +9,18 @@ import TreeProjects from '@astro-fleet/shared-ui/src/components/TreeProjects.ast
 import TreeFaq from '@astro-fleet/shared-ui/src/components/TreeFaq.astro';
 import TreeInspectionForm from '@astro-fleet/shared-ui/src/components/TreeInspectionForm.astro';
 
-import { getForm } from '../lib/forms';
+import { getForm } from '../../lib/forms';
+import { getServiceCards } from '../../lib/services';
 
 // CMS-editable content (Sveltia commits these JSON files; the build imports them).
-import site from '../content/settings/site.json';
-import services from '../content/pages/services.json';
+import site from '../../content/settings/site.json';
+import services from '../../content/pages/services-commercial.json';
 
 // Same form model the homepage uses — one definition, reused across pages.
 const quoteForm = await getForm('quote');
+
+// Cards come from the Single Service collection, filtered to the commercial term.
+const commercialServices = await getServiceCards({ category: 'commercial' });
 ---
 
 <TreeLayout
@@ -34,7 +38,7 @@ const quoteForm = await getForm('quote');
   <TreeStatsRow stats={services.stats} />
   <TreeServices
     heading={services.services.heading}
-    services={services.services.items}
+    services={commercialServices}
     eyebrow=""
     align="left"
     showViewAll={false}
