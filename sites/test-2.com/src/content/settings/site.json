@@ -25,12 +25,12 @@
       },
       {
         "label": "Residential",
-        "href": "/residential/",
+        "href": "/services/residential/",
         "caret": true
       },
       {
         "label": "Commercial",
-        "href": "/commercial/",
+        "href": "/services/",
         "caret": true
       },
       {
