@@ -34,7 +34,7 @@ media_libraries:
     transformations:
       raster_image: # original format
         format: webp # new format, only `webp` is supported
-        quality: 85 # default: 85
+        quality: 90 # default: 85
         width: 2048 # default: original size
         height: 2048 # default: original size
       svg:
