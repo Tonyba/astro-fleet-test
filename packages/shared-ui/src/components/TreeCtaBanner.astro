@@ -1,0 +1,263 @@
+---
+/**
+ * TreeCtaBanner.astro
+ * -------------------
+ * Full-bleed "Need a tree expert?" CTA banner. Figma node 123:211.
+ * Desktop (>1024px): brand-strong bar with a decorative tree cluster anchored
+ * bottom-left, heading on the left, and two buttons (accent quote CTA + outlined
+ * call) on the right.
+ * <=1024px: content stacks and the mobile tree row (node 123:4762) sits below.
+ * <=767px: buttons go full-width and the tree row spans edge-to-edge, matching
+ * mobile node 123:4751.
+ *
+ * The tree artwork PNGs carry the banner's brand-strong (#1e372e) background
+ * baked in, so they blend seamlessly against the section fill.
+ */
+import TreePicture from './TreePicture.astro';
+
+export interface Props {
+  headingLead?: string;
+  headingSub?: string;
+  primaryLabel?: string;
+  primaryHref?: string;
+  phoneLabel?: string;
+  phoneNumber?: string;
+  phoneHref?: string;
+  phoneIconSrc?: string;
+  treeArtDesktopSrc?: string;
+  treeArtMobileSrc?: string;
+}
+
+const {
+  headingLead = 'Need a tree expert?',
+  headingSub = 'Get your free estimate today.',
+  primaryLabel = 'Get free quote now',
+  primaryHref = '#quote',
+  phoneLabel = 'Call (203) 367-8219',
+  phoneNumber = '(203) 367-8219',
+  phoneHref,
+  phoneIconSrc = '/media/icons/cta-phone.svg',
+  treeArtDesktopSrc = '/media/photos/cta-trees-desktop.png',
+  treeArtMobileSrc = '/media/photos/cta-trees-mobile.png',
+} = Astro.props;
+
+const telHref = phoneHref ?? `tel:${phoneNumber.replace(/[^\d+]/g, '')}`;
+---
+
+<section class="tree-cta-banner" aria-label="Request a free estimate">
+  <div class="tree-cta-banner__art tree-cta-banner__art--desktop">
+    <TreePicture src={treeArtDesktopSrc} alt="" width={357} height={141} loading="lazy" />
+  </div>
+
+  <div class="tree-cta-banner__inner tree-container">
+    <div class="tree-cta-banner__text">
+      <h2 class="tree-cta-banner__heading">{headingLead}</h2>
+      <p class="tree-cta-banner__subheading">{headingSub}</p>
+    </div>
+
+    <div class="tree-cta-banner__actions">
+      <a href={primaryHref} class="tree-cta-banner__btn tree-cta-banner__btn--primary">
+        {primaryLabel}
+      </a>
+      <a href={telHref} class="tree-cta-banner__btn tree-cta-banner__btn--call">
+        <img
+          class="tree-cta-banner__btn-icon"
+          src={phoneIconSrc}
+          alt=""
+          aria-hidden="true"
+          width="21"
+          height="21"
+          loading="lazy"
+          decoding="async"
+        />
+        <span>{phoneLabel}</span>
+      </a>
+    </div>
+
+    <div class="tree-cta-banner__art tree-cta-banner__art--mobile">
+      <TreePicture src={treeArtMobileSrc} alt="" width={393} height={191} loading="lazy" />
+    </div>
+  </div>
+</section>
+
+<style>
+  .tree-cta-banner {
+    position: relative;
+    overflow: hidden;
+    background: var(--color-bg-brand-strong, #1e372e);
+  }
+
+  .tree-cta-banner__inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    min-height: 127px;
+  }
+
+  /* ===== Decorative tree artwork ===== */
+  .tree-cta-banner__art {
+    pointer-events: none;
+    user-select: none;
+  }
+  .tree-cta-banner__art :global(picture) {
+    display: block;
+  }
+  .tree-cta-banner__art :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .tree-cta-banner__art--desktop {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    z-index: 0;
+    width: 357px;
+    height: 141px;
+  }
+  .tree-cta-banner__art--desktop :global(img) {
+    height: 100%;
+    object-fit: cover;
+  }
+  .tree-cta-banner__art--mobile {
+    display: none;
+  }
+
+  /* ===== Heading ===== */
+  .tree-cta-banner__text {
+    position: relative;
+    z-index: 1;
+    margin-left: 126px; /* clears the bottom-left tree cluster */
+    max-width: 744px;
+  }
+  .tree-cta-banner__heading {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: 36px;
+    font-weight: 600;
+    line-height: 1.4;
+    text-transform: capitalize;
+    color: var(--color-text-inverse, #fff);
+  }
+  .tree-cta-banner__subheading {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: 21px;
+    font-weight: 400;
+    line-height: 1.4;
+    text-transform: capitalize;
+    color: var(--color-text-inverse, #fff);
+  }
+
+  /* ===== Buttons ===== */
+  .tree-cta-banner__actions {
+    position: relative;
+    z-index: 1;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .tree-cta-banner__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 11px;
+    width: 339px;
+    height: 60px;
+    padding: 0 20px;
+    border-radius: var(--tree-radius-btn, 6px);
+    font-family: var(--font-heading);
+    font-size: 18px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+  .tree-cta-banner__btn--primary {
+    background: var(--color-bg-accent, #c8f08f);
+    color: var(--color-text-primary, #013b2d);
+    font-weight: 700;
+    text-transform: capitalize;
+  }
+  .tree-cta-banner__btn--primary:hover {
+    background: #b9e878;
+  }
+  .tree-cta-banner__btn--call {
+    background: transparent;
+    border: 1px solid var(--color-text-inverse, #fff);
+    color: var(--color-text-inverse, #fff);
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .tree-cta-banner__btn--call:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .tree-cta-banner__btn-icon {
+    display: block;
+    width: 21px;
+    height: 21px;
+    flex-shrink: 0;
+  }
+
+  /* ===== Tablet (<=1024px) — stack, hide left cluster, show tree row ===== */
+  @media (max-width: 1024px) {
+    .tree-cta-banner__inner {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 24px;
+      padding-top: 40px;
+      padding-bottom: 0;
+    }
+    .tree-cta-banner__art--desktop {
+      display: none;
+    }
+    .tree-cta-banner__art--mobile {
+      display: block;
+      width: 100%;
+      max-width: 460px;
+      margin: 8px auto 0;
+    }
+    .tree-cta-banner__text {
+      margin-left: 0;
+      max-width: 640px;
+    }
+    .tree-cta-banner__actions {
+      margin-left: 0;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  }
+
+  /* ===== Mobile (<=767px) — full-width buttons + edge-to-edge tree row ===== */
+  @media (max-width: 767px) {
+    .tree-cta-banner__inner {
+      align-items: stretch;
+      text-align: center;
+      gap: 32px;
+    }
+    .tree-cta-banner__text {
+      max-width: none;
+    }
+    .tree-cta-banner__heading {
+      font-size: 32px;
+    }
+    .tree-cta-banner__subheading {
+      font-size: 18px;
+    }
+    .tree-cta-banner__actions {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+    }
+    .tree-cta-banner__btn {
+      width: 100%;
+    }
+    .tree-cta-banner__art--mobile {
+      max-width: none;
+      width: calc(100% + 48px);
+      margin: 0 -24px 0;
+    }
+  }
+</style>

@@ -1,0 +1,260 @@
+---
+/**
+ * TreeHero.astro
+ * --------------
+ * Home hero. Figma nodes 123:58 (full-bleed media) + 123:59 (content) +
+ * 123:172 (quote form). Dark forest background, left content column with
+ * eyebrow/headline/reviews/bullets/badges/CTAs, and the TreeQuoteForm on the
+ * right.
+ */
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import TreePicture from './TreePicture.astro';
+import TreeQuoteForm from './TreeQuoteForm.astro';
+import type { Props as QuoteProps } from './TreeQuoteForm.astro';
+
+export interface HeroBadge { src: string; alt: string; width: number; height: number; }
+
+export interface Props {
+  eyebrow?: string;
+  headline?: string;
+  reviewText?: string;
+  subcopy?: string;
+  bullets?: string[];
+  badges?: HeroBadge[];
+  primaryCta?: { label: string; sublabel?: string; href: string };
+  phone?: { label?: string; number: string };
+  backgroundImage?: string;
+  /** Portrait background used on tablet + mobile (Figma uses a dedicated image). */
+  backgroundImageMobile?: string;
+  quote?: QuoteProps;
+}
+
+const {
+  eyebrow = "CONNECTICUT'S TRUSTED TREE CARE EXPERTS",
+  headline = 'SAFE. RELIABLE. EXPERT TREE CARE.',
+  reviewText = '500+ 5-Star Reviews',
+  subcopy = 'Professional tree removal, trimming, and land management for homes and businesses across Connecticut.',
+  bullets = [
+    'Local Connecticut Tree Specialists',
+    'Safety-First Professional Crew',
+    '1 year workmanship warranty',
+  ],
+  badges = [
+    { src: '/media/badges/hero-bbb.png', alt: 'BBB Accredited Business A+ rating', width: 112, height: 82 },
+    { src: '/media/badges/hero-guaranteed.png', alt: '100% Service Guaranteed', width: 108, height: 108 },
+    { src: '/media/badges/hero-247.png', alt: '24/7 Emergency Service', width: 82, height: 82 },
+  ],
+  primaryCta = { label: 'Get Free Estimate', sublabel: 'Fast & Easy Quote', href: '#quote' },
+  phone = { label: 'Call US', number: '(203) 367-8219' },
+  backgroundImage = '/media/photos/hero-bg.png',
+  backgroundImageMobile = '/media/photos/hero-bg-mobile.png',
+  quote,
+} = Astro.props;
+
+const telHref = `tel:${phone.number.replace(/[^\d+]/g, '')}`;
+
+// AVIF sibling helpers (a <source> that 404s does not fall back, so only emit
+// the AVIF source when the optimized file actually exists).
+const avifOf = (p: string) => p.replace(/\.(png|jpe?g)$/i, '.avif');
+const hasAvif = (p: string) => {
+  const a = avifOf(p);
+  return a !== p && p.startsWith('/') && existsSync(join(process.cwd(), 'public', a));
+};
+---
+
+<section class="tree-hero">
+  <div class="tree-hero__bg" aria-hidden="true">
+    <picture>
+      {hasAvif(backgroundImageMobile) && (
+        <source media="(max-width: 1024px)" srcset={avifOf(backgroundImageMobile)} type="image/avif" />
+      )}
+      <source media="(max-width: 1024px)" srcset={backgroundImageMobile} />
+      {hasAvif(backgroundImage) && <source srcset={avifOf(backgroundImage)} type="image/avif" />}
+      <img src={backgroundImage} alt="" class="tree-hero__bg-img" width={1920} height={867} loading="eager" fetchpriority="high" decoding="async" />
+    </picture>
+    <span class="tree-hero__overlay"></span>
+  </div>
+
+  <div class="tree-hero__inner tree-container">
+    <div class="tree-hero__content">
+      <p class="tree-hero__eyebrow">{eyebrow}</p>
+      <h1 class="tree-hero__headline">{headline}</h1>
+
+      <div class="tree-hero__reviews">
+        <img src="/media/icons/google-stars.svg" alt="Google 5-star rating" width="130" height="30" />
+        <span>{reviewText}</span>
+      </div>
+
+      <p class="tree-hero__subcopy">{subcopy}</p>
+
+      <ul class="tree-hero__bullets">
+        {bullets.map((b) => (
+          <li class="tree-hero__bullet">
+            <svg class="tree-hero__check" width="25" height="25" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="11" fill="var(--color-bg-action, #2f8328)" />
+              <path d="M7 12.5l3.2 3.2L17 9" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <span>{b}</span>
+          </li>
+        ))}
+      </ul>
+
+      <div class="tree-hero__badges">
+        {badges.map((b) => (
+          <TreePicture src={b.src} alt={b.alt} width={b.width} height={b.height} loading="eager" class="tree-hero__badge" />
+        ))}
+      </div>
+
+      <div class="tree-hero__actions">
+        <a href={primaryCta.href} class="tree-hero__cta">
+          <span class="tree-hero__cta-text">
+            <span class="tree-hero__cta-label">{primaryCta.label}</span>
+            {primaryCta.sublabel && <span class="tree-hero__cta-sub">{primaryCta.sublabel}</span>}
+          </span>
+          <svg class="tree-hero__cta-arrow" width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+            <path d="M13 27 27 13m0 0H15m12 0v12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </a>
+        <a href={telHref} class="tree-hero__call">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6.5 3h3l1.5 4-2 1.5a12 12 0 0 0 5 5L18.5 16l4 1.5v3a2 2 0 0 1-2 2A17 17 0 0 1 4.5 5a2 2 0 0 1 2-2Z" fill="currentColor"/>
+          </svg>
+          <span class="tree-hero__call-text">
+            {phone.label && <span class="tree-hero__call-label">{phone.label}</span>}
+            <span class="tree-hero__call-number">{phone.number}</span>
+          </span>
+        </a>
+      </div>
+    </div>
+
+    <div class="tree-hero__form">
+      <TreeQuoteForm {...quote} />
+    </div>
+  </div>
+</section>
+
+<style>
+  .tree-hero { position: relative; isolation: isolate; overflow: hidden; }
+
+  .tree-hero__bg { position: absolute; inset: 0; z-index: -1; overflow: hidden; }
+  .tree-hero__bg picture { display: block; width: 100%; height: 100%; }
+  .tree-hero__bg-img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+  .tree-hero__overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg,
+      rgba(1, 25, 18, 0.92) 0%,
+      rgba(1, 25, 18, 0.78) 42%,
+      rgba(1, 25, 18, 0.45) 100%);
+  }
+
+  .tree-hero__inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 60px;
+    padding-block: 72px 96px;
+  }
+
+  /* ===== Content column ===== */
+  .tree-hero__content { flex: 1 1 auto; max-width: 683px; color: var(--color-text-inverse, #fff); }
+  .tree-hero__eyebrow { font-size: 18px; font-weight: 600; line-height: 1.8; color: var(--color-text-inverse, #fff); }
+  .tree-hero__headline {
+    font-size: 52px; font-weight: 600; line-height: 1.2;
+    color: var(--color-text-accent, #c8f08f); margin: 12px 0;
+  }
+  .tree-hero__reviews {
+    display: inline-flex; align-items: center; gap: 11px;
+    background: var(--color-bg-surface, #fff);
+    height: 42px; padding: 0 20px; border-radius: 50px;
+    color: #0b171e; font-size: 16px; font-weight: 500;
+  }
+  .tree-hero__reviews img { height: 30px; width: auto; }
+  .tree-hero__subcopy { font-size: 18px; font-weight: 400; line-height: 1.8; margin-top: 20px; max-width: 620px; }
+
+  .tree-hero__bullets { list-style: none; padding: 0; margin: 20px 0 0; display: flex; flex-direction: column; gap: 6px; }
+  .tree-hero__bullet { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 500; }
+  .tree-hero__check { flex-shrink: 0; }
+
+  .tree-hero__badges { display: flex; align-items: center; gap: 20px; margin-top: 28px; }
+  .tree-hero__badges :global(.tree-hero__badge) { height: 82px; width: auto; object-fit: contain; }
+  .tree-hero__badges :global(picture:nth-child(2) .tree-hero__badge) { height: 108px; }
+
+  .tree-hero__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+  .tree-hero__cta {
+    display: inline-flex; align-items: center; gap: 20px;
+    background: var(--color-bg-action, #2f8328);
+    color: var(--color-text-inverse, #fff);
+    padding: 0 40px; height: 93px; border-radius: 6px;
+    transition: background-color 0.15s ease;
+  }
+  .tree-hero__cta:hover { background: var(--color-bg-action-hover, #368a2a); }
+  .tree-hero__cta-text { display: flex; flex-direction: column; }
+  .tree-hero__cta-label { font-size: 21px; font-weight: 700; line-height: 1.6; }
+  .tree-hero__cta-sub { font-size: 18px; font-weight: 500; line-height: 1.6; }
+  .tree-hero__cta-arrow { flex-shrink: 0; }
+
+  .tree-hero__call {
+    display: inline-flex; align-items: center; gap: 20px;
+    border: 2px solid var(--color-border-inverse, #fff);
+    color: var(--color-text-inverse, #fff);
+    padding: 0 40px; height: 93px; border-radius: 6px;
+    transition: background-color 0.15s ease;
+  }
+  .tree-hero__call:hover { background: rgba(255, 255, 255, 0.1); }
+  .tree-hero__call-text { display: flex; flex-direction: column; }
+  .tree-hero__call-label { font-size: 18px; font-weight: 600; line-height: 1.8; }
+  .tree-hero__call-number { font-size: 21px; font-weight: 600; line-height: 1.8; }
+
+  /* ===== Form column ===== */
+  .tree-hero__form { flex: 0 0 auto; width: 603px; max-width: 100%; }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 1200px) {
+    .tree-hero__inner { gap: 40px; }
+    .tree-hero__form { width: 520px; }
+  }
+  @media (max-width: 1024px) {
+    .tree-hero__inner { flex-direction: column; padding-block: 48px 64px; }
+    .tree-hero__content { max-width: 680px; }
+    .tree-hero__form { width: 100%; max-width: 603px; }
+    .tree-hero__headline { font-size: 44px; }
+    /* Uniform dark overlay over the portrait mobile image (matches Figma). */
+    .tree-hero__overlay {
+      background: linear-gradient(180deg, rgba(1, 25, 18, 0.62) 0%, rgba(1, 25, 18, 0.82) 100%);
+    }
+  }
+  @media (max-width: 767px) {
+    /* Figma mobile centers the whole content column. */
+    .tree-hero__content { text-align: center; max-width: 100%; }
+    .tree-hero__eyebrow { font-size: 14px; }
+    .tree-hero__headline { font-size: 38px; line-height: 1.05; }
+
+    /* Compact reviews pill (Figma: h30, stars 20, text 13). */
+    .tree-hero__reviews { height: 30px; padding: 0 16px; gap: 9px; font-size: 13px; }
+    .tree-hero__reviews img { height: 20px; }
+
+    .tree-hero__subcopy { font-size: 14px; margin-top: 12px; }
+    .tree-hero__bullet { font-size: 16px; }
+    .tree-hero__check { width: 20px; height: 20px; }
+    /* Bullet text stays left-aligned but the group is centered (matches Figma). */
+    .tree-hero__bullets {
+      align-items: flex-start;
+      width: fit-content;
+      max-width: 100%;
+      margin: 18px auto 0;
+    }
+
+    .tree-hero__badges { justify-content: center; gap: 14px; margin-top: 18px; }
+    .tree-hero__badges :global(.tree-hero__badge) { height: 57px; }
+    .tree-hero__badges :global(picture:nth-child(2) .tree-hero__badge) { height: 76px; }
+
+    /* Figma mobile drops the green estimate CTA; only the outlined call button
+       remains, single-line (no "Call US" label) at 50px tall. */
+    .tree-hero__actions { flex-direction: column; margin-top: 18px; }
+    .tree-hero__cta { display: none; }
+    .tree-hero__call { width: 100%; height: 50px; justify-content: center; gap: 12px; }
+    .tree-hero__call svg { width: 20px; height: 20px; }
+    .tree-hero__call-label { display: none; }
+    .tree-hero__call-number { font-size: 18px; line-height: 1.2; }
+  }
+</style>

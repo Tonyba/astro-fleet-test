@@ -70,8 +70,34 @@ export const WARM: DesignTokens = {
   spacing: 'normal',
 };
 
+/**
+ * TREE — tree-care / landscaping brand (Figma: "erik-tree-services").
+ * Deep-green brand with a light-green accent and a mid-green action colour.
+ * The full semantic token set this design uses lives in the site's
+ * global.css `@theme` and the TreeLayout :root; these map the generic
+ * DesignTokens slots to the closest brand values.
+ */
+export const TREE: DesignTokens = {
+  colors: {
+    primary: '#013b2d',
+    secondary: '#1e372e',
+    accent: '#c8f08f',
+    background: '#ffffff',
+    text: '#373434',
+    cta: '#2f8328',
+  },
+  fonts: {
+    heading: 'Libre Franklin',
+    body: 'Libre Franklin',
+  },
+  heroLayout: 'split',
+  ctaStyle: 'rounded',
+  spacing: 'normal',
+};
+
 export const ALL_PRESETS: Record<string, DesignTokens> = {
   corporate: CORPORATE,
   saas: SAAS,
   warm: WARM,
+  tree: TREE,
 };

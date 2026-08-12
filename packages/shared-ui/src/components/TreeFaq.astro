@@ -1,0 +1,366 @@
+---
+/**
+ * TreeFaq.astro
+ * -------------
+ * "Questions? We're here to help" FAQ section for the tree-care template.
+ * Figma node 123:681 (desktop) / 123:5048 (mobile).
+ * Left rail: eyebrow + two-line heading (+ optional subtitle) and a green
+ * "Have a specific question?" contact card (phone + "Send Us a message" pill).
+ * Right column: an accessible accordion of FAQ rows separated by dividers.
+ * Minimal vanilla JS toggles each row (aria-expanded + smooth height); it
+ * re-inits on astro:after-swap. All content is prop-driven for CMS editing.
+ */
+export interface TreeFaqItem {
+  question: string;
+  answer: string;
+}
+
+export interface Props {
+  eyebrow?: string;
+  /** First (bold) line of the heading. */
+  titleLead?: string;
+  /** Second (regular) line of the heading. */
+  titleRest?: string;
+  /** Optional supporting line under the heading (empty on desktop Figma). */
+  subtitle?: string;
+  contactHeading?: string;
+  phone?: string;
+  messageLabel?: string;
+  messageHref?: string;
+  faqs?: TreeFaqItem[];
+  /** Index of the item expanded on load (matches Figma: first item open). */
+  defaultOpen?: number;
+}
+
+const {
+  eyebrow = 'Common Questions',
+  titleLead = 'Questions?',
+  titleRest = "We're here to help",
+  subtitle = '',
+  contactHeading = 'Have a specific question?',
+  phone = '(203) 367-8219',
+  messageLabel = 'Send Us a message',
+  messageHref = '#contact',
+  defaultOpen = 0,
+  faqs = [
+    {
+      question: 'How much does tree removal cost?',
+      answer:
+        'The cost of tree removal depends on factors such as tree size, location, and job complexity. We offer free, personalized estimates for every customer. Contact us today for a no-obligation quote.',
+    },
+    {
+      question: 'What method do you use for stump removal?',
+      answer:
+        'We use professional stump grinding equipment to grind the stump several inches below grade, then clean up the debris so the area is ready for grass, mulch, or replanting.',
+    },
+    {
+      question: 'Do you provide 24/7 emergency services?',
+      answer:
+        'Yes. Storms and fallen limbs never wait for business hours, so our emergency crew is on call around the clock to make your property safe as quickly as possible.',
+    },
+    {
+      question: 'Are you licensed and insured?',
+      answer:
+        'Absolutely. We are fully licensed and carry comprehensive liability and workers’ compensation insurance, so you are protected on every job we perform.',
+    },
+    {
+      question: 'What method do you use for stump removal?',
+      answer:
+        'For most residential jobs we grind the stump, but for larger commercial sites we can fully excavate the root ball when the space needs to be completely cleared.',
+    },
+    {
+      question: 'How long does it take to remove or prune a tree?',
+      answer:
+        'Most standard removals and pruning jobs are completed within a single day. Larger or more complex trees near structures or power lines may take longer, and we will give you a clear timeline up front.',
+    },
+    {
+      question: 'Do you offer any discounts?',
+      answer:
+        'We offer seasonal promotions as well as discounts for seniors, veterans, and repeat customers. Ask us about current offers when you request your free quote.',
+    },
+  ],
+} = Astro.props;
+
+const telHref = `tel:${phone.replace(/[^\d+]/g, '')}`;
+---
+
+<section class="tree-faq" aria-labelledby="tree-faq-title">
+  <div class="tree-faq__inner tree-container">
+    <!-- Left rail -->
+    <div class="tree-faq__rail">
+      <div class="tree-faq__intro">
+        <p class="tree-faq__eyebrow">{eyebrow}</p>
+        <h2 class="tree-faq__title" id="tree-faq-title">
+          <span class="tree-faq__title-lead">{titleLead}</span>{' '}
+          <span class="tree-faq__title-rest">{titleRest}</span>
+        </h2>
+        {subtitle && <p class="tree-faq__subtitle">{subtitle}</p>}
+      </div>
+
+      <div class="tree-faq__card">
+        <p class="tree-faq__card-heading">{contactHeading}</p>
+        <a href={telHref} class="tree-faq__phone">
+          <img
+            src="/media/icons/faq-phone.svg"
+            alt=""
+            class="tree-faq__phone-icon"
+            width="21"
+            height="21"
+            aria-hidden="true"
+          />
+          <span class="tree-faq__phone-number">{phone}</span>
+        </a>
+        <a href={messageHref} class="tree-faq__message">{messageLabel}</a>
+      </div>
+    </div>
+
+    <!-- Accordion -->
+    <div class="tree-faq__list">
+      {faqs.map((item, i) => (
+        <>
+          <div class:list={['tree-faq__item', { 'is-open': i === defaultOpen }]}>
+            <h3 class="tree-faq__q">
+              <button
+                type="button"
+                class="tree-faq__trigger"
+                aria-expanded={i === defaultOpen ? 'true' : 'false'}
+                aria-controls={`tree-faq-panel-${i}`}
+              >
+                <span class="tree-faq__q-text">{item.question}</span>
+                <img
+                  src="/media/icons/faq-chevron.svg"
+                  alt=""
+                  class="tree-faq__chevron"
+                  width="11"
+                  height="18"
+                  aria-hidden="true"
+                />
+              </button>
+            </h3>
+            <div class="tree-faq__panel" id={`tree-faq-panel-${i}`} role="region">
+              <div class="tree-faq__panel-inner">
+                <p class="tree-faq__answer">{item.answer}</p>
+              </div>
+            </div>
+          </div>
+          <div class="tree-faq__divider" role="presentation"></div>
+        </>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .tree-faq {
+    background: var(--color-bg-subtle, #f9f9f9);
+    padding-block: 86px;
+  }
+
+  .tree-faq__inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+  }
+
+  /* ===== Left rail ===== */
+  .tree-faq__rail {
+    flex: 0 0 471px;
+    max-width: 471px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  .tree-faq__intro { display: flex; flex-direction: column; gap: 18px; }
+  .tree-faq__eyebrow {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.248;
+    text-transform: uppercase;
+    color: var(--color-text-primary, #013b2d);
+  }
+  .tree-faq__title {
+    font-size: 42px;
+    line-height: 1.1;
+    text-transform: capitalize;
+    color: var(--color-text-primary, #013b2d);
+  }
+  .tree-faq__title-lead { font-weight: 600; }
+  .tree-faq__title-rest { font-weight: 400; }
+  .tree-faq__subtitle {
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.6;
+    color: var(--color-text-secondary, #373434);
+  }
+
+  /* ===== Contact card ===== */
+  .tree-faq__card {
+    width: 348px;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 47px 39px 33px 41px;
+    background: var(--color-bg-action-hover, #368a2a);
+    border-radius: 11px;
+  }
+  .tree-faq__card-heading {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.6;
+    color: var(--color-text-inverse, #fff);
+  }
+  .tree-faq__phone {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--color-text-inverse, #fff);
+  }
+  .tree-faq__phone-icon { width: 21px; height: 21px; flex-shrink: 0; }
+  .tree-faq__phone-number {
+    font-size: 24px;
+    font-weight: 600;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .tree-faq__message {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 270px;
+    max-width: 100%;
+    height: 60px;
+    margin-top: 6px;
+    background: var(--color-bg-surface, #fff);
+    color: var(--color-text-primary, #013b2d);
+    font-size: 18px;
+    font-weight: 600;
+    border-radius: 50px;
+    transition: filter 0.15s ease;
+  }
+  .tree-faq__message:hover { filter: brightness(0.96); }
+
+  /* ===== Accordion ===== */
+  .tree-faq__list {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  .tree-faq__q { margin: 0; }
+  .tree-faq__trigger {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    width: 100%;
+    padding: 0;
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+  }
+  .tree-faq__q-text {
+    font-size: 21px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--color-text-primary, #013b2d);
+  }
+  .tree-faq__chevron {
+    flex-shrink: 0;
+    width: 11px;
+    height: 18px;
+    margin-top: 4px;
+    /* Asset points right; rotate to a down chevron when collapsed. */
+    transform: rotate(90deg);
+    transition: transform 0.3s ease;
+  }
+  .tree-faq__item.is-open .tree-faq__chevron { transform: rotate(-90deg); }
+
+  .tree-faq__panel {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s ease;
+  }
+  .tree-faq__panel-inner { padding-top: 23px; }
+  .tree-faq__answer {
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.6;
+    color: #555555;
+    max-width: 746px;
+  }
+
+  .tree-faq__divider {
+    height: 1px;
+    background: var(--color-border-subtle, #d9d9d9);
+  }
+  /* No trailing rule after the last question. */
+  .tree-faq__list > .tree-faq__divider:last-child { display: none; }
+
+  /* ===== Tablet ===== */
+  @media (max-width: 1024px) {
+    .tree-faq__inner { flex-direction: column; gap: 40px; }
+    .tree-faq__rail {
+      flex-basis: auto;
+      max-width: none;
+      width: 100%;
+      align-items: flex-start;
+    }
+    .tree-faq__list { width: 100%; }
+  }
+
+  /* ===== Mobile ===== */
+  @media (max-width: 767px) {
+    .tree-faq { padding-block: 56px; }
+    .tree-faq__eyebrow { font-size: 14px; }
+    .tree-faq__title { font-size: 36px; }
+    .tree-faq__subtitle { font-size: 14px; }
+    /* Intro/heading stay left-aligned on mobile (Figma 123:5049 items-start);
+       only the green contact card centers its own content. */
+    .tree-faq__rail { align-items: flex-start; text-align: left; }
+    .tree-faq__intro { align-items: flex-start; }
+    .tree-faq__card { width: 100%; align-items: center; text-align: center; padding: 24px; }
+    .tree-faq__phone-number { font-size: 20px; }
+    .tree-faq__message { height: 50px; }
+    .tree-faq__q-text { font-size: 19px; }
+  }
+</style>
+
+<script>
+  function initTreeFaq() {
+    document.querySelectorAll<HTMLElement>('.tree-faq').forEach((root) => {
+      const items = root.querySelectorAll<HTMLElement>('.tree-faq__item');
+      items.forEach((item) => {
+        const trigger = item.querySelector<HTMLButtonElement>('.tree-faq__trigger');
+        const panel = item.querySelector<HTMLElement>('.tree-faq__panel');
+        if (!trigger || !panel) return;
+
+        const setOpen = (open: boolean) => {
+          item.classList.toggle('is-open', open);
+          trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+          panel.style.maxHeight = open ? `${panel.scrollHeight}px` : '0px';
+        };
+
+        // Sync initial state from the server-rendered aria-expanded.
+        setOpen(trigger.getAttribute('aria-expanded') === 'true');
+
+        trigger.addEventListener('click', () => {
+          const open = trigger.getAttribute('aria-expanded') !== 'true';
+          setOpen(open);
+        });
+      });
+
+      // Keep open panels sized correctly after viewport changes.
+      window.addEventListener('resize', () => {
+        root.querySelectorAll<HTMLElement>('.tree-faq__item.is-open .tree-faq__panel').forEach((p) => {
+          p.style.maxHeight = `${p.scrollHeight}px`;
+        });
+      });
+    });
+  }
+
+  initTreeFaq();
+  document.addEventListener('astro:after-swap', initTreeFaq);
+</script>

@@ -6,7 +6,78 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Astro Fleet is a multi-site Astro monorepo for agencies and multi-brand companies. Each site lives in `sites/<domain>/` and is independently deployable. Shared components and config live in `packages/`.
 
-**Stack:** Astro 6, Bun, Turborepo 2, Tailwind CSS 4, TypeScript (strict mode). Static-first — zero client-side JS by default. Fonts are self-hosted via the Astro 6 Fonts API (configured in each site's `astro.config.mjs`, no third-party Google Fonts requests).
+**Stack:** Astro 6, Bun, Turborepo 2, Tailwind CSS 4, TypeScript (strict mode). Static-first — zero client-side JS by default. Fonts are self-hosted via the Astro 6 Fonts API (configured in each site's `astro.config.mjs`, no third-party Google Fonts requests). 
+
+**CMS:** Sveltia CMS
+
+## Main development rules
+- Use figma mcp and figma skills if necessary
+- Use Brave as default browser
+- if you need to check browser limit yourself to 1 dev instance and if you dont know what port to open in localhost tell me
+- The implementation must be pixel-perfect (1:1) compared to the Figma design.
+- Do not redesign, reinterpret, or improve anything. Reproduce exactly what is in Figma.
+- Use semantic HTML5 structure (header, nav, section, main, footer, etc.).
+- Use taildwind for css. Minimal vanilla JavaScript only.
+- The layout must be fully responsive:
+    * Desktop (default styles)
+    * Tablet (max-width: 1024px)
+    * Mobile (max-width: 767px)
+- Use Flexbox and/or CSS Grid where appropriate.
+- Maintain exact:
+    * spacing
+    * font sizes
+    * font weights
+    * colors
+    * border radius
+    * shadows
+    * line heights
+- Extract reusable design tokens into global reusable sites ui/layout, utils folder depending on which file must be used:
+    * colors
+    * font sizes
+    * spacing
+- Use clean BEM methodology for class naming.
+- All elements inside a section that are repeatable (ex: accordion items, tabs, carousel items, etc.) must be editable from CMS too
+- Images must use proper <img> tags with descriptive alt attributes.
+- Follow modern CSS best practices. Navbar Requirements:
+* On desktop: standard horizontal navigation layout.
+* On tablet and mobile (max-width: 1024px):
+    * Replace navigation links with a hamburger button.
+    * The hamburger must toggle the visibility of the navigation menu.
+    * The menu must expand/collapse smoothly (CSS transition required).
+    * Use minimal vanilla JavaScript for toggle functionality.
+    * The menu must be accessible (aria-expanded, proper button element).
+    * No external libraries.
+- any reusable ui section or layout must be save in packages/shared-ui following same format used in files already there
+- all media files must be saved in public/media
+- Do not add features that are not present in the Figma design.
+- If spacing or font size is unclear, calculate proportionally from the design instead of guessing.
+- If something from the Figma link cannot be accessed, state what is missing before generating code.
+- Output only the code. No explanations.
+- any text, link, button link, image, website logo (and favicon) or video must be editable from cms
+- all menus (header, footer) must be editable from cms
+- all global colors and fonts must be editable from cms if posible 
+- all media files must be saved in media files path
+- skip build and lint
+- when asked for corrections or edits remember that you must follow figma design if links provided, IT MUST BE RESPONSIVE and also FOCUS ONLY IN MENTIONED SECTIONS OR UI ELEMENTS IF MENTIONED
+
+## Carousels
+- Use Embla Carousel for carousels
+
+## Forms
+- Save all forms submissions data in cms
+- Spam is handled by Turnstile — Cloudflare's free, invisible CAPTCHA replacement. 
+- for phone fields use intl-tel-input library. validate that is valid phone number and auto select country
+- all other fields must be validated according to its type (email, number, etc).
+- all forms and their fields must be editable from crm and also resuable through pages and if it's posible make forms a content model in cms
+- In Form fields you should be able to edit label, placeholder and field type
+
+## Images
+- all images must be optimized when uploaded with shortpixel and output image must be avif
+- if image is bigger, similar or same size as original after being processed by shortpixel then use original image
+- you can process images with shortpixel in background and replace images after process is done
+- if shortpixel api request fails then just use original image
+**Shortpixel API key**: HboXFLdoxxZa95UO2i1A
+
 
 ## Commands
 

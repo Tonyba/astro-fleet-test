@@ -12,7 +12,9 @@
   "dependencies": {
     "astro": "^6.1.7",
     "@astro-fleet/shared-ui": "workspace:*",
-    "@astro-fleet/config": "workspace:*"
+    "@astro-fleet/config": "workspace:*",
+    "embla-carousel": "^8.5.2",
+    "intl-tel-input": "^25.3.1"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9",

@@ -27,10 +27,365 @@ local_backend: true
 media_folder: sites/test-2.com/public/media   # where uploads are stored (repo path)
 public_folder: /media                      # URL these files resolve to on the site
 
+media_libraries:
+  all:
+    max_file_size: 125829120
+    slugify_filename: true
+    transformations:
+      raster_image: # original format
+        format: webp # new format, only `webp` is supported
+        quality: 90 # default: 85
+        width: 2048 # default: original size
+        height: 2048 # default: original size
+      svg:
+        optimize: true
+
 # ---------------------------------------------------------------------------
 # Collections
 # ---------------------------------------------------------------------------
 collections:
+  # -------------------------------------------------------------------------
+  # Site Settings — global chrome (logo, header, footer, contact, theme).
+  # Reused across every page of the site.
+  # -------------------------------------------------------------------------
+  - name: settings
+    label: Site Settings
+    editor: { preview: false }
+    files:
+      - name: site
+        label: Site
+        file: sites/test-2.com/src/content/settings/site.json
+        fields:
+          - { label: Site Name, name: siteName, widget: string }
+          - { label: Logo, name: logo, widget: image }
+          - label: Theme
+            name: theme
+            widget: object
+            fields:
+              - label: Colors
+                name: colors
+                widget: object
+                fields:
+                  - { label: Text Primary, name: textPrimary, widget: color }
+                  - { label: Text Accent, name: textAccent, widget: color }
+                  - { label: Brand, name: bgBrand, widget: color }
+                  - { label: Brand Strong, name: bgBrandStrong, widget: color }
+                  - { label: Accent, name: bgAccent, widget: color }
+                  - { label: Action, name: bgAction, widget: color }
+                  - { label: Action Hover, name: bgActionHover, widget: color }
+                  - { label: Emergency, name: bgEmergency, widget: color }
+              - label: Fonts
+                name: fonts
+                widget: object
+                fields:
+                  - { label: Font Family, name: sans, widget: string }
+          - label: Forms
+            name: forms
+            widget: object
+            fields:
+              - label: Quote Form
+                name: quote
+                widget: object
+                fields:
+                  - { label: Title, name: title, widget: string }
+                  - { label: Subtitle, name: subtitle, widget: text }
+                  - { label: Submit Button Text, name: submitText, widget: string }
+                  - { label: Action / Endpoint, name: action, widget: string }
+                  - label: Fields
+                    name: fields
+                    widget: list
+                    fields:
+                      - { label: Field Name (key), name: name, widget: string }
+                      - { label: Type, name: type, widget: select, options: [text, email, tel, textarea, select, radio], default: text }
+                      - { label: Label, name: label, widget: string, required: false }
+                      - { label: Placeholder, name: placeholder, widget: string, required: false }
+                      - { label: Required, name: required, widget: boolean, default: false, required: false }
+                      - { label: Options (select/radio), name: options, widget: list, required: false, hint: 'Only applies to select and radio field types.', field: { label: Option, name: option, widget: string } }
+          - label: Header
+            name: header
+            widget: object
+            fields:
+              - label: Navigation
+                name: navigation
+                widget: list
+                fields:
+                  - { label: Label, name: label, widget: string }
+                  - { label: Link, name: href, widget: string }
+                  - { label: Dropdown caret, name: caret, widget: boolean, required: false, default: false }
+              - label: Phone
+                name: phone
+                widget: object
+                fields:
+                  - { label: Number, name: number, widget: string }
+                  - { label: Label, name: label, widget: string, required: false }
+              - { label: CTA Text, name: ctaText, widget: string }
+              - { label: CTA Link, name: ctaHref, widget: string }
+          - label: Footer
+            name: footer
+            widget: object
+            fields:
+              - { label: Description, name: description, widget: text }
+              - label: Trust Badges
+                name: badges
+                widget: list
+                fields:
+                  - { label: Image, name: src, widget: image }
+                  - { label: Alt, name: alt, widget: string }
+                  - { label: Width, name: width, widget: number }
+                  - { label: Height, name: height, widget: number }
+              - label: Social Links
+                name: social
+                widget: list
+                fields:
+                  - { label: Platform, name: platform, widget: string }
+                  - { label: URL, name: url, widget: string }
+                  - { label: Icon, name: icon, widget: image }
+              - label: Link Columns
+                name: columns
+                widget: list
+                fields:
+                  - { label: Title, name: title, widget: string }
+                  - label: Links
+                    name: links
+                    widget: list
+                    fields:
+                      - { label: Label, name: label, widget: string }
+                      - { label: Link, name: href, widget: string }
+              - label: Contact
+                name: contact
+                widget: object
+                fields:
+                  - { label: Phone, name: phone, widget: string }
+                  - { label: Email, name: email, widget: string }
+                  - { label: Address, name: address, widget: string }
+              - label: Emergency
+                name: emergency
+                widget: object
+                fields:
+                  - { label: Label, name: label, widget: string }
+                  - { label: Number, name: number, widget: string }
+              - { label: Copyright, name: copyright, widget: string }
+              - label: Legal Links
+                name: legalLinks
+                widget: list
+                fields:
+                  - { label: Label, name: label, widget: string }
+                  - { label: Link, name: href, widget: string }
+
+  # -------------------------------------------------------------------------
+  # Homepage — per-section editable content.
+  # -------------------------------------------------------------------------
+  - name: homepage
+    label: Homepage
+    editor: { preview: false }
+    files:
+      - name: home
+        label: Home
+        file: sites/test-2.com/src/content/homepage/home.json
+        fields:
+          - label: SEO
+            name: seo
+            widget: object
+            fields:
+              - { label: Title, name: title, widget: string }
+              - { label: Description, name: description, widget: text }
+              - { label: Keywords, name: keywords, widget: list, field: { label: Keyword, name: keyword, widget: string } }
+          - label: Hero
+            name: hero
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Headline, name: headline, widget: string }
+              - { label: Review Text, name: reviewText, widget: string }
+              - { label: Subcopy, name: subcopy, widget: text }
+              - { label: Bullets, name: bullets, widget: list, field: { label: Bullet, name: bullet, widget: string } }
+              - label: Primary CTA
+                name: primaryCta
+                widget: object
+                fields:
+                  - { label: Label, name: label, widget: string }
+                  - { label: Sub-label, name: sublabel, widget: string, required: false }
+                  - { label: Link, name: href, widget: string }
+              - label: Phone
+                name: phone
+                widget: object
+                fields:
+                  - { label: Label, name: label, widget: string, required: false }
+                  - { label: Number, name: number, widget: string }
+              - { label: Background Image (desktop), name: backgroundImage, widget: image }
+              - { label: Background Image (mobile/tablet), name: backgroundImageMobile, widget: image }
+              - label: Trust Badges
+                name: badges
+                widget: list
+                fields:
+                  - { label: Image, name: src, widget: image }
+                  - { label: Alt, name: alt, widget: string }
+                  - { label: Width, name: width, widget: number }
+                  - { label: Height, name: height, widget: number }
+          - label: Services
+            name: services
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Heading, name: heading, widget: string }
+              - label: Service Cards
+                name: items
+                widget: list
+                fields:
+                  - { label: Title, name: title, widget: string }
+                  - { label: Description, name: description, widget: text }
+                  - { label: Photo, name: image, widget: image }
+                  - { label: Icon, name: icon, widget: image }
+                  - { label: Link, name: href, widget: string }
+          - label: Why Choose Us
+            name: whyChoose
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Heading, name: heading, widget: string }
+              - label: Feature Cards
+                name: items
+                widget: list
+                fields:
+                  - { label: Icon, name: icon, widget: image }
+                  - { label: Title, name: title, widget: string }
+                  - { label: Description, name: description, widget: text }
+          - label: Stats Bar
+            name: stats
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Heading, name: heading, widget: string }
+              - label: Stats
+                name: items
+                widget: list
+                fields:
+                  - { label: Value, name: value, widget: string }
+                  - { label: Label, name: label, widget: string }
+          - label: CTA Banner
+            name: ctaBanner
+            widget: object
+            fields:
+              - { label: Heading Lead, name: headingLead, widget: string }
+              - { label: Heading Sub, name: headingSub, widget: string }
+              - { label: Button Label, name: primaryLabel, widget: string }
+              - { label: Phone Number, name: phoneNumber, widget: string }
+          - label: Projects
+            name: projects
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Heading, name: heading, widget: string }
+              - { label: Description, name: description, widget: text }
+              - label: Project Photos
+                name: items
+                widget: list
+                fields:
+                  - { label: Photo, name: image, widget: image }
+                  - { label: Alt, name: alt, widget: string }
+          - label: Emergency Banner
+            name: emergency
+            widget: object
+            fields:
+              - { label: Heading, name: heading, widget: string }
+              - { label: Subtext, name: subtext, widget: text }
+              - { label: Phone Label, name: phoneLabel, widget: string }
+              - { label: Phone Number, name: phoneNumber, widget: string }
+          - label: Process
+            name: process
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Heading, name: heading, widget: string }
+              - { label: Description, name: description, widget: text }
+              - label: Steps
+                name: steps
+                widget: list
+                fields:
+                  - { label: Number, name: number, widget: string }
+                  - { label: Icon, name: icon, widget: image }
+                  - { label: Icon Alt, name: iconAlt, widget: string }
+                  - { label: Title, name: title, widget: string }
+                  - { label: Description, name: description, widget: text }
+          - label: Testimonials
+            name: testimonials
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Heading, name: heading, widget: string }
+              - { label: Description, name: description, widget: text }
+              - label: Rating
+                name: rating
+                widget: object
+                fields:
+                  - { label: Score, name: score, widget: string }
+                  - { label: Caption, name: caption, widget: string }
+              - label: Reviews
+                name: reviews
+                widget: list
+                fields:
+                  - { label: Title, name: title, widget: string }
+                  - { label: Quote, name: quote, widget: text }
+                  - { label: Name, name: name, widget: string }
+          - label: FAQ
+            name: faq
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Title Lead, name: titleLead, widget: string }
+              - { label: Title Rest, name: titleRest, widget: string }
+              - label: Questions
+                name: items
+                widget: list
+                fields:
+                  - { label: Question, name: question, widget: string }
+                  - { label: Answer, name: answer, widget: text }
+          - label: Service Areas
+            name: serviceAreas
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Heading, name: heading, widget: string }
+              - { label: Description, name: description, widget: text }
+              - { label: Areas Label, name: areasLabel, widget: string }
+              - { label: Areas, name: areas, widget: list, field: { label: Area, name: area, widget: string } }
+              - { label: CTA Text, name: ctaText, widget: string }
+          - label: Blog (heading)
+            name: blog
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Title, name: title, widget: string }
+          - label: Inspection Form
+            name: inspection
+            widget: object
+            fields:
+              - { label: Heading, name: heading, widget: string }
+              - { label: Lead, name: lead, widget: text }
+              - { label: Paragraphs, name: paragraphs, widget: list, field: { label: Paragraph, name: p, widget: text } }
+
+  # -------------------------------------------------------------------------
+  # Form submissions (leads) — written by the /api/quote function. Read-only.
+  # -------------------------------------------------------------------------
+  - name: submissions
+    label: Form Submissions
+    label_singular: Submission
+    folder: sites/test-2.com/src/content/submissions
+    create: false
+    delete: true
+    extension: md
+    format: frontmatter
+    summary: '{{fields.name}} — {{fields.form}} ({{fields.received}})'
+    fields:
+      - { label: Form, name: form, widget: string }
+      - { label: Name, name: name, widget: string }
+      - { label: Email, name: email, widget: string }
+      - { label: Phone, name: phone, widget: string }
+      - { label: Project Type, name: project_type, widget: string, required: false }
+      - { label: Service, name: service, widget: string, required: false }
+      - { label: Received, name: received, widget: datetime, required: false }
+      - { label: Message, name: body, widget: text, required: false }
+
   - name: posts
     label: Blog Posts
     label_singular: Post
@@ -43,5 +398,7 @@ collections:
       - { label: Title, name: title, widget: string }
       - { label: Date, name: date, widget: datetime, format: 'YYYY-MM-DD', date_format: 'YYYY-MM-DD', time_format: false }
       - { label: Description, name: description, widget: text, required: false }
+      - { label: Featured Image, name: image, widget: image, required: false }
+      - { label: Image Alt Text, name: imageAlt, widget: string, required: false }
       - { label: Draft, name: draft, widget: boolean, default: false, required: false }
       - { label: Body, name: body, widget: markdown }

@@ -1,0 +1,315 @@
+---
+/**
+ * TreeHeader.astro
+ * ----------------
+ * Primary site header for the tree-care template. Figma node 123:146.
+ * Desktop: logo · centered horizontal nav · phone block + "Get a free Quote"
+ * button on a subtle right panel.
+ * <=1024px: hamburger button toggles a sliding nav panel (vanilla JS, a11y).
+ * All content is driven by props so it can be fed from the CMS Site Settings.
+ */
+export interface TreeNavItem {
+  label: string;
+  href: string;
+  /** Render a dropdown caret next to the label (matches Figma). */
+  caret?: boolean;
+}
+export interface TreePhone {
+  /** Display number, e.g. "(203) 367-8219". */
+  number: string;
+  /** Small caption under the number, e.g. "Main line". */
+  label?: string;
+}
+
+export interface Props {
+  navigation: TreeNavItem[];
+  phone?: TreePhone;
+  ctaText?: string;
+  ctaHref?: string;
+  /** Provided by TreeLayout. */
+  logoSrc?: string;
+  logoAlt?: string;
+  siteName?: string;
+}
+
+const {
+  navigation,
+  phone = { number: '(203) 367-8219', label: 'Main line' },
+  ctaText = 'Get a free Quote',
+  ctaHref = '#quote',
+  logoSrc = '/media/logo.png',
+  logoAlt = "Erick's Tree Service",
+  siteName = 'Home',
+} = Astro.props;
+
+const telHref = `tel:${phone.number.replace(/[^\d+]/g, '')}`;
+const currentPath = Astro.url.pathname;
+const isActive = (href: string) =>
+  href === '/' ? currentPath === '/' : currentPath === href || currentPath.startsWith(href);
+---
+
+<header class="tree-header" role="banner">
+  <div class="tree-header__inner tree-container">
+    <a href="/" class="tree-header__logo" aria-label={`${siteName} — Home`}>
+      <img src={logoSrc} alt={logoAlt} class="tree-header__logo-img" width="215" height="70" />
+    </a>
+
+    <nav class="tree-header__nav" aria-label="Main navigation">
+      <ul class="tree-header__menu">
+        {navigation.map((item) => (
+          <li class="tree-header__menu-item">
+            <a
+              href={item.href}
+              class:list={['tree-header__menu-link', { 'is-active': isActive(item.href) }]}
+            >
+              {item.label}
+              {item.caret && (
+                <svg class="tree-header__caret" width="13" height="8" viewBox="0 0 13 8" fill="none" aria-hidden="true">
+                  <path d="M1 1.5 6.5 6.5 12 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              )}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="tree-header__right">
+      <a href={telHref} class="tree-header__phone">
+        <svg class="tree-header__phone-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M6.5 3h3l1.5 4-2 1.5a12 12 0 0 0 5 5L18.5 16l4 1.5v3a2 2 0 0 1-2 2A17 17 0 0 1 4.5 5a2 2 0 0 1 2-2Z" fill="currentColor"/>
+        </svg>
+        <span class="tree-header__phone-text">
+          <span class="tree-header__phone-number">{phone.number}</span>
+          {phone.label && <span class="tree-header__phone-label">{phone.label}</span>}
+        </span>
+      </a>
+      <a href={ctaHref} class="tree-header__cta">{ctaText}</a>
+    </div>
+
+    <button
+      type="button"
+      class="tree-header__burger"
+      aria-label="Open navigation menu"
+      aria-expanded="false"
+      aria-controls="tree-nav-panel"
+    >
+      <span class="tree-header__burger-bar"></span>
+      <span class="tree-header__burger-bar"></span>
+      <span class="tree-header__burger-bar"></span>
+    </button>
+  </div>
+
+  <!-- Mobile / tablet nav panel -->
+  <div id="tree-nav-panel" class="tree-header__panel" hidden>
+    <ul class="tree-header__panel-list">
+      {navigation.map((item) => (
+        <li>
+          <a
+            href={item.href}
+            class:list={['tree-header__panel-link', { 'is-active': isActive(item.href) }]}
+          >{item.label}</a>
+        </li>
+      ))}
+      <li class="tree-header__panel-phone">
+        <a href={telHref}>{phone.number}{phone.label ? ` · ${phone.label}` : ''}</a>
+      </li>
+      <li>
+        <a href={ctaHref} class="tree-header__cta tree-header__cta--block">{ctaText}</a>
+      </li>
+    </ul>
+  </div>
+</header>
+
+<style>
+  .tree-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--color-bg-surface, #fff);
+  }
+
+  .tree-header__inner {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    min-height: 114px;
+  }
+
+  /* ===== Logo ===== */
+  .tree-header__logo { display: flex; align-items: center; flex-shrink: 0; }
+  .tree-header__logo-img { height: 70px; width: auto; object-fit: contain; }
+
+  /* ===== Desktop nav (centered) ===== */
+  .tree-header__nav { flex: 1 1 auto; display: flex; justify-content: center; }
+  .tree-header__menu {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .tree-header__menu-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text-primary, #013b2d);
+    white-space: nowrap;
+    transition: color 0.15s ease;
+  }
+  .tree-header__menu-link:hover,
+  .tree-header__menu-link.is-active { color: var(--color-bg-action, #2f8328); }
+  .tree-header__caret { flex-shrink: 0; }
+
+  /* ===== Phone + CTA cluster ===== */
+  .tree-header__right {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-shrink: 0;
+    padding-left: 40px;
+  }
+  .tree-header__phone {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--color-text-primary, #013b2d);
+  }
+  .tree-header__phone-icon { color: var(--color-bg-action, #2f8328); flex-shrink: 0; }
+  .tree-header__phone-text { display: flex; flex-direction: column; line-height: 1.15; }
+  .tree-header__phone-number { font-size: 21px; font-weight: 600; text-transform: uppercase; }
+  .tree-header__phone-label { font-size: 16px; font-weight: 500; text-transform: capitalize; }
+
+  .tree-header__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 60px;
+    padding: 0 28px;
+    background: var(--color-bg-brand, #013b2d);
+    color: var(--color-text-inverse, #fff);
+    font-size: 18px;
+    font-weight: 600;
+    text-transform: capitalize;
+    border-radius: var(--tree-radius-btn, 6px);
+    white-space: nowrap;
+    transition: background-color 0.15s ease;
+  }
+  .tree-header__cta:hover { background: var(--color-bg-brand-strong, #1e372e); }
+  .tree-header__cta--block { width: 100%; }
+
+  /* ===== Hamburger ===== */
+  .tree-header__burger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .tree-header__burger-bar {
+    display: block;
+    width: 26px;
+    height: 2px;
+    margin: 0 auto;
+    background: var(--color-text-primary, #013b2d);
+    border-radius: 2px;
+    transition: transform 0.3s ease, opacity 0.2s ease;
+  }
+  .tree-header__burger[aria-expanded='true'] .tree-header__burger-bar:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .tree-header__burger[aria-expanded='true'] .tree-header__burger-bar:nth-child(2) { opacity: 0; }
+  .tree-header__burger[aria-expanded='true'] .tree-header__burger-bar:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* ===== Mobile panel ===== */
+  .tree-header__panel {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.35s ease;
+    border-top: 1px solid var(--color-border-subtle, #d9d9d9);
+    background: var(--color-bg-surface, #fff);
+  }
+  .tree-header__panel:not([hidden]).is-open { max-height: 80vh; }
+  .tree-header__panel-list {
+    list-style: none;
+    margin: 0;
+    padding: 12px var(--tree-gutter, 24px) 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .tree-header__panel-link {
+    display: block;
+    padding: 12px 4px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-text-primary, #013b2d);
+    border-bottom: 1px solid var(--color-bg-subtle, #f2f2f2);
+  }
+  .tree-header__panel-link:hover,
+  .tree-header__panel-link.is-active { color: var(--color-bg-action, #2f8328); }
+  .tree-header__panel-phone { padding: 12px 4px; font-weight: 600; color: var(--color-text-primary, #013b2d); }
+  .tree-header__panel-list > li:last-child { margin-top: 12px; }
+
+  /* ===== Tablet + mobile (<=1024px) ===== */
+  @media (max-width: 1024px) {
+    .tree-header__inner { min-height: 84px; }
+    .tree-header__logo-img { height: 52px; }
+    .tree-header__nav,
+    .tree-header__right { display: none; }
+    .tree-header__burger { display: flex; margin-left: auto; }
+  }
+
+  /* ===== Mobile (<=767px) ===== */
+  @media (max-width: 767px) {
+    /* Figma mobile logo is 188x62 (larger than the tablet 52px). */
+    .tree-header__inner { min-height: 90px; }
+    .tree-header__logo-img { height: 62px; }
+  }
+</style>
+
+<script>
+  function initTreeHeader() {
+    const burger = document.querySelector('.tree-header__burger');
+    const panel = document.getElementById('tree-nav-panel');
+    if (!burger || !panel) return;
+
+    const open = () => {
+      panel.hidden = false;
+      requestAnimationFrame(() => panel.classList.add('is-open'));
+      burger.setAttribute('aria-expanded', 'true');
+      burger.setAttribute('aria-label', 'Close navigation menu');
+    };
+    const close = () => {
+      panel.classList.remove('is-open');
+      burger.setAttribute('aria-expanded', 'false');
+      burger.setAttribute('aria-label', 'Open navigation menu');
+    };
+
+    burger.addEventListener('click', () => {
+      const expanded = burger.getAttribute('aria-expanded') === 'true';
+      expanded ? close() : open();
+    });
+
+    panel.addEventListener('transitionend', () => {
+      if (!panel.classList.contains('is-open')) panel.hidden = true;
+    });
+
+    panel.querySelectorAll('a').forEach((a) => a.addEventListener('click', close));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && burger.getAttribute('aria-expanded') === 'true') close();
+    });
+  }
+
+  initTreeHeader();
+  document.addEventListener('astro:after-swap', initTreeHeader);
+</script>

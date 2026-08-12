@@ -10,6 +10,8 @@ const posts = defineCollection({
     title: string(),
     date: coerce.date(),
     description: string().optional(),
+    image: string().optional(),
+    imageAlt: string().optional(),
     draft: boolean().default(false),
   }),
 });

@@ -1,0 +1,282 @@
+---
+/**
+ * TreeBlogPreview.astro
+ * ---------------------
+ * "Our Blog" recent-articles section for the tree-care template.
+ * Figma node 123:327 (desktop) / 123:5109 (mobile).
+ * Centered header (eyebrow + heading), a row of three post preview cards
+ * (rounded photo with a green date pill, title, excerpt, "Keep Reading"
+ * link), and a centered outlined "View all" button.
+ * All content is prop-driven for CMS editing.
+ */
+import TreePicture from './TreePicture.astro';
+
+export interface TreeBlogPost {
+  title: string;
+  excerpt: string;
+  date: string;
+  href: string;
+  /** Original raster path (e.g. /media/photos/blog-*.jpg). */
+  image: string;
+  imageAlt: string;
+}
+
+export interface Props {
+  eyebrow?: string;
+  title?: string;
+  readMoreLabel?: string;
+  viewAllLabel?: string;
+  viewAllHref?: string;
+  posts?: TreeBlogPost[];
+}
+
+const defaultPost: TreeBlogPost = {
+  title:
+    'Tree Removal Connecticut: Your Legal Obligations When Removing Trees Near Power Lines',
+  excerpt:
+    "When you hire someone to care for your trees, you're trusting them with living things that can take decades to grow, and that can cause serious damage if managed incorrectly. When a tree care...",
+  date: '21/04/2026',
+  href: '#',
+  image: '/media/photos/blog-tree-power-lines.jpg',
+  imageAlt: 'Arborist pruning a tree near power lines',
+};
+
+const {
+  eyebrow = 'Recent Articles',
+  title = 'our Blog',
+  readMoreLabel = 'Keep Reading',
+  viewAllLabel = 'View all',
+  viewAllHref = '/blog',
+  posts = [defaultPost, defaultPost, defaultPost],
+} = Astro.props;
+---
+
+<section class="tree-blog" aria-labelledby="tree-blog-title">
+  <div class="tree-blog__inner tree-container">
+    <header class="tree-blog__header">
+      <p class="tree-blog__eyebrow">{eyebrow}</p>
+      <h2 class="tree-blog__title" id="tree-blog-title">{title}</h2>
+    </header>
+
+    <ul class="tree-blog__grid">
+      {posts.map((post) => (
+        <li class="tree-blog__card">
+          <figure class="tree-blog__media">
+            <TreePicture
+              src={post.image}
+              alt={post.imageAlt}
+              class="tree-blog__img"
+              width={454}
+              height={292}
+              loading="lazy"
+            />
+            <span class="tree-blog__date">
+              <img
+                src="/media/icons/blog-calendar.svg"
+                alt=""
+                class="tree-blog__date-icon"
+                width="22"
+                height="22"
+                aria-hidden="true"
+              />
+              <time class="tree-blog__date-text">{post.date}</time>
+            </span>
+          </figure>
+
+          <div class="tree-blog__body">
+            <h3 class="tree-blog__post-title">
+              <a href={post.href} class="tree-blog__post-link">{post.title}</a>
+            </h3>
+            <p class="tree-blog__excerpt">{post.excerpt}</p>
+            <a href={post.href} class="tree-blog__more">
+              <span class="tree-blog__more-label">{readMoreLabel}</span>
+              <img
+                src="/media/icons/blog-arrow.svg"
+                alt=""
+                class="tree-blog__more-arrow"
+                width="24"
+                height="18"
+                aria-hidden="true"
+              />
+            </a>
+          </div>
+        </li>
+      ))}
+    </ul>
+
+    <a href={viewAllHref} class="tree-blog__view-all">{viewAllLabel}</a>
+  </div>
+</section>
+
+<style>
+  .tree-blog {
+    background: var(--color-bg-surface, #fff);
+    padding-block: 100px;
+  }
+  .tree-blog__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 56px;
+  }
+
+  /* ===== Header ===== */
+  .tree-blog__header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    text-align: center;
+  }
+  .tree-blog__eyebrow {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.248;
+    text-transform: capitalize;
+    color: var(--color-text-primary, #013b2d);
+  }
+  .tree-blog__title {
+    font-size: 42px;
+    font-weight: 700;
+    line-height: 1.248;
+    text-transform: capitalize;
+    color: #282828;
+  }
+
+  /* ===== Cards ===== */
+  .tree-blog__grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .tree-blog__card {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .tree-blog__media {
+    position: relative;
+    margin: 0;
+    width: 100%;
+  }
+  .tree-blog__media :global(picture) { display: block; }
+  .tree-blog__media :global(.tree-blog__img) {
+    display: block;
+    width: 100%;
+    height: 292px;
+    object-fit: cover;
+    border-radius: 6px;
+  }
+  .tree-blog__date {
+    position: absolute;
+    left: 13px;
+    bottom: 15px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 35px;
+    padding: 0 10px;
+    background: #34a853;
+    border-radius: 7.5px;
+  }
+  .tree-blog__date-icon { width: 22px; height: 22px; flex-shrink: 0; }
+  .tree-blog__date-text {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.593;
+    color: var(--color-text-inverse, #fff);
+    white-space: nowrap;
+  }
+
+  .tree-blog__body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .tree-blog__post-title { margin: 0; }
+  .tree-blog__post-link {
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 1.3;
+    color: #000;
+    transition: color 0.15s ease;
+  }
+  .tree-blog__post-link:hover { color: var(--color-bg-action, #2f8328); }
+  .tree-blog__excerpt {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.6;
+    color: #000;
+  }
+  .tree-blog__more {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tree-blog__more-label {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 24px;
+    color: var(--color-text-primary, #013b2d);
+  }
+  .tree-blog__more-arrow {
+    width: 24px;
+    height: 18px;
+    /* Asset points down; rotate so the "Keep Reading" arrow points right. */
+    transform: rotate(-90deg);
+    transition: transform 0.15s ease;
+  }
+  .tree-blog__more:hover .tree-blog__more-arrow { transform: rotate(-90deg) translateY(-3px); }
+
+  /* ===== View all ===== */
+  .tree-blog__view-all {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 200px;
+    height: 60px;
+    border: 1px solid var(--color-border-strong, var(--color-text-primary, #013b2d));
+    border-radius: var(--tree-radius-btn, 6px);
+    font-size: 18px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--color-text-primary, #013b2d);
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+  .tree-blog__view-all:hover {
+    background: var(--color-text-primary, #013b2d);
+    color: var(--color-text-inverse, #fff);
+  }
+
+  /* ===== Tablet ===== */
+  @media (max-width: 1024px) {
+    .tree-blog { padding-block: 72px; }
+    .tree-blog__grid { grid-template-columns: repeat(2, 1fr); }
+    /* Center a lone third card on the second row. */
+    .tree-blog__card:nth-child(3) { grid-column: 1 / -1; max-width: calc(50% - 10px); margin: 0 auto; }
+  }
+
+  /* ===== Mobile ===== */
+  @media (max-width: 767px) {
+    .tree-blog { padding-block: 56px; }
+    .tree-blog__inner { gap: 40px; }
+    .tree-blog__eyebrow { font-size: 14px; }
+    .tree-blog__title { font-size: 36px; }
+    .tree-blog__grid { grid-template-columns: 1fr; gap: 24px; }
+    .tree-blog__card:nth-child(3) { max-width: none; margin: 0; }
+    .tree-blog__media :global(.tree-blog__img) { height: 198px; }
+    /* Smaller date pill on mobile — Figma 123:5118. */
+    .tree-blog__date { height: 26px; left: 6px; bottom: 6px; border-radius: 3px; }
+    .tree-blog__date-icon { width: 20px; height: 20px; }
+    .tree-blog__date-text { font-size: 14px; }
+    .tree-blog__body { gap: 20px; }
+    .tree-blog__post-link { font-size: 21px; }
+    .tree-blog__excerpt { font-size: 14px; }
+    .tree-blog__view-all { width: 171px; height: 50px; font-size: 16px; }
+  }
+</style>

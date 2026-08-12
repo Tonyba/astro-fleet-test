@@ -1,0 +1,330 @@
+---
+/**
+ * TreeAbout.astro
+ * ---------------
+ * "About us" section for the tree-care template. Figma node 123:111 (desktop
+ * page 123:55) — includes the embedded Google review card, Figma node 123:124.
+ *
+ * Desktop: two columns — copy + CTAs on the left, a tall arborist photo on the
+ * right with the "Fabien Cutillo" review card floating over its lower edge.
+ * <=1024px: photo shrinks; <=767px (mobile node 123:4526): single column, the
+ * photo is hidden and the review card renders as a standalone block below.
+ *
+ * Every string/image is a prop with a Figma-verbatim default, so it renders
+ * fully without props and stays CMS-editable.
+ */
+import TreePicture from './TreePicture.astro';
+
+export interface TreeAboutCta {
+  text: string;
+  href: string;
+}
+export interface TreeAboutPhoto {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+}
+export interface TreeAboutReview {
+  name: string;
+  quote: string;
+  avatarSrc: string;
+  avatarAlt: string;
+  /** Star-rating image (Figma renders a fixed 5-star row). */
+  starsSrc: string;
+  /** "Verified" checkmark badge shown after the stars. */
+  verifiedSrc: string;
+  /** Source-platform logo shown top-right of the card (Google). */
+  sourceSrc: string;
+  sourceAlt: string;
+}
+
+export interface Props {
+  eyebrow?: string;
+  heading?: string;
+  paragraphs?: string[];
+  primaryCta?: TreeAboutCta;
+  secondaryCta?: TreeAboutCta;
+  photo?: TreeAboutPhoto;
+  review?: TreeAboutReview;
+}
+
+const {
+  eyebrow = 'About us',
+  heading = 'Certified Tree Care Professionals Serving Connecticut with Trusted Arborist Services',
+  paragraphs = [
+    'Erick’s Tree Services is a professional tree care company serving residential and commercial properties throughout Connecticut.',
+    'With years of hands-on experience, our team specializes in safe and efficient tree removal, trimming, stump grinding, and emergency storm cleanup.',
+    'We are committed to delivering reliable service with a strong focus on safety, professionalism, and long-term customer trust. Every project is handled with care, precision, and respect for your property.',
+    'Our goal is simple: provide high-quality tree services that keep your property safe, clean, and well maintained.',
+  ],
+  primaryCta = { text: 'Get free quote now', href: '#quote' },
+  secondaryCta = { text: 'Learn more about us', href: '#about' },
+  photo = {
+    src: '/media/photos/about-arborist-tree.png',
+    alt: 'Certified arborist harnessed to a tall pine, pruning branches with a chainsaw',
+    width: 616,
+    height: 566,
+  },
+  review = {
+    name: 'Fabien Cutillo',
+    quote: 'Used Erik twice. Excellent service. Will use him again. Does a great job',
+    avatarSrc: '/media/photos/about-reviewer.png',
+    avatarAlt: 'Fabien Cutillo',
+    starsSrc: '/media/icons/about-stars.svg',
+    verifiedSrc: '/media/icons/about-verified.svg',
+    sourceSrc: '/media/icons/about-google.svg',
+    sourceAlt: 'Google review',
+  },
+} = Astro.props;
+---
+
+<section class="tree-about" aria-labelledby="tree-about-heading">
+  <div class="tree-about__inner tree-container">
+    <div class="tree-about__body">
+      <div class="tree-about__block">
+        <p class="tree-about__eyebrow">{eyebrow}</p>
+        <h2 id="tree-about-heading" class="tree-about__heading">{heading}</h2>
+        <div class="tree-about__text">
+          {paragraphs.map((p) => <p class="tree-about__paragraph">{p}</p>)}
+        </div>
+      </div>
+
+      <div class="tree-about__actions">
+        <a href={primaryCta.href} class="tree-about__btn tree-about__btn--primary">{primaryCta.text}</a>
+        <a href={secondaryCta.href} class="tree-about__btn tree-about__btn--ghost">
+          <span>{secondaryCta.text}</span>
+          <img class="tree-about__btn-arrow" src="/media/icons/about-arrow.svg" alt="" width="25" height="25" aria-hidden="true" />
+        </a>
+      </div>
+    </div>
+
+    <div class="tree-about__media">
+      <figure class="tree-about__figure">
+        <TreePicture
+          class="tree-about__photo"
+          src={photo.src}
+          alt={photo.alt}
+          width={photo.width}
+          height={photo.height}
+          loading="lazy"
+        />
+      </figure>
+
+      <article class="tree-about__review" aria-label={`Review by ${review.name}`}>
+        <img class="tree-about__review-source" src={review.sourceSrc} alt={review.sourceAlt} width="30" height="30" loading="lazy" />
+        <div class="tree-about__review-head">
+          <img class="tree-about__review-avatar" src={review.avatarSrc} alt={review.avatarAlt} width="43" height="43" loading="lazy" />
+          <div class="tree-about__review-meta">
+            <p class="tree-about__review-name">{review.name}</p>
+            <div class="tree-about__review-rating">
+              <img class="tree-about__review-stars" src={review.starsSrc} alt="5 out of 5 stars" width="98" height="17" loading="lazy" />
+              <img class="tree-about__review-verified" src={review.verifiedSrc} alt="Verified review" width="20" height="20" loading="lazy" />
+            </div>
+          </div>
+        </div>
+        <p class="tree-about__review-quote">{review.quote}</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<style>
+  .tree-about {
+    background: var(--color-bg-surface, #fff);
+    padding-block: 100px;
+  }
+
+  .tree-about__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 721px) minmax(0, 616px);
+    justify-content: space-between;
+    gap: 60px;
+    align-items: start;
+  }
+
+  /* ===== Left column: copy + CTAs ===== */
+  .tree-about__body {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+  .tree-about__block {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .tree-about__eyebrow {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.248;
+    text-transform: uppercase;
+    color: var(--color-text-primary, #013b2d);
+  }
+  .tree-about__heading {
+    margin: 0;
+    font-size: 42px;
+    font-weight: 500;
+    line-height: 1.248;
+    text-transform: capitalize;
+    color: var(--color-text-primary, #013b2d);
+  }
+  .tree-about__text {
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+  }
+  .tree-about__paragraph {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.66;
+    color: var(--color-text-secondary, #373434);
+  }
+
+  /* ===== Buttons ===== */
+  .tree-about__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+  }
+  .tree-about__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 60px;
+    font-size: 18px;
+    white-space: nowrap;
+  }
+  .tree-about__btn--primary {
+    gap: 10px;
+    padding: 0 40px;
+    font-weight: 700;
+    text-transform: capitalize;
+    color: var(--color-text-primary, #013b2d);
+    background: var(--color-bg-accent, #c8f08f);
+    border-radius: var(--tree-radius-btn, 6px);
+    transition: filter 0.15s ease;
+  }
+  .tree-about__btn--primary:hover { filter: brightness(0.96); }
+  .tree-about__btn--ghost {
+    gap: 6px;
+    padding: 0 4px;
+    font-weight: 600;
+    color: var(--color-text-primary, #013b2d);
+    border-bottom: 1px solid var(--color-text-primary, #013b2d);
+  }
+  .tree-about__btn-arrow { display: block; width: 25px; height: 25px; }
+
+  /* ===== Right column: photo + review card ===== */
+  .tree-about__media { position: relative; }
+  .tree-about__figure { margin: 0; }
+  .tree-about__photo,
+  .tree-about__figure :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--tree-radius-card, 12px);
+  }
+
+  .tree-about__review {
+    position: absolute;
+    right: 26px;
+    bottom: 45px;
+    width: 442px;
+    max-width: calc(100% - 52px);
+    box-sizing: border-box;
+    padding: 22px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: var(--color-bg-subtle, #f9f9f9);
+    border-radius: var(--tree-radius-card, 12px);
+    box-shadow: 0 9px 7.5px rgba(132, 132, 132, 0.5);
+  }
+  .tree-about__review-source {
+    position: absolute;
+    top: 19px;
+    right: 52px;
+    width: 30px;
+    height: 30px;
+  }
+  .tree-about__review-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .tree-about__review-avatar {
+    width: 43px;
+    height: 43px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  .tree-about__review-meta {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .tree-about__review-name {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.6;
+    color: #01304e;
+  }
+  .tree-about__review-rating {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+  }
+  .tree-about__review-stars { width: 98px; height: 17px; display: block; }
+  .tree-about__review-verified { width: 20px; height: 20px; display: block; }
+  .tree-about__review-quote {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.6;
+    color: #01304e;
+  }
+
+  /* ===== Tablet ===== */
+  @media (max-width: 1024px) {
+    .tree-about { padding-block: 72px; }
+    .tree-about__inner {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+    .tree-about__heading { font-size: 34px; }
+    .tree-about__media { max-width: 616px; }
+  }
+
+  /* ===== Mobile (matches mobile node 123:4526) ===== */
+  @media (max-width: 767px) {
+    .tree-about { padding-block: 56px; }
+    .tree-about__eyebrow { font-size: 14px; }
+    .tree-about__heading { font-size: 30px; }
+    .tree-about__paragraph { font-size: 14px; }
+
+    /* Figma mobile: primary CTA full-width, ghost link auto-width + centered. */
+    .tree-about__actions { flex-direction: column; align-items: center; }
+    .tree-about__btn--primary { width: 100%; }
+    .tree-about__btn--ghost { width: auto; }
+
+    /* Mobile design drops the large photo and shows only the review card. */
+    .tree-about__figure { display: none; }
+    .tree-about__review {
+      position: static;
+      width: 100%;
+      max-width: none;
+      right: auto;
+      bottom: auto;
+    }
+    /* Google badge sits near the card's right edge on mobile (Figma 123:4818). */
+    .tree-about__review-source { top: 12px; right: 18px; }
+    .tree-about__review-name { font-size: 14px; }
+    .tree-about__review-quote { font-size: 14px; }
+  }
+</style>

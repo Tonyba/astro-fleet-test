@@ -1,0 +1,200 @@
+---
+/**
+ * TreeTestimonials.astro
+ * ----------------------
+ * "What Our Customers Are Saying" reviews carousel. Figma node 123:575.
+ * Subtle-grey section, heading + rating badge, an Embla carousel of soft-green
+ * review cards, and prev/next arrows.
+ */
+export interface Review {
+  title: string;
+  quote: string;
+  name: string;
+}
+
+export interface Props {
+  eyebrow?: string;
+  heading?: string;
+  description?: string;
+  rating?: { score: string; caption: string };
+  reviews?: Review[];
+}
+
+const {
+  eyebrow = 'Reviews',
+  heading = 'What Our Customers Are Saying',
+  description = "See why our clients trust Erick's Tree Services for their tree service needs.",
+  rating = { score: '4.8', caption: 'Based on 14.000 reviews' },
+  reviews = Array.from({ length: 6 }, () => ({
+    title: 'Tree removal',
+    quote: 'From the initial call to Eric I knew I had found the right man for the job. He came to give us a bid exactly when he said. He promptly showed up to do the job, which was a very large downed oak. He and his crew made very quick work of it and were very neat, respectful of the property and did exactly what he said they',
+    name: 'Fabien Cutillo',
+  })),
+} = Astro.props;
+---
+
+<section class="tree-testimonials">
+  <div class="tree-container">
+    <header class="tree-testimonials__header">
+      <div class="tree-testimonials__intro">
+        <p class="tree-testimonials__eyebrow">{eyebrow}</p>
+        <h2 class="tree-testimonials__heading">{heading}</h2>
+        <p class="tree-testimonials__desc">{description}</p>
+      </div>
+    </header>
+  </div>
+
+  <div class="tree-testimonials__embla">
+    <div class="tree-testimonials__viewport" data-embla>
+      <div class="tree-testimonials__container">
+        {reviews.map((r) => (
+          <article class="tree-testimonials__card">
+            <h3 class="tree-testimonials__card-title">{r.title}</h3>
+            <p class="tree-testimonials__card-quote">{r.quote}</p>
+            <hr class="tree-testimonials__divider" />
+            <div class="tree-testimonials__author">
+              <img class="tree-testimonials__g" src="/media/icons/rev-google.svg" alt="" width="30" height="30" loading="lazy" />
+              <div class="tree-testimonials__author-meta">
+                <span class="tree-testimonials__name">{r.name}</span>
+                <span class="tree-testimonials__stars">
+                  <img src="/media/icons/rev-stars.svg" alt="5 out of 5 stars" width="98" height="17" loading="lazy" />
+                  <img src="/media/icons/rev-verified.svg" alt="Verified review" width="20" height="20" loading="lazy" />
+                </span>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <div class="tree-container tree-testimonials__foot">
+    <div class="tree-testimonials__rating">
+      <img src="/media/icons/rev-google-word.png" alt="Google" width="77" height="26" />
+      <span class="tree-testimonials__score">{rating.score}</span>
+      <span class="tree-testimonials__caption">{rating.caption}</span>
+    </div>
+    <div class="tree-testimonials__arrows">
+      <button type="button" class="tree-testimonials__arrow" data-embla-prev aria-label="Previous review">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button type="button" class="tree-testimonials__arrow" data-embla-next aria-label="Next review">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<style>
+  .tree-testimonials { position: relative; padding-block: 90px; background: var(--color-bg-subtle, #f9f9f9); overflow: hidden; }
+
+  .tree-testimonials__header {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 40px;
+  }
+
+  /* Carousel bleeds to the right viewport edge; first card aligns to container-left. */
+  .tree-testimonials__embla { padding-left: max(var(--tree-gutter, 24px), calc(50% - 701px)); }
+  .tree-testimonials__intro { max-width: 731px; }
+  .tree-testimonials__eyebrow { font-size: 16px; font-weight: 600; line-height: 1.8; color: var(--color-text-primary, #013b2d); }
+  .tree-testimonials__heading { font-size: 46px; font-weight: 600; line-height: 1; text-transform: capitalize; color: var(--color-text-primary, #013b2d); margin: 12px 0 20px; }
+  .tree-testimonials__desc { font-size: 18px; font-weight: 400; line-height: 1.6; color: var(--color-text-primary, #013b2d); }
+
+  /* Desktop: rating badge sits at the top-right of the container, over the header. */
+  .tree-testimonials__rating {
+    position: absolute;
+    top: 90px;
+    right: max(var(--tree-gutter, 24px), calc(50% - 725px));
+    z-index: 2;
+    width: 160px; min-height: 142px;
+    background: var(--color-bg-brand, #013b2d);
+    border-radius: 18px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    padding: 16px; text-align: center;
+  }
+  .tree-testimonials__foot { position: relative; }
+  .tree-testimonials__rating img { height: 26px; width: auto; }
+  .tree-testimonials__score { font-size: 37px; font-weight: 700; letter-spacing: -1.5px; color: var(--color-text-inverse, #fff); }
+  .tree-testimonials__caption { font-size: 16px; font-weight: 500; line-height: 1; color: var(--color-text-inverse, #fff); }
+
+  .tree-testimonials__viewport { overflow: hidden; }
+  .tree-testimonials__container { display: flex; gap: 12px; }
+  .tree-testimonials__card {
+    flex: 0 0 auto; width: 534px; max-width: 90%; min-height: 377px;
+    background: var(--color-bg-brand-soft, #e5f1ed);
+    border-radius: 12px;
+    padding: 40px;
+    display: flex; flex-direction: column; justify-content: center; gap: 20px;
+  }
+  .tree-testimonials__card-title { font-size: 24px; font-weight: 600; line-height: 1.6; color: var(--color-text-primary, #013b2d); }
+  .tree-testimonials__card-quote { font-size: 16px; font-weight: 400; line-height: 1.6; color: var(--color-text-primary, #013b2d); }
+  .tree-testimonials__divider { border: 0; border-top: 1px solid rgba(1, 59, 45, 0.18); width: 100%; margin: 0; }
+  .tree-testimonials__author { display: flex; align-items: center; gap: 12px; }
+  .tree-testimonials__g { width: 30px; height: 30px; }
+  .tree-testimonials__author-meta { display: flex; flex-direction: column; }
+  .tree-testimonials__name { font-size: 18px; font-weight: 600; color: var(--color-text-primary, #013b2d); }
+  .tree-testimonials__stars { display: inline-flex; align-items: center; gap: 11px; margin-top: 2px; }
+  .tree-testimonials__stars img:first-child { height: 17px; width: auto; }
+
+  .tree-testimonials__arrows { display: flex; gap: 36px; margin-top: 28px; }
+  .tree-testimonials__arrow {
+    width: 60px; height: 60px; border-radius: 50%;
+    border: 1px solid var(--color-border-strong, #013b2d); background: transparent; color: var(--color-text-primary, #013b2d);
+    display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+  .tree-testimonials__arrow:hover { background: var(--color-bg-brand, #013b2d); color: #fff; }
+
+  @media (max-width: 1024px) {
+    .tree-testimonials { padding-block: 64px; }
+    .tree-testimonials__header { flex-direction: column; }
+    .tree-testimonials__heading { font-size: 34px; }
+    .tree-testimonials__card { width: 460px; }
+  }
+  @media (max-width: 767px) {
+    .tree-testimonials { padding-block: 56px; }
+    /* Header (incl. rating badge) centered on mobile — Figma 123:4946. */
+    .tree-testimonials__header { flex-direction: column; align-items: center; text-align: center; }
+    .tree-testimonials__intro { max-width: none; }
+    .tree-testimonials__eyebrow { font-size: 14px; }
+    .tree-testimonials__heading { font-size: 36px; }
+    .tree-testimonials__desc { font-size: 14px; }
+    /* Symmetric peeks: remove the left-bleed padding so align:center is centered. */
+    .tree-testimonials__embla { padding-left: 0; }
+    .tree-testimonials__card {
+      width: 311px; max-width: 84%;
+      min-height: 452px;
+      padding: 40px 20px;
+    }
+    .tree-testimonials__card-title { font-size: 21px; }
+    .tree-testimonials__card-quote { font-size: 15px; }
+    /* Rating badge drops below the carousel, centered (Figma 123:4944). */
+    .tree-testimonials__foot { display: flex; flex-direction: column; align-items: center; gap: 24px; margin-top: 28px; }
+    .tree-testimonials__rating { position: static; width: 218px; min-height: 114px; margin: 0 auto; }
+    .tree-testimonials__arrows { margin-top: 0; }
+    .tree-testimonials__score { font-size: 34px; }
+    .tree-testimonials__caption { font-size: 15px; }
+  }
+</style>
+
+<script>
+  import EmblaCarousel from 'embla-carousel';
+
+  function initTreeTestimonials() {
+    document.querySelectorAll('.tree-testimonials').forEach((root) => {
+      const node = root.querySelector('[data-embla]');
+      if (!node) return;
+      const embla = EmblaCarousel(node as HTMLElement, {
+        loop: true,
+        align: 'start',
+        containScroll: 'trimSnaps',
+        // Center the active card (with peeks both sides) on mobile — Figma 123:4944.
+        breakpoints: { '(max-width: 767px)': { align: 'center' } },
+      });
+      root.querySelector('[data-embla-prev]')?.addEventListener('click', () => embla.scrollPrev());
+      root.querySelector('[data-embla-next]')?.addEventListener('click', () => embla.scrollNext());
+    });
+  }
+
+  initTreeTestimonials();
+  document.addEventListener('astro:after-swap', initTreeTestimonials);
+</script>

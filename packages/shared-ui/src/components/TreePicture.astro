@@ -1,0 +1,58 @@
+---
+/**
+ * TreePicture.astro
+ * -----------------
+ * Renders a <picture> with an AVIF source (produced by
+ * scripts/optimize-images.mjs) and the original raster as a fallback, so
+ * markup works before optimization runs and serves AVIF once it exists.
+ *
+ * Pass the ORIGINAL path (e.g. /media/photos/hero.jpg); the AVIF sibling
+ * (/media/photos/hero.avif) is derived automatically.
+ */
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+
+export interface Props {
+  src: string;
+  alt: string;
+  width?: number;
+  height?: number;
+  class?: string;
+  loading?: 'lazy' | 'eager';
+  fetchpriority?: 'high' | 'low' | 'auto';
+  sizes?: string;
+}
+
+const {
+  src,
+  alt,
+  width,
+  height,
+  class: className,
+  loading = 'lazy',
+  fetchpriority,
+  sizes,
+} = Astro.props;
+
+const avif = src.replace(/\.(png|jpe?g)$/i, '.avif');
+// Only emit the AVIF <source> when the optimized file actually exists in the
+// site's public/ dir — a <source> that 404s does NOT fall back to <img>, so an
+// unbuilt AVIF would show a broken image. Falls back to the original until then.
+const hasAvif =
+  avif !== src && src.startsWith('/') && existsSync(join(process.cwd(), 'public', avif));
+---
+
+<picture>
+  {hasAvif && <source srcset={avif} type="image/avif" />}
+  <img
+    src={src}
+    alt={alt}
+    width={width}
+    height={height}
+    class={className}
+    loading={loading}
+    fetchpriority={fetchpriority}
+    sizes={sizes}
+    decoding="async"
+  />
+</picture>

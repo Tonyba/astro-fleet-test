@@ -1,362 +1,77 @@
 ---
-import BaseLayout from '@astro-fleet/shared-ui/src/layouts/BaseLayout.astro';
-import ServiceCard from '@astro-fleet/shared-ui/src/components/ServiceCard.astro';
-import TrustBar from '@astro-fleet/shared-ui/src/components/TrustBar.astro';
-import CTABlock from '@astro-fleet/shared-ui/src/components/CTABlock.astro';
-import { CORPORATE } from '@astro-fleet/config/tokens';
-import {
-  SITE_NAME,
-  TAGLINE,
-  LOGO_SRC,
-  navigation,
-  footerColumns,
-  contactInfo,
-  socialLinks,
-} from '../lib/site-config';
+import '../styles/global.css';
+import TreeLayout from '@astro-fleet/shared-ui/src/layouts/TreeLayout.astro';
+import TreeHero from '@astro-fleet/shared-ui/src/components/TreeHero.astro';
+import TreeTrustBar from '@astro-fleet/shared-ui/src/components/TreeTrustBar.astro';
+import TreeServices from '@astro-fleet/shared-ui/src/components/TreeServices.astro';
+import TreeWhyChoose from '@astro-fleet/shared-ui/src/components/TreeWhyChoose.astro';
+import TreeCtaBanner from '@astro-fleet/shared-ui/src/components/TreeCtaBanner.astro';
+import TreeAbout from '@astro-fleet/shared-ui/src/components/TreeAbout.astro';
+import TreeStatsBar from '@astro-fleet/shared-ui/src/components/TreeStatsBar.astro';
+import TreeCommercial from '@astro-fleet/shared-ui/src/components/TreeCommercial.astro';
+import TreeProjects from '@astro-fleet/shared-ui/src/components/TreeProjects.astro';
+import TreeEmergencyBanner from '@astro-fleet/shared-ui/src/components/TreeEmergencyBanner.astro';
+import TreeProcess from '@astro-fleet/shared-ui/src/components/TreeProcess.astro';
+import TreeTestimonials from '@astro-fleet/shared-ui/src/components/TreeTestimonials.astro';
+import TreeServiceAreas from '@astro-fleet/shared-ui/src/components/TreeServiceAreas.astro';
+import TreeFaq from '@astro-fleet/shared-ui/src/components/TreeFaq.astro';
+import TreeBlogPreview from '@astro-fleet/shared-ui/src/components/TreeBlogPreview.astro';
+import TreeInspectionForm from '@astro-fleet/shared-ui/src/components/TreeInspectionForm.astro';
 
-const trustItems = [
-  { text: 'Open Source & MIT Licensed' },
-  { text: 'Zero JS by Default' },
-  { text: 'Tailwind CSS v4' },
-  { text: 'Type-Safe Config' },
-];
+import { getCollection } from 'astro:content';
 
-const features = [
-  {
-    title: 'Shared Components',
-    description:
-      'A battle-tested library of Astro components — Header, Footer, ServiceCard, CTABlock and more — shared across every site in your fleet.',
-    href: '/services/',
-    linkText: 'See all components',
-  },
-  {
-    title: 'Design Tokens',
-    description:
-      'Three ready-made presets (Corporate, SaaS, Warm) powered by a typed DesignTokens interface. Reskin any site by changing a single config value.',
-    href: '/services/',
-    linkText: 'Explore tokens',
-  },
-  {
-    title: 'One-Command Deploy',
-    description:
-      'Each site builds independently via Turborepo. Deploy to Cloudflare Pages, Netlify, or any static host with a single wrangler command.',
-    href: '/services/',
-    linkText: 'Deployment guide',
-  },
-];
+// CMS-editable content (Sveltia commits these JSON files; the build imports them).
+import site from '../content/settings/site.json';
+import home from '../content/homepage/home.json';
+
+// Blog preview — pulled from the CMS `posts` collection (latest 3, non-draft).
+const dateFmt = (d: Date) =>
+  `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+const blogPosts = (await getCollection('posts', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3)
+  .map((post) => ({
+    title: post.data.title,
+    excerpt: post.data.description ?? '',
+    date: dateFmt(post.data.date),
+    href: `/blog/${post.id.replace(/\.md$/, '')}/`,
+    image: post.data.image ?? '/media/photos/blog-tree-power-lines.jpg',
+    imageAlt: post.data.imageAlt ?? post.data.title,
+  }));
 ---
 
-<BaseLayout
-  title={`${SITE_NAME} — Build Multiple Sites, One Codebase`}
-  description="Astro Fleet is an open-source multi-site monorepo starter. Shared components, design tokens, and one-command deploys for agencies and multi-brand teams."
-  keywords={['astro', 'monorepo', 'multi-site', 'starter', 'design tokens', 'tailwind']}
-  {navigation}
-  footerColumns={footerColumns}
-  {contactInfo}
-  {socialLinks}
-  siteName={SITE_NAME}
-  tagline={TAGLINE}
-  logoSrc={LOGO_SRC}
-  ctaText="Get Started"
-  ctaHref="/contact/"
-  designTokens={CORPORATE}
+<TreeLayout
+  title={home.seo.title}
+  description={home.seo.description}
+  keywords={home.seo.keywords}
+  siteName={site.siteName}
+  logoSrc={site.logo}
+  header={site.header}
+  footer={site.footer}
+  colors={site.theme.colors}
+  fonts={site.theme.fonts}
 >
-  <!-- Hero -->
-  <section class="hero">
-    <div class="hero__bg" aria-hidden="true">
-      <span class="hero__glow hero__glow--1"></span>
-      <span class="hero__glow hero__glow--2"></span>
-      <span class="hero__grid"></span>
-    </div>
-    <div class="hero__container">
-      <div class="hero__badge">
-        <span class="hero__badge-dot"></span>
-        Open Source Monorepo Starter
-      </div>
-      <h1 class="hero__headline">
-        Build Multiple Sites,<br />
-        <span class="hero__headline--accent">One Codebase</span>
-      </h1>
-      <p class="hero__sub">
-        Astro Fleet gives your team a shared component library, typed design tokens,
-        and a Turborepo pipeline — so spinning up a new brand site takes minutes,
-        not weeks.
-      </p>
-      <div class="hero__actions">
-        <a href="/contact/" class="hero__cta-primary">
-          Get Started
-          <svg class="hero__cta-arrow" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <path d="M4 10h12m0 0-5-5m5 5-5 5" stroke="currentColor" stroke-width="2"
-              stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </a>
-        <a href="/about/" class="hero__cta-secondary">Learn More</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Trust bar -->
-  <TrustBar items={trustItems} />
-
-  <!-- Features -->
-  <section class="section features">
-    <div class="container">
-      <div class="section-header">
-        <h2 class="section-header__title">Everything You Need Out of the Box</h2>
-        <p class="section-header__description">
-          Astro Fleet bundles the patterns that every multi-site project needs —
-          so you can focus on content and conversion, not boilerplate.
-        </p>
-      </div>
-      <div class="features__grid">
-        {features.map((f) => (
-          <ServiceCard
-            title={f.title}
-            description={f.description}
-            href={f.href}
-            linkText={f.linkText}
-          />
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA -->
-  <CTABlock
-    heading="Ready to Launch Your Fleet?"
-    description="Clone the repo, run bun install, and have your first site live in under 10 minutes."
-    primaryButton={{ text: 'Get Started', href: '/contact/' }}
-    secondaryButton={{ text: 'View Services', href: '/services/' }}
+  <TreeHero {...home.hero} quote={site.forms.quote} />
+  <TreeTrustBar />
+  <TreeServices eyebrow={home.services.eyebrow} heading={home.services.heading} services={home.services.items} />
+  <TreeWhyChoose eyebrow={home.whyChoose.eyebrow} heading={home.whyChoose.heading} items={home.whyChoose.items} />
+  <TreeCtaBanner {...home.ctaBanner} />
+  <TreeAbout />
+  <TreeStatsBar eyebrow={home.stats.eyebrow} heading={home.stats.heading} stats={home.stats.items} />
+  <TreeCommercial />
+  <TreeProjects eyebrow={home.projects.eyebrow} heading={home.projects.heading} description={home.projects.description} projects={home.projects.items} />
+  <TreeEmergencyBanner {...home.emergency} />
+  <TreeProcess eyebrow={home.process.eyebrow} heading={home.process.heading} description={home.process.description} steps={home.process.steps} />
+  <TreeTestimonials eyebrow={home.testimonials.eyebrow} heading={home.testimonials.heading} description={home.testimonials.description} rating={home.testimonials.rating} reviews={home.testimonials.reviews} />
+  <TreeServiceAreas
+    eyebrow={home.serviceAreas.eyebrow}
+    heading={home.serviceAreas.heading}
+    description={home.serviceAreas.description}
+    areasLabel={home.serviceAreas.areasLabel}
+    areas={home.serviceAreas.areas}
+    ctaText={home.serviceAreas.ctaText}
   />
-</BaseLayout>
-
-<style>
-  /* ===== Hero ===== */
-  .hero {
-    position: relative;
-    isolation: isolate;
-    overflow: hidden;
-    padding: 7rem 1.5rem 5.5rem;
-    text-align: center;
-    color: #e5e9f0;
-    background:
-      radial-gradient(120% 120% at 50% -10%,
-        color-mix(in srgb, var(--color-accent, #2563eb) 22%, transparent) 0%, transparent 55%),
-      linear-gradient(180deg, #0a0e17 0%, #05070c 100%);
-  }
-
-  /* Decorative backdrop: soft glows + faint grid */
-  .hero__bg {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    overflow: hidden;
-    pointer-events: none;
-  }
-
-  .hero__glow {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.5;
-  }
-
-  .hero__glow--1 {
-    top: -10rem;
-    left: -6rem;
-    width: 26rem;
-    height: 26rem;
-    background: radial-gradient(circle,
-      color-mix(in srgb, var(--color-accent, #2563eb) 55%, transparent), transparent 70%);
-    animation: hero-float-1 14s ease-in-out infinite;
-  }
-
-  .hero__glow--2 {
-    top: -6rem;
-    right: -8rem;
-    width: 30rem;
-    height: 30rem;
-    background: radial-gradient(circle,
-      color-mix(in srgb, var(--color-accent, #2563eb) 35%, transparent), transparent 70%);
-    animation: hero-float-2 18s ease-in-out infinite;
-  }
-
-  .hero__grid {
-    position: absolute;
-    inset: 0;
-    background-image:
-      linear-gradient(to right,
-        color-mix(in srgb, #ffffff 8%, transparent) 1px, transparent 1px),
-      linear-gradient(to bottom,
-        color-mix(in srgb, #ffffff 8%, transparent) 1px, transparent 1px);
-    background-size: 44px 44px;
-    -webkit-mask-image: radial-gradient(120% 80% at 50% 0%, #000 30%, transparent 75%);
-    mask-image: radial-gradient(120% 80% at 50% 0%, #000 30%, transparent 75%);
-  }
-
-  .hero__container {
-    position: relative;
-    max-width: 820px;
-    margin: 0 auto;
-    animation: hero-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-
-  .hero__badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.4rem 1rem 0.4rem 0.85rem;
-    background: color-mix(in srgb, var(--color-accent, #2563eb) 14%, transparent);
-    color: color-mix(in srgb, var(--color-accent, #2563eb) 55%, #ffffff);
-    font-size: 0.8125rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    border-radius: 999px;
-    border: 1px solid color-mix(in srgb, var(--color-accent, #2563eb) 25%, transparent);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-    margin-bottom: 1.75rem;
-  }
-
-  .hero__badge-dot {
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 50%;
-    background: var(--color-accent, #2563eb);
-    animation: hero-pulse 2s ease-out infinite;
-  }
-
-  .hero__headline {
-    font-family: var(--font-heading, inherit);
-    font-size: clamp(2.5rem, 6.5vw, 4.25rem);
-    font-weight: 900;
-    line-height: 1.05;
-    letter-spacing: -0.035em;
-    color: #f8fafc;
-    margin-bottom: 1.35rem;
-  }
-
-  .hero__headline--accent {
-    background: linear-gradient(120deg,
-      color-mix(in srgb, var(--color-accent, #2563eb) 65%, #ffffff),
-      var(--color-accent, #2563eb));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-
-  .hero__sub {
-    font-size: 1.1875rem;
-    color: color-mix(in srgb, #ffffff 72%, transparent);
-    line-height: 1.7;
-    max-width: 600px;
-    margin: 0 auto 2.5rem;
-  }
-
-  .hero__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    justify-content: center;
-  }
-
-  .hero__cta-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.95rem 2.1rem;
-    background: linear-gradient(135deg,
-      var(--color-cta, #2563eb),
-      color-mix(in srgb, var(--color-cta, #2563eb) 70%, #000));
-    color: #ffffff;
-    font-weight: 700;
-    font-size: 1rem;
-    border-radius: 0.625rem;
-    text-decoration: none;
-    box-shadow: 0 8px 24px -6px color-mix(in srgb, var(--color-cta, #2563eb) 60%, transparent);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
-  }
-
-  .hero__cta-primary:hover {
-    transform: translateY(-2px);
-    filter: brightness(1.05);
-    box-shadow: 0 12px 30px -6px color-mix(in srgb, var(--color-cta, #2563eb) 70%, transparent);
-    opacity: 1;
-  }
-
-  .hero__cta-arrow {
-    width: 1.05rem;
-    height: 1.05rem;
-    transition: transform 0.2s ease;
-  }
-
-  .hero__cta-primary:hover .hero__cta-arrow {
-    transform: translateX(3px);
-  }
-
-  .hero__cta-secondary {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.95rem 2.1rem;
-    background: color-mix(in srgb, #ffffff 6%, transparent);
-    border: 1.5px solid color-mix(in srgb, #ffffff 22%, transparent);
-    color: #e5e9f0;
-    font-weight: 600;
-    font-size: 1rem;
-    border-radius: 0.625rem;
-    text-decoration: none;
-    -webkit-backdrop-filter: blur(4px);
-    backdrop-filter: blur(4px);
-    transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
-  }
-
-  .hero__cta-secondary:hover {
-    border-color: var(--color-accent, #2563eb);
-    color: var(--color-accent, #2563eb);
-    background: color-mix(in srgb, var(--color-accent, #2563eb) 8%, transparent);
-    opacity: 1;
-  }
-
-  /* ===== Hero motion ===== */
-  @keyframes hero-rise {
-    from { opacity: 0; transform: translateY(18px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes hero-pulse {
-    0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent, #2563eb) 55%, transparent); }
-    70%  { box-shadow: 0 0 0 0.5rem transparent; }
-    100% { box-shadow: 0 0 0 0 transparent; }
-  }
-
-  @keyframes hero-float-1 {
-    0%, 100% { transform: translate(0, 0); }
-    50%      { transform: translate(2rem, 1.5rem); }
-  }
-
-  @keyframes hero-float-2 {
-    0%, 100% { transform: translate(0, 0); }
-    50%      { transform: translate(-1.5rem, 1rem); }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .hero__container,
-    .hero__badge-dot,
-    .hero__glow {
-      animation: none;
-    }
-  }
-
-  /* ===== Features grid ===== */
-  .features__grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-
-  @media (min-width: 768px) {
-    .features__grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-</style>
+  <TreeFaq eyebrow={home.faq.eyebrow} titleLead={home.faq.titleLead} titleRest={home.faq.titleRest} faqs={home.faq.items} />
+  <TreeBlogPreview eyebrow={home.blog.eyebrow} title={home.blog.title} posts={blogPosts.length ? blogPosts : undefined} />
+  <TreeInspectionForm heading={home.inspection.heading} lead={home.inspection.lead} paragraphs={home.inspection.paragraphs} quote={site.forms.quote} />
+</TreeLayout>

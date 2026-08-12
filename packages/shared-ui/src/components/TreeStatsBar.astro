@@ -1,0 +1,118 @@
+---
+/**
+ * TreeStatsBar.astro
+ * ------------------
+ * "What We Did So Far" stats pill. Figma node 123:263.
+ * A single two-tone rounded bar: a lighter-green intro panel (eyebrow + heading)
+ * on the left and a dark brand-strong stats row on the right.
+ * (The commercial block that follows in the design is TreeCommercial.)
+ */
+export interface TreeStat {
+  value: string;
+  label: string;
+}
+
+export interface Props {
+  eyebrow?: string;
+  heading?: string;
+  stats?: TreeStat[];
+}
+
+const {
+  eyebrow = 'Some Numbers',
+  heading = 'What we did so far',
+  stats = [
+    { value: '25+', label: 'Years Experience' },
+    { value: '1,000+', label: 'Projects Completed' },
+    { value: '24/7', label: 'Emergency Services' },
+    { value: '100%', label: 'Commitment to Safety' },
+  ],
+} = Astro.props;
+---
+
+<section class="tree-stats">
+  <div class="tree-container">
+    <div class="tree-stats__bar">
+      <div class="tree-stats__intro">
+        <p class="tree-stats__eyebrow">{eyebrow}</p>
+        <p class="tree-stats__heading">{heading}</p>
+      </div>
+      <ul class="tree-stats__list">
+        {stats.map((stat) => (
+          <li class="tree-stats__item">
+            <span class="tree-stats__value">{stat.value}</span>
+            <span class="tree-stats__label">{stat.label}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Transparent + negative bottom margin so the pill overlaps the section
+     below (the commercial photo peeks around it, matching the Figma). */
+  .tree-stats {
+    position: relative;
+    z-index: 3;
+    background: transparent;
+    padding: 40px 0 0;
+    margin-bottom: -80px;
+  }
+
+  .tree-stats__bar {
+    display: flex;
+    align-items: stretch;
+    min-height: 174px;
+    border-radius: 22px;
+    background: var(--color-bg-brand-strong, #1e372e);
+    color: var(--color-text-inverse, #fff);
+    overflow: hidden;
+  }
+  .tree-stats__intro {
+    flex: 0 0 25%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+    padding: 0 32px 0 56px;
+    background: var(--color-bg-action, #2f8328);
+  }
+  .tree-stats__eyebrow {
+    margin: 0; font-size: 16px; font-weight: 400; line-height: 1.25; text-transform: uppercase;
+  }
+  .tree-stats__heading {
+    margin: 0; max-width: 220px; font-size: 40px; font-weight: 700; line-height: 1.05; text-transform: capitalize;
+  }
+  .tree-stats__list {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    gap: 24px;
+    list-style: none;
+    margin: 0;
+    padding: 0 40px;
+  }
+  .tree-stats__item { display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .tree-stats__value { font-size: 40px; font-weight: 700; line-height: 1.1; }
+  .tree-stats__label { margin-top: 4px; font-size: 18px; font-weight: 400; line-height: 1.4; }
+
+  @media (max-width: 1024px) {
+    .tree-stats { margin-bottom: 0; }
+    .tree-stats__bar { flex-wrap: wrap; }
+    .tree-stats__intro { flex: 1 1 100%; padding: 28px 32px; }
+    .tree-stats__list { flex-wrap: wrap; justify-content: center; gap: 28px 48px; padding: 32px; }
+    .tree-stats__item { flex: 0 0 35%; }
+  }
+  @media (max-width: 767px) {
+    /* Figma mobile: green intro over dark stacked stats, top corners rounded only. */
+    .tree-stats__bar { flex-direction: column; border-radius: 22px 22px 0 0; }
+    .tree-stats__intro { align-items: center; text-align: center; }
+    .tree-stats__heading { max-width: none; font-size: 30px; font-weight: 600; }
+    .tree-stats__list { flex-direction: column; gap: 28px; padding: 36px 24px; }
+    .tree-stats__item { flex: 0 0 auto; }
+    .tree-stats__value { font-size: 36px; }
+    .tree-stats__label { font-size: 16px; }
+  }
+</style>

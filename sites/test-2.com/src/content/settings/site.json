@@ -1,0 +1,237 @@
+{
+  "siteName": "Erick's Tree Service",
+  "logo": "/media/logo.png",
+  "theme": {
+    "colors": {
+      "textPrimary": "#013b2d",
+      "textAccent": "#c8f08f",
+      "bgBrand": "#013b2d",
+      "bgBrandStrong": "#1e372e",
+      "bgAccent": "#c8f08f",
+      "bgAction": "#2f8328",
+      "bgActionHover": "#368a2a",
+      "bgEmergency": "#ae1d20"
+    },
+    "fonts": {
+      "sans": "Libre Franklin"
+    }
+  },
+  "forms": {
+    "quote": {
+      "title": "Get Your Free Quote",
+      "subtitle": "Tell us about your project and we'll get back to you within 24 hours.",
+      "submitText": "Get Free Quote Now",
+      "action": "/api/quote",
+      "fields": [
+        {
+          "name": "full_name",
+          "type": "text",
+          "label": "Full Name",
+          "placeholder": "Full Name*",
+          "required": true
+        },
+        {
+          "name": "email",
+          "type": "email",
+          "label": "Email Address",
+          "placeholder": "Email Adress*",
+          "required": true
+        },
+        {
+          "name": "phone",
+          "type": "tel",
+          "label": "Phone Number",
+          "placeholder": "Phone Number*",
+          "required": true
+        },
+        {
+          "name": "project_type",
+          "type": "radio",
+          "label": "Proyect Type",
+          "placeholder": "",
+          "required": false,
+          "options": [
+            "Residential",
+            "Commercial"
+          ]
+        },
+        {
+          "name": "service",
+          "type": "select",
+          "label": "What service do you need?",
+          "placeholder": "",
+          "required": false,
+          "options": [
+            "Tree Removal Services",
+            "Tree Trimming & Pruning",
+            "Stump Grinding",
+            "Land Clearing & Lot Cleaning",
+            "Storm Damage Cleanup",
+            "Cabling & Bracing"
+          ]
+        },
+        {
+          "name": "message",
+          "type": "textarea",
+          "label": "Project details",
+          "placeholder": "Tell us about your project...",
+          "required": false
+        }
+      ]
+    }
+  },
+  "header": {
+    "navigation": [
+      {
+        "label": "Home",
+        "href": "/"
+      },
+      {
+        "label": "Residential",
+        "href": "/residential/",
+        "caret": true
+      },
+      {
+        "label": "Commercial",
+        "href": "/commercial/",
+        "caret": true
+      },
+      {
+        "label": "Proyects",
+        "href": "/projects/"
+      },
+      {
+        "label": "Blog",
+        "href": "/blog/"
+      },
+      {
+        "label": "Contact Us",
+        "href": "/contact/"
+      }
+    ],
+    "phone": {
+      "number": "(203) 367-8219",
+      "label": "Main line"
+    },
+    "ctaText": "Get a free Quote",
+    "ctaHref": "#quote"
+  },
+  "footer": {
+    "description": "Safe, reliable, and professional tree removal, trimming, stump grinding, and emergency storm cleanup for residential and commercial properties.",
+    "badges": [
+      {
+        "src": "/media/badges/bbb.png",
+        "alt": "BBB Accredited Business A+ rating",
+        "width": 106,
+        "height": 77
+      },
+      {
+        "src": "/media/badges/guaranteed.png",
+        "alt": "100% Service Guaranteed",
+        "width": 77,
+        "height": 77
+      }
+    ],
+    "social": [
+      {
+        "platform": "Facebook",
+        "url": "#",
+        "icon": "/media/_x30_1._facebook.svg"
+      },
+      {
+        "platform": "Instagram",
+        "url": "#",
+        "icon": "/media/icons/instagram.svg"
+      },
+      {
+        "platform": "TikTok",
+        "url": "#",
+        "icon": "/media/icons/tiktok.svg"
+      }
+    ],
+    "columns": [
+      {
+        "title": "Quick Navigation",
+        "links": [
+          {
+            "label": "Home",
+            "href": "/"
+          },
+          {
+            "label": "About Us",
+            "href": "/about/"
+          },
+          {
+            "label": "Residential Services",
+            "href": "/residential/"
+          },
+          {
+            "label": "Commercial Services",
+            "href": "/commercial/"
+          },
+          {
+            "label": "Projects",
+            "href": "/projects/"
+          },
+          {
+            "label": "Services Area",
+            "href": "/service-areas/"
+          },
+          {
+            "label": "Contact",
+            "href": "/contact/"
+          }
+        ]
+      },
+      {
+        "title": "Services",
+        "links": [
+          {
+            "label": "Tree Removal",
+            "href": "/services/tree-removal/"
+          },
+          {
+            "label": "Tree Trimming & Pruning",
+            "href": "/services/tree-trimming/"
+          },
+          {
+            "label": "Stump Grinding",
+            "href": "/services/stump-grinding/"
+          },
+          {
+            "label": "Land Clearing & Lot Cleaning",
+            "href": "/services/land-clearing/"
+          },
+          {
+            "label": "Storm Damage Cleanup",
+            "href": "/services/storm-damage/"
+          },
+          {
+            "label": "Cabling & Bracing",
+            "href": "/services/cabling-bracing/"
+          }
+        ]
+      }
+    ],
+    "contact": {
+      "phone": "(203) 367-8219",
+      "email": "veliz800@yahoo.com",
+      "address": "45 Guilford Dr, Bridgeport, CT 06606"
+    },
+    "emergency": {
+      "label": "Call emergency line",
+      "number": "(203) 650-8519"
+    },
+    "copyright": "Erick's Tree Services. All rights reserved.",
+    "legalLinks": [
+      {
+        "label": "Terms & Conditions",
+        "href": "/terms/"
+      },
+      {
+        "label": "Terms of Use",
+        "href": "/terms-of-use/"
+      }
+    ]
+  }
+}

@@ -1,0 +1,180 @@
+---
+/**
+ * TreeEmergencyBanner.astro
+ * -------------------------
+ * Red "TREE EMERGENCY? WE'RE READY TO HELP." banner with a green
+ * "Call emergency line" phone button. Figma node 123:254 (desktop) /
+ * 123:4887 (mobile).
+ * Desktop: alert icon + heading/subtext on the left, phone button on the right.
+ * <=767px: everything stacks and centers; the phone button goes full width.
+ * All content is prop-driven so it can be fed from the CMS.
+ */
+import TreePicture from './TreePicture.astro';
+
+export interface Props {
+  /** Path to the alert icon (raster, rendered via TreePicture). */
+  iconSrc?: string;
+  iconAlt?: string;
+  heading?: string;
+  subtext?: string;
+  /** Small caption above the phone number. */
+  phoneLabel?: string;
+  /** Display phone number, e.g. "(203) 650-8519". */
+  phoneNumber?: string;
+}
+
+const {
+  iconSrc = '/media/photos/emergency-alert.png',
+  iconAlt = 'Emergency alert',
+  heading = "TREE EMERGENCY? WE'RE READY TO HELP.",
+  subtext = '24/7 Service For Emergency. Fast response. Safe removal. Peace of mind.',
+  phoneLabel = 'Call emergency line',
+  phoneNumber = '(203) 650-8519',
+} = Astro.props;
+
+const telHref = `tel:${phoneNumber.replace(/[^\d+]/g, '')}`;
+---
+
+<section class="tree-emergency" aria-labelledby="tree-emergency-heading">
+  <div class="tree-emergency__inner tree-container">
+    <div class="tree-emergency__lead">
+      <span class="tree-emergency__icon">
+        <TreePicture src={iconSrc} alt={iconAlt} width={80} height={80} loading="lazy" />
+      </span>
+      <div class="tree-emergency__text">
+        <h2 id="tree-emergency-heading" class="tree-emergency__heading">{heading}</h2>
+        <p class="tree-emergency__subtext">{subtext}</p>
+      </div>
+    </div>
+
+    <a class="tree-emergency__phone" href={telHref}>
+      <img
+        class="tree-emergency__phone-icon"
+        src="/media/icons/emergency-phone.svg"
+        alt=""
+        width="25"
+        height="25"
+        aria-hidden="true"
+      />
+      <span class="tree-emergency__phone-text">
+        <span class="tree-emergency__phone-label">{phoneLabel}</span>
+        <span class="tree-emergency__phone-number">{phoneNumber}</span>
+      </span>
+    </a>
+  </div>
+</section>
+
+<style>
+  .tree-emergency {
+    padding-block: 38px;
+    background: var(--color-bg-emergency, #ae1d20);
+  }
+
+  .tree-emergency__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 36px;
+  }
+
+  /* ===== Left lead (icon + text) ===== */
+  .tree-emergency__lead {
+    display: flex;
+    align-items: center;
+    gap: 36px;
+  }
+  .tree-emergency__icon {
+    display: block;
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+    line-height: 0;
+  }
+  .tree-emergency__icon :global(img) {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+  }
+  .tree-emergency__text {
+    display: flex;
+    flex-direction: column;
+  }
+  .tree-emergency__heading {
+    margin: 0;
+    font-size: 36px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--color-text-inverse, #fff);
+  }
+  .tree-emergency__subtext {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.4;
+    color: var(--color-text-inverse, #fff);
+  }
+
+  /* ===== Phone button ===== */
+  .tree-emergency__phone {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    height: 86px;
+    padding: 0 28px;
+    flex-shrink: 0;
+    background: var(--color-bg-action, #2f8328);
+    border-radius: var(--tree-radius-btn, 6px);
+    color: var(--color-text-inverse, #fff);
+    transition: background-color 0.15s ease;
+  }
+  .tree-emergency__phone:hover { background: var(--color-bg-action-hover, #368a2a); }
+  .tree-emergency__phone-icon { display: block; width: 25px; height: 25px; flex-shrink: 0; }
+  .tree-emergency__phone-text { display: flex; flex-direction: column; }
+  .tree-emergency__phone-label {
+    font-size: 18.625px;
+    font-weight: 500;
+    text-transform: capitalize;
+    line-height: 1.2;
+  }
+  .tree-emergency__phone-number {
+    font-size: 27.938px;
+    font-weight: 600;
+    text-transform: uppercase;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  /* ===== Tablet (<=1024px) ===== */
+  @media (max-width: 1024px) {
+    .tree-emergency__heading { font-size: 30px; }
+    .tree-emergency__phone { height: 78px; }
+    .tree-emergency__phone-number { font-size: 24px; }
+  }
+
+  /* ===== Mobile (<=767px): stacked + centered ===== */
+  @media (max-width: 767px) {
+    .tree-emergency { padding-block: 40px; }
+    .tree-emergency__inner {
+      flex-direction: column;
+      align-items: center;
+      gap: 25px;
+    }
+    .tree-emergency__lead {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 25px;
+    }
+    .tree-emergency__text { align-items: center; text-align: center; }
+    .tree-emergency__heading { font-size: 30px; }
+    .tree-emergency__subtext { font-size: 18px; }
+    .tree-emergency__phone {
+      width: 100%;
+      max-width: 309px;
+      height: 70px;
+    }
+    .tree-emergency__phone-label { font-size: 18px; }
+    .tree-emergency__phone-number { font-size: 20px; }
+  }
+</style>
