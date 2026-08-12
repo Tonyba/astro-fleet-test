@@ -104,10 +104,24 @@ collections:
               - label: Navigation
                 name: navigation
                 widget: list
+                label_singular: Menu Item
+                summary: '{{fields.label}}'
                 fields:
                   - { label: Label, name: label, widget: string }
                   - { label: Link, name: href, widget: string }
                   - { label: Dropdown caret, name: caret, widget: boolean, required: false, default: false }
+                  # Optional second level. Any item with at least one submenu
+                  # entry renders a dropdown on desktop and an expandable
+                  # accordion inside the mobile panel — the caret is automatic.
+                  - label: Submenu
+                    name: submenu
+                    widget: list
+                    required: false
+                    label_singular: Submenu Item
+                    summary: '{{fields.label}}'
+                    fields:
+                      - { label: Label, name: label, widget: string }
+                      - { label: Link, name: href, widget: string }
               - label: Phone
                 name: phone
                 widget: object

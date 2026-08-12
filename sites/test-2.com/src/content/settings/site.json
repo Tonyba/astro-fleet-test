@@ -26,12 +26,72 @@
       {
         "label": "Residential",
         "href": "/services/residential/",
-        "caret": true
+        "caret": true,
+        "submenu": [
+          {
+            "label": "All Residential Services",
+            "href": "/services/residential/"
+          },
+          {
+            "label": "Tree Removal",
+            "href": "/service/tree-removal/"
+          },
+          {
+            "label": "Tree Pruning & Trimming",
+            "href": "/service/tree-trimming/"
+          },
+          {
+            "label": "Stump Grinding",
+            "href": "/service/stump-grinding/"
+          },
+          {
+            "label": "Land Clearing & Lot Cleaning",
+            "href": "/service/land-clearing/"
+          },
+          {
+            "label": "Storm Damage Cleanup",
+            "href": "/service/storm-damage/"
+          },
+          {
+            "label": "Cabling & Bracing",
+            "href": "/service/cabling-bracing/"
+          }
+        ]
       },
       {
         "label": "Commercial",
         "href": "/services/commercial/",
-        "caret": true
+        "caret": true,
+        "submenu": [
+          {
+            "label": "All Commercial Services",
+            "href": "/services/commercial/"
+          },
+          {
+            "label": "Tree Removal",
+            "href": "/service/tree-removal/"
+          },
+          {
+            "label": "Tree Pruning & Trimming",
+            "href": "/service/tree-trimming/"
+          },
+          {
+            "label": "Stump Grinding",
+            "href": "/service/stump-grinding/"
+          },
+          {
+            "label": "Land Clearing & Lot Cleaning",
+            "href": "/service/land-clearing/"
+          },
+          {
+            "label": "Storm Damage Cleanup",
+            "href": "/service/storm-damage/"
+          },
+          {
+            "label": "Cabling & Bracing",
+            "href": "/service/cabling-bracing/"
+          }
+        ]
       },
       {
         "label": "Proyects",

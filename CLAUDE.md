@@ -19,6 +19,7 @@ Astro Fleet is a multi-site Astro monorepo for agencies and multi-brand companie
 - Do not redesign, reinterpret, or improve anything. Reproduce exactly what is in Figma.
 - Use semantic HTML5 structure (header, nav, section, main, footer, etc.).
 - Use taildwind for css. Minimal vanilla JavaScript only.
+- Menus can have submenus
 - The layout must be fully responsive:
     * Desktop (default styles)
     * Tablet (max-width: 1024px)

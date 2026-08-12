@@ -8,11 +8,21 @@
  * <=1024px: hamburger button toggles a sliding nav panel (vanilla JS, a11y).
  * All content is driven by props so it can be fed from the CMS Site Settings.
  */
+export interface TreeSubNavItem {
+  label: string;
+  href: string;
+}
 export interface TreeNavItem {
   label: string;
   href: string;
   /** Render a dropdown caret next to the label (matches Figma). */
   caret?: boolean;
+  /**
+   * Optional second level, edited in the CMS under Site Settings → Header →
+   * Navigation → Submenu. Present items become a hover/focus dropdown on
+   * desktop and an expandable accordion inside the mobile panel.
+   */
+  submenu?: TreeSubNavItem[];
 }
 export interface TreePhone {
   /** Display number, e.g. "(203) 367-8219". */
@@ -46,6 +56,7 @@ const telHref = `tel:${phone.number.replace(/[^\d+]/g, '')}`;
 const currentPath = Astro.url.pathname;
 const isActive = (href: string) =>
   href === '/' ? currentPath === '/' : currentPath === href || currentPath.startsWith(href);
+const hasSubmenu = (item: TreeNavItem) => Boolean(item.submenu?.length);
 ---
 
 <header class="tree-header" role="banner">
@@ -57,18 +68,31 @@ const isActive = (href: string) =>
     <nav class="tree-header__nav" aria-label="Main navigation">
       <ul class="tree-header__menu">
         {navigation.map((item) => (
-          <li class="tree-header__menu-item">
+          <li class:list={['tree-header__menu-item', { 'has-submenu': hasSubmenu(item) }]}>
             <a
               href={item.href}
               class:list={['tree-header__menu-link', { 'is-active': isActive(item.href) }]}
+              aria-haspopup={hasSubmenu(item) ? 'true' : undefined}
             >
               {item.label}
-              {item.caret && (
+              {(item.caret || hasSubmenu(item)) && (
                 <svg class="tree-header__caret" width="13" height="8" viewBox="0 0 13 8" fill="none" aria-hidden="true">
                   <path d="M1 1.5 6.5 6.5 12 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               )}
             </a>
+            {hasSubmenu(item) && (
+              <ul class="tree-header__submenu">
+                {item.submenu!.map((sub) => (
+                  <li>
+                    <a
+                      href={sub.href}
+                      class:list={['tree-header__submenu-link', { 'is-active': currentPath === sub.href }]}
+                    >{sub.label}</a>
+                  </li>
+                ))}
+              </ul>
+            )}
           </li>
         ))}
       </ul>
@@ -103,12 +127,39 @@ const isActive = (href: string) =>
   <!-- Mobile / tablet nav panel -->
   <div id="tree-nav-panel" class="tree-header__panel" hidden>
     <ul class="tree-header__panel-list">
-      {navigation.map((item) => (
+      {navigation.map((item, i) => (
         <li>
-          <a
-            href={item.href}
-            class:list={['tree-header__panel-link', { 'is-active': isActive(item.href) }]}
-          >{item.label}</a>
+          <div class="tree-header__panel-row">
+            <a
+              href={item.href}
+              class:list={['tree-header__panel-link', { 'is-active': isActive(item.href) }]}
+            >{item.label}</a>
+            {hasSubmenu(item) && (
+              <button
+                type="button"
+                class="tree-header__panel-toggle"
+                aria-expanded="false"
+                aria-controls={`tree-submenu-${i}`}
+                aria-label={`Show ${item.label} submenu`}
+              >
+                <svg class="tree-header__caret" width="13" height="8" viewBox="0 0 13 8" fill="none" aria-hidden="true">
+                  <path d="M1 1.5 6.5 6.5 12 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+            )}
+          </div>
+          {hasSubmenu(item) && (
+            <ul id={`tree-submenu-${i}`} class="tree-header__panel-sublist" hidden>
+              {item.submenu!.map((sub) => (
+                <li>
+                  <a
+                    href={sub.href}
+                    class:list={['tree-header__panel-sublink', { 'is-active': currentPath === sub.href }]}
+                  >{sub.label}</a>
+                </li>
+              ))}
+            </ul>
+          )}
         </li>
       ))}
       <li class="tree-header__panel-phone">
@@ -163,7 +214,56 @@ const isActive = (href: string) =>
   }
   .tree-header__menu-link:hover,
   .tree-header__menu-link.is-active { color: var(--color-bg-action, #2f8328); }
-  .tree-header__caret { flex-shrink: 0; }
+  .tree-header__caret { flex-shrink: 0; transition: transform 0.2s ease; }
+
+  /* ===== Desktop dropdown ===== */
+  .tree-header__menu-item { position: relative; }
+  .tree-header__submenu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    /* Top padding bridges the gap to the trigger so hover never breaks. */
+    padding: 14px 0 10px;
+    margin: 0;
+    min-width: 268px;
+    list-style: none;
+    background: var(--color-bg-surface, #fff);
+    border-radius: var(--tree-radius-btn, 6px);
+    box-shadow: 0 14px 34px rgba(1, 59, 45, 0.14);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translate(-50%, -6px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+    z-index: 20;
+  }
+  .tree-header__menu-item.has-submenu:hover .tree-header__submenu,
+  .tree-header__menu-item.has-submenu:focus-within .tree-header__submenu {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translate(-50%, 0);
+  }
+  .tree-header__menu-item.has-submenu:hover .tree-header__caret,
+  .tree-header__menu-item.has-submenu:focus-within .tree-header__caret {
+    transform: rotate(180deg);
+  }
+  .tree-header__submenu-link {
+    display: block;
+    padding: 11px 24px;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.35;
+    color: var(--color-text-primary, #013b2d);
+    white-space: nowrap;
+    transition: color 0.15s ease, background-color 0.15s ease;
+  }
+  .tree-header__submenu-link:hover,
+  .tree-header__submenu-link:focus-visible,
+  .tree-header__submenu-link.is-active {
+    color: var(--color-bg-action, #2f8328);
+    background: var(--color-bg-subtle, #f2f2f2);
+  }
 
   /* ===== Phone + CTA cluster ===== */
   .tree-header__right {
@@ -247,16 +347,59 @@ const isActive = (href: string) =>
     flex-direction: column;
     gap: 4px;
   }
+  .tree-header__panel-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    border-bottom: 1px solid var(--color-bg-subtle, #f2f2f2);
+  }
   .tree-header__panel-link {
     display: block;
+    flex: 1 1 auto;
     padding: 12px 4px;
     font-size: 18px;
     font-weight: 600;
     color: var(--color-text-primary, #013b2d);
-    border-bottom: 1px solid var(--color-bg-subtle, #f2f2f2);
   }
   .tree-header__panel-link:hover,
   .tree-header__panel-link.is-active { color: var(--color-bg-action, #2f8328); }
+
+  /* ===== Mobile submenu accordion ===== */
+  .tree-header__panel-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: var(--color-text-primary, #013b2d);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .tree-header__panel-toggle[aria-expanded='true'] { color: var(--color-bg-action, #2f8328); }
+  .tree-header__panel-toggle[aria-expanded='true'] .tree-header__caret { transform: rotate(180deg); }
+  .tree-header__panel-sublist {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 16px;
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s ease;
+  }
+  .tree-header__panel-sublist:not([hidden]).is-open { max-height: 600px; }
+  .tree-header__panel-sublink {
+    display: block;
+    padding: 10px 4px;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--color-text-primary, #013b2d);
+    border-bottom: 1px solid var(--color-bg-subtle, #f2f2f2);
+  }
+  .tree-header__panel-sublink:hover,
+  .tree-header__panel-sublink.is-active { color: var(--color-bg-action, #2f8328); }
   .tree-header__panel-phone { padding: 12px 4px; font-weight: 600; color: var(--color-text-primary, #013b2d); }
   .tree-header__panel-list > li:last-child { margin-top: 12px; }
 
@@ -293,15 +436,46 @@ const isActive = (href: string) =>
       panel.classList.remove('is-open');
       burger.setAttribute('aria-expanded', 'false');
       burger.setAttribute('aria-label', 'Open navigation menu');
+      panel.querySelectorAll('.tree-header__panel-toggle').forEach((t) => collapseSub(t));
     };
+
+    // Second-level accordion inside the mobile panel.
+    const subOf = (toggle) => {
+      const id = toggle.getAttribute('aria-controls');
+      return id ? document.getElementById(id) : null;
+    };
+    const collapseSub = (toggle) => {
+      const sub = subOf(toggle);
+      if (!sub) return;
+      sub.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+    };
+    const expandSub = (toggle) => {
+      const sub = subOf(toggle);
+      if (!sub) return;
+      sub.hidden = false;
+      requestAnimationFrame(() => sub.classList.add('is-open'));
+      toggle.setAttribute('aria-expanded', 'true');
+    };
+
+    panel.querySelectorAll('.tree-header__panel-toggle').forEach((toggle) => {
+      const sub = subOf(toggle);
+      sub?.addEventListener('transitionend', (e) => {
+        if (e.target === sub && !sub.classList.contains('is-open')) sub.hidden = true;
+      });
+      toggle.addEventListener('click', () => {
+        toggle.getAttribute('aria-expanded') === 'true' ? collapseSub(toggle) : expandSub(toggle);
+      });
+    });
 
     burger.addEventListener('click', () => {
       const expanded = burger.getAttribute('aria-expanded') === 'true';
       expanded ? close() : open();
     });
 
-    panel.addEventListener('transitionend', () => {
-      if (!panel.classList.contains('is-open')) panel.hidden = true;
+    panel.addEventListener('transitionend', (e) => {
+      // Ignore bubbled transitions from the nested submenu lists.
+      if (e.target === panel && !panel.classList.contains('is-open')) panel.hidden = true;
     });
 
     panel.querySelectorAll('a').forEach((a) => a.addEventListener('click', close));

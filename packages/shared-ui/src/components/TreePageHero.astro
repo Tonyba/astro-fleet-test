@@ -13,7 +13,7 @@
  * Everything is prop-driven (title, copy, both CTAs, photo) so the section can
  * be reused by any interior page and edited from the CMS.
  */
-import TreePicture from './TreePicture.astro';
+import TreePicture from "./TreePicture.astro";
 
 export interface Props {
   title: string;
@@ -42,7 +42,7 @@ export interface Props {
   /** Title size — 36px on the contact hero (123:2087), 42px everywhere else. */
   titleSize?: string;
   /** Title casing — the contact hero sets its heading uppercase. */
-  titleTransform?: 'none' | 'uppercase';
+  titleTransform?: "none" | "uppercase";
   /** Space between title, copy and actions. 12px on the blog hero (123:2044). */
   copyGap?: string;
 }
@@ -51,11 +51,11 @@ const {
   title,
   description,
   primaryCta,
-  separator = 'or',
+  separator = "or",
   phoneCta,
   image,
   imageAlt,
-  imageSplit = '53.75%',
+  imageSplit = "53.75%",
   compact = false,
   minHeight,
   titleSize,
@@ -63,52 +63,66 @@ const {
   copyGap,
 } = Astro.props;
 
-const telHref = phoneCta ? `tel:${phoneCta.number.replace(/[^\d+]/g, '')}` : undefined;
+const telHref = phoneCta
+  ? `tel:${phoneCta.number.replace(/[^\d+]/g, "")}`
+  : undefined;
 ---
 
 <section
-  class:list={['tree-page-hero', { 'tree-page-hero--compact': compact }]}
+  class:list={["tree-page-hero", { "tree-page-hero--compact": compact }]}
   style={[
     `--tree-page-hero-split-desktop: ${imageSplit};`,
-    minHeight ? `--tree-page-hero-height: ${minHeight};` : '',
-    titleSize ? `--tree-page-hero-title-size: ${titleSize};` : '',
-    titleTransform ? `--tree-page-hero-title-transform: ${titleTransform};` : '',
-    copyGap ? `--tree-page-hero-copy-gap: ${copyGap};` : '',
-  ].join('')}
+    minHeight ? `--tree-page-hero-height: ${minHeight};` : "",
+    titleSize ? `--tree-page-hero-title-size: ${titleSize};` : "",
+    titleTransform
+      ? `--tree-page-hero-title-transform: ${titleTransform};`
+      : "",
+    copyGap ? `--tree-page-hero-copy-gap: ${copyGap};` : "",
+  ].join("")}
 >
   <div class="tree-container tree-page-hero__inner">
     <div class="tree-page-hero__copy">
       <h1 class="tree-page-hero__title">{title}</h1>
       {description && <p class="tree-page-hero__desc">{description}</p>}
 
-      {(primaryCta || phoneCta) && (
-        <div class="tree-page-hero__actions">
-          {primaryCta && (
-            <a href={primaryCta.href} class="tree-page-hero__btn tree-page-hero__btn--solid">
-              {primaryCta.label}
-            </a>
-          )}
-          {primaryCta && phoneCta && separator && (
-            <span class="tree-page-hero__or">{separator}</span>
-          )}
-          {phoneCta && (
-            <a href={telHref} class="tree-page-hero__btn tree-page-hero__btn--outline">
-              <img
-                class="tree-page-hero__btn-icon"
-                src="/media/icons/cta-phone.svg"
-                alt=""
-                width="21"
-                height="21"
-                aria-hidden="true"
-              />
-              <span>{phoneCta.label}</span>
-            </a>
-          )}
-        </div>
-      )}
+      {
+        (primaryCta || phoneCta) && (
+          <div class="tree-page-hero__actions">
+            {primaryCta && (
+              <a
+                href={primaryCta.href}
+                class="tree-page-hero__btn tree-page-hero__btn--solid"
+              >
+                {primaryCta.label}
+              </a>
+            )}
+            {primaryCta && phoneCta && separator && (
+              <span class="tree-page-hero__or">{separator}</span>
+            )}
+            {phoneCta && (
+              <a
+                href={telHref}
+                class="tree-page-hero__btn tree-page-hero__btn--outline"
+              >
+                <img
+                  class="tree-page-hero__btn-icon"
+                  src="/media/icons/cta-phone.svg"
+                  alt=""
+                  width="21"
+                  height="21"
+                  aria-hidden="true"
+                />
+                <span>{phoneCta.label}</span>
+              </a>
+            )}
+          </div>
+        )
+      }
 
-      {/* Interior pages can drop a block into the copy column — the contact
-          hero puts its quote form here (Figma 123:2085). */}
+      {
+        /* Interior pages can drop a block into the copy column — the contact
+          hero puts its quote form here (Figma 123:2085). */
+      }
       <slot />
     </div>
   </div>
@@ -145,7 +159,7 @@ const telHref = phoneCta ? `tel:${phoneCta.number.replace(/[^\d+]/g, '')}` : und
 
   /* 8px rule along the bottom edge (Figma 123:3202) — sits behind the photo. */
   .tree-page-hero::after {
-    content: '';
+    content: "";
     position: absolute;
     inset: auto 0 0 0;
     height: 8px;
@@ -160,8 +174,12 @@ const telHref = phoneCta ? `tel:${phoneCta.number.replace(/[^\d+]/g, '')}` : und
   }
 
   /* Title-only band (Figma 123:4218): 240px tall, copy vertically centred. */
-  .tree-page-hero--compact { min-height: 240px; }
-  .tree-page-hero--compact .tree-page-hero__inner { padding-block: 0; }
+  .tree-page-hero--compact {
+    min-height: 240px;
+  }
+  .tree-page-hero--compact .tree-page-hero__inner {
+    padding-block: 0;
+  }
 
   .tree-page-hero__copy {
     display: flex;
@@ -203,7 +221,9 @@ const telHref = phoneCta ? `tel:${phoneCta.number.replace(/[^\d+]/g, '')}` : und
     border-radius: var(--tree-radius-btn, 6px);
     font-size: 18px;
     line-height: 1.8;
-    transition: background-color 0.15s ease, color 0.15s ease;
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease;
   }
 
   .tree-page-hero__btn--solid {
@@ -246,7 +266,9 @@ const telHref = phoneCta ? `tel:${phoneCta.number.replace(/[^\d+]/g, '')}` : und
   /* Photo: full-bleed right half, running past the right edge of the page.
      <Picture /> wraps the <img> in a <picture>; that inline box would add a
      stray line box to the section, so take it out of flow entirely. */
-  .tree-page-hero > :global(picture) { display: contents; }
+  .tree-page-hero > :global(picture) {
+    display: contents;
+  }
   /* An absolutely positioned replaced element takes its width from the
      intrinsic aspect ratio, not from `left`/`right` — so the width has to be
      stated outright or the photo stops short of the right edge. */
@@ -259,25 +281,54 @@ const telHref = phoneCta ? `tel:${phoneCta.number.replace(/[^\d+]/g, '')}` : und
     height: 100%;
     max-width: none;
     object-fit: cover;
+    right: 0;
   }
 
   /* ===== Tablet (<=1024px) — keep the split, tighten type ===== */
   @media (max-width: 1024px) {
-    .tree-page-hero { min-height: 440px; }
-    .tree-page-hero__inner { padding-block: 60px; }
-    .tree-page-hero__copy { gap: 24px; max-width: 60%; }
-    .tree-page-hero__title { font-size: var(--tree-page-hero-title-size, 34px); }
-    .tree-page-hero__desc { font-size: 16px; line-height: 1.7; }
-    .tree-page-hero__actions { flex-wrap: wrap; gap: 12px; }
-    .tree-page-hero__btn { height: 54px; font-size: 16px; }
-    .tree-page-hero__btn--solid { flex: 0 0 auto; padding-inline: 28px; }
-    .tree-page-hero__btn--outline { flex: 0 0 auto; padding-inline: 24px; }
-    .tree-page-hero { --tree-page-hero-split: 62%; }
+    .tree-page-hero {
+      min-height: 440px;
+    }
+    .tree-page-hero__inner {
+      padding-block: 60px;
+    }
+    .tree-page-hero__copy {
+      gap: 24px;
+      max-width: 60%;
+    }
+    .tree-page-hero__title {
+      font-size: var(--tree-page-hero-title-size, 34px);
+    }
+    .tree-page-hero__desc {
+      font-size: 16px;
+      line-height: 1.7;
+    }
+    .tree-page-hero__actions {
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .tree-page-hero__btn {
+      height: 54px;
+      font-size: 16px;
+    }
+    .tree-page-hero__btn--solid {
+      flex: 0 0 auto;
+      padding-inline: 28px;
+    }
+    .tree-page-hero__btn--outline {
+      flex: 0 0 auto;
+      padding-inline: 24px;
+    }
+    .tree-page-hero {
+      --tree-page-hero-split: 62%;
+    }
   }
 
   /* ===== Mobile (<=767px) — photo on top, copy stacked beneath ===== */
   @media (max-width: 1024px) {
-    .tree-page-hero--compact { min-height: 190px; }
+    .tree-page-hero--compact {
+      min-height: 190px;
+    }
   }
 
   @media (max-width: 767px) {
@@ -286,22 +337,50 @@ const telHref = phoneCta ? `tel:${phoneCta.number.replace(/[^\d+]/g, '')}` : und
       min-height: 0;
       padding-top: 278px; /* room for the photo band above the copy (Figma 123:6069) */
     }
-    .tree-page-hero__inner { padding-block: 50px 62px; }
-    .tree-page-hero--compact { padding-top: 180px; }
-    .tree-page-hero--compact .tree-page-hero__inner { padding-block: 28px 32px; }
-    .tree-page-hero--compact :global(.tree-page-hero__img) { height: 180px; }
-    .tree-page-hero__copy { max-width: none; gap: 20px; }
+    .tree-page-hero__inner {
+      padding-block: 50px 62px;
+    }
+    .tree-page-hero--compact {
+      padding-top: 180px;
+    }
+    .tree-page-hero--compact .tree-page-hero__inner {
+      padding-block: 28px 32px;
+    }
+    .tree-page-hero--compact :global(.tree-page-hero__img) {
+      height: 180px;
+    }
+    .tree-page-hero__copy {
+      max-width: none;
+      gap: 20px;
+    }
     /* Contact keeps its 36px heading at every width (Figma 123:37912). */
-    .tree-page-hero__title { font-size: var(--tree-page-hero-title-size, 30px); }
-    .tree-page-hero__desc { font-size: 15px; }
-    .tree-page-hero__actions { flex-direction: column; align-items: stretch; gap: 12px; }
-    .tree-page-hero__btn { width: 100%; height: 52px; }
+    .tree-page-hero__title {
+      font-size: var(--tree-page-hero-title-size, 30px);
+    }
+    .tree-page-hero__desc {
+      font-size: 15px;
+    }
+    .tree-page-hero__actions {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
+    .tree-page-hero__btn {
+      width: 100%;
+      height: 52px;
+    }
     .tree-page-hero__btn--solid,
-    .tree-page-hero__btn--outline { flex: 0 0 auto; }
+    .tree-page-hero__btn--outline {
+      flex: 0 0 auto;
+    }
     /* The mobile design drops the "or" and just stacks the two buttons
        (Figma 123:6060 has no separator node). */
-    .tree-page-hero__or { display: none; }
-    .tree-page-hero { --tree-page-hero-split: 0%; }
+    .tree-page-hero__or {
+      display: none;
+    }
+    .tree-page-hero {
+      --tree-page-hero-split: 0%;
+    }
     .tree-page-hero :global(.tree-page-hero__img) {
       top: 0;
       height: 278px;
