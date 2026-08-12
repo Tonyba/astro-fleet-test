@@ -1,0 +1,22 @@
+{
+  "seo": {
+    "title": "Blog — Erick's Tree Service",
+    "description": "Tree care tips, storm-season advice, permit guidance and news from Erick’s Tree Services across Connecticut.",
+    "keywords": [
+      "tree care blog",
+      "tree removal advice",
+      "Connecticut arborist"
+    ]
+  },
+  "hero": {
+    "title": "Our Blog",
+    "description": "Explore all the latest news, updates, tips and more.",
+    "image": "/src/assets/photos/contact-hero.jpg",
+    "imageAlt": "Close-up of a freshly cut tree trunk showing its growth rings",
+    "imageSplit": "56.98%"
+  },
+  "recentHeading": "Recent blog posts",
+  "allHeading": "All blog posts",
+  "emptyMessage": "No posts published yet — check back soon.",
+  "fallbackImage": "/src/assets/photos/blog-tree-power-lines.jpg"
+}

@@ -36,8 +36,12 @@ export interface Props {
   fields?: FieldDef[];
   submitText?: string;
   action?: string;
-  /** 'bordered' = hero card (border, 20px radius); 'plain' = inset card (12px radius, no border). */
-  variant?: 'bordered' | 'plain';
+  /**
+   * 'bordered' = hero card (border, 20px radius); 'plain' = inset card
+   * (12px radius, no border); 'inverse' = reversed out on a dark band with
+   * transparent, white-outlined fields — the contact hero (Figma 123:2090).
+   */
+  variant?: 'bordered' | 'plain' | 'inverse';
   /** Show the in-card title + subtitle (hidden when the heading lives beside the card). */
   showHeader?: boolean;
   /** Hidden field identifying which form submitted (for the CMS/endpoint). */
@@ -188,6 +192,38 @@ const autocompleteFor = (field: FieldDef): string | undefined =>
     padding: 20px;
     max-width: 550px;
   }
+  /* On-dark: no card at all, fields are transparent with a white hairline. */
+  /* No card here — the dark band shows through, so the root must drop the
+     surface fill the other variants rely on. */
+  .tree-quote--inverse { max-width: 711px; padding: 0; border: 0; background: transparent; }
+  .tree-quote--inverse .tree-quote__head { text-align: left; }
+  .tree-quote--inverse .tree-quote__title,
+  .tree-quote--inverse .tree-quote__subtitle,
+  .tree-quote--inverse .tree-quote__label,
+  .tree-quote--inverse .tree-quote__radio { color: var(--color-text-inverse, #fff); }
+  .tree-quote--inverse .tree-quote__input,
+  .tree-quote--inverse .tree-quote__select,
+  .tree-quote--inverse .tree-quote__textarea {
+    background: transparent;
+    border-color: var(--color-border-inverse, #fff);
+    color: var(--color-text-inverse, #fff);
+  }
+  .tree-quote--inverse .tree-quote__input::placeholder,
+  .tree-quote--inverse .tree-quote__textarea::placeholder {
+    color: var(--color-text-inverse, #fff);
+    opacity: 0.85;
+  }
+  /* Native option lists render on the UA's own surface — keep them readable. */
+  .tree-quote--inverse .tree-quote__select option { color: #0b171e; }
+  .tree-quote--inverse .tree-quote__chevron { color: var(--color-text-inverse, #fff); }
+  .tree-quote--inverse .tree-quote__radio-dot {
+    background: transparent;
+    border-color: var(--color-border-inverse, #fff);
+  }
+  .tree-quote--inverse .tree-quote__radio input:checked + .tree-quote__radio-dot {
+    border: 6px solid var(--color-text-inverse, #fff);
+  }
+  .tree-quote--inverse .tree-quote__status.is-success { color: var(--color-bg-accent, #c8f08f); }
   .tree-quote__form { display: flex; flex-direction: column; gap: 20px; }
 
   .tree-quote__head { display: flex; flex-direction: column; gap: 12px; text-align: center; }

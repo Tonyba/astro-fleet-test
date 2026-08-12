@@ -1,0 +1,66 @@
+{
+  "seo": {
+    "title": "Contact Us — Erick's Tree Service",
+    "description": "Get in touch with Erick’s Tree Services for a free quote. Call (203) 367-8219, email us, or send the form. 24/7 emergency tree service across Connecticut.",
+    "keywords": [
+      "contact",
+      "tree service quote",
+      "Connecticut tree service",
+      "emergency tree removal"
+    ]
+  },
+  "hero": {
+    "title": "Get in Touch with Us",
+    "description": "Have questions about our tree services? Need a free quote? We're here to help 24/7. Contact us today and let our expert team take care of your tree care needs.",
+    "image": "/src/assets/photos/contact-hero.jpg",
+    "imageAlt": "Close-up of a freshly cut tree trunk showing its growth rings",
+    "imageSplit": "56.98%",
+    "minHeight": "853px"
+  },
+  "details": {
+    "heading": "Find Us",
+    "rows": [
+      {
+        "icon": "/media/icons/phone-line.svg",
+        "label": "(203) 367-8219",
+        "href": "tel:+12033678219"
+      },
+      {
+        "icon": "/media/icons/email.svg",
+        "label": "veliz800@yahoo.com",
+        "href": "mailto:veliz800@yahoo.com"
+      },
+      {
+        "icon": "/media/icons/location.svg",
+        "label": "45 Guilford Dr, Bridgeport, CT 06606",
+        "href": "https://www.google.com/maps/search/?api=1&query=45+Guilford+Dr+Bridgeport+CT+06606"
+      }
+    ],
+    "emergency": {
+      "icon": "/media/icons/why-siren.png",
+      "title": "24/7 Emergency Service",
+      "text": "For urgent tree emergencies including storm damage and fallen trees, call us any time on",
+      "phone": "(203) 650-8519."
+    },
+    "followLabel": "Follow us",
+    "socials": [
+      {
+        "platform": "Facebook",
+        "url": "#",
+        "icon": "/media/_x30_1._facebook.svg"
+      },
+      {
+        "platform": "Instagram",
+        "url": "#",
+        "icon": "/media/icons/instagram.svg"
+      },
+      {
+        "platform": "TikTok",
+        "url": "#",
+        "icon": "/media/icons/tiktok.svg"
+      }
+    ],
+    "mapEmbedUrl": "https://www.google.com/maps?q=45+Guilford+Dr+Bridgeport+CT+06606&output=embed",
+    "mapTitle": "Erick’s Tree Services location — 45 Guilford Dr, Bridgeport, CT 06606"
+  }
+}

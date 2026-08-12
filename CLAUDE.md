@@ -38,7 +38,7 @@ Astro Fleet is a multi-site Astro monorepo for agencies and multi-brand companie
     * spacing
 - Use clean BEM methodology for class naming.
 - All elements inside a section that are repeatable (ex: accordion items, tabs, carousel items, etc.) must be editable from CMS too
-- All sections or ui elements used in other pages for new created pages or edited if they got any section that look the same they must be reused
+- All sections or ui elements used in other pages for new created pages or edited pages if they got any section that look the same they must be reused
 - Images must use proper <img> tags with descriptive alt attributes.
 - Follow modern CSS best practices. Navbar Requirements:
 * On desktop: standard horizontal navigation layout.

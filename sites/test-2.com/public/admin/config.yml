@@ -567,6 +567,231 @@ collections:
               - { label: Paragraphs, name: paragraphs, widget: list, field: { label: Paragraph, name: p, widget: text } }
 
   # -------------------------------------------------------------------------
+  # About Us page — /about/.
+  # -------------------------------------------------------------------------
+  - name: about_page
+    label: About Us Page
+    editor: { preview: false }
+    files:
+      - name: about
+        label: About Us
+        file: sites/test-2.com/src/content/pages/about.json
+        fields:
+          - label: SEO
+            name: seo
+            widget: object
+            fields:
+              - { label: Title, name: title, widget: string }
+              - { label: Description, name: description, widget: text }
+              - { label: Keywords, name: keywords, widget: list, field: { label: Keyword, name: keyword, widget: string } }
+          - label: Page Hero
+            name: hero
+            widget: object
+            fields:
+              - { label: Title, name: title, widget: string }
+              - { label: Description, name: description, widget: text, required: false }
+              - label: Primary Button
+                name: primaryCta
+                widget: object
+                fields:
+                  - { label: Label, name: label, widget: string }
+                  - { label: Link, name: href, widget: string }
+              - { label: Separator Word, name: separator, widget: string, required: false }
+              - label: Phone Button
+                name: phoneCta
+                widget: object
+                fields:
+                  - { label: Label, name: label, widget: string }
+                  - { label: Number, name: number, widget: string }
+              - { label: Photo, name: image, widget: image }
+              - { label: Photo Alt Text, name: imageAlt, widget: string }
+              - { label: Photo Start (desktop), name: imageSplit, widget: string, required: false }
+              - { label: Band Height, name: minHeight, widget: string, required: false, hint: 'e.g. 396px. Blank uses the standard 551px hero.' }
+          - label: Our Story
+            name: story
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string, required: false }
+              - { label: Heading, name: heading, widget: string }
+              - { label: Paragraphs, name: paragraphs, widget: list, field: { label: Paragraph, name: p, widget: text } }
+              - { label: Button Label, name: ctaLabel, widget: string, required: false }
+              - { label: Button Link, name: ctaHref, widget: string, required: false }
+              - { label: Photo, name: image, widget: image }
+              - { label: Photo Alt Text, name: imageAlt, widget: string }
+          - label: Stats Bar
+            name: stats
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Heading, name: heading, widget: string }
+              - label: Stats
+                name: items
+                widget: list
+                fields:
+                  - { label: Value, name: value, widget: string }
+                  - { label: Label, name: label, widget: string }
+          - label: Our Approach
+            name: approach
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string, required: false }
+              - { label: Heading, name: heading, widget: string }
+              - { label: Description, name: description, widget: text, required: false }
+              - label: Accreditation Badges
+                name: badges
+                widget: list
+                required: false
+                summary: '{{fields.alt}}'
+                fields:
+                  - { label: Badge, name: src, widget: image }
+                  - { label: Alt Text, name: alt, widget: string }
+              - { label: Button Label, name: ctaLabel, widget: string, required: false }
+              - { label: Button Link, name: ctaHref, widget: string, required: false }
+              - { label: Photo, name: image, widget: image }
+              - { label: Photo Alt Text, name: imageAlt, widget: string }
+          - label: Our Mission
+            name: mission
+            widget: object
+            fields:
+              - { label: Heading, name: heading, widget: string }
+              - { label: Description, name: description, widget: text, required: false }
+              - { label: Background Photo, name: backgroundImage, widget: image }
+              - { label: Background Alt Text, name: backgroundImageAlt, widget: string, required: false, hint: 'Leave blank if the photo is purely decorative.' }
+          - label: Core Values
+            name: coreValues
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string, required: false }
+              - { label: Heading, name: heading, widget: string, required: false }
+              - label: Values
+                name: items
+                widget: list
+                summary: '{{fields.title}}'
+                fields:
+                  - { label: Icon, name: icon, widget: image, media_folder: /sites/test-2.com/public/media/icons, public_folder: /media/icons }
+                  - { label: Title, name: title, widget: string }
+                  - { label: Description, name: description, widget: text }
+          - label: FAQ
+            name: faq
+            widget: object
+            fields:
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Title (bold line), name: titleLead, widget: string }
+              - { label: Title (second line), name: titleRest, widget: string }
+              - { label: Subtitle, name: subtitle, widget: text, required: false }
+              - label: Questions
+                name: items
+                widget: list
+                summary: '{{fields.question}}'
+                fields:
+                  - { label: Question, name: question, widget: string }
+                  - { label: Answer, name: answer, widget: text }
+          - label: Inspection Form Section
+            name: inspection
+            widget: object
+            fields:
+              - { label: Heading, name: heading, widget: string }
+              - { label: Lead, name: lead, widget: text }
+              - { label: Paragraphs, name: paragraphs, widget: list, field: { label: Paragraph, name: p, widget: text } }
+
+  # -------------------------------------------------------------------------
+  # Blog page — /blog/. Only the page chrome lives here; the posts themselves
+  # are the Blog Posts collection further down.
+  # -------------------------------------------------------------------------
+  - name: blog_page
+    label: Blog Page
+    editor: { preview: false }
+    files:
+      - name: blog
+        label: Blog
+        file: sites/test-2.com/src/content/pages/blog.json
+        fields:
+          - label: SEO
+            name: seo
+            widget: object
+            fields:
+              - { label: Title, name: title, widget: string }
+              - { label: Description, name: description, widget: text }
+              - { label: Keywords, name: keywords, widget: list, field: { label: Keyword, name: keyword, widget: string } }
+          - label: Page Hero
+            name: hero
+            widget: object
+            fields:
+              - { label: Title, name: title, widget: string }
+              - { label: Description, name: description, widget: text, required: false }
+              - { label: Photo, name: image, widget: image }
+              - { label: Photo Alt Text, name: imageAlt, widget: string }
+              - { label: Photo Start (desktop), name: imageSplit, widget: string, required: false }
+          - { label: Lead Row Heading, name: recentHeading, widget: string, hint: 'Above the first two posts.' }
+          - { label: Listing Heading, name: allHeading, widget: string, hint: 'Above the remaining posts.' }
+          - { label: Empty Message, name: emptyMessage, widget: string, hint: 'Shown when no posts are published.' }
+          - { label: Fallback Photo, name: fallbackImage, widget: image, hint: 'Used for posts with no featured image.' }
+
+  # -------------------------------------------------------------------------
+  # Contact page — /contact/. The quote form itself is the shared Forms model;
+  # only the hero copy, photo and the Find Us details live here.
+  # -------------------------------------------------------------------------
+  - name: contact_page
+    label: Contact Page
+    editor: { preview: false }
+    files:
+      - name: contact
+        label: Contact
+        file: sites/test-2.com/src/content/pages/contact.json
+        fields:
+          - label: SEO
+            name: seo
+            widget: object
+            fields:
+              - { label: Title, name: title, widget: string }
+              - { label: Description, name: description, widget: text }
+              - { label: Keywords, name: keywords, widget: list, field: { label: Keyword, name: keyword, widget: string } }
+          - label: Page Hero
+            name: hero
+            widget: object
+            hint: 'The quote form shown here is the shared "quote" form under Forms.'
+            fields:
+              - { label: Title, name: title, widget: string }
+              - { label: Description, name: description, widget: text, required: false }
+              - { label: Photo, name: image, widget: image }
+              - { label: Photo Alt Text, name: imageAlt, widget: string }
+              - { label: Photo Start (desktop), name: imageSplit, widget: string, required: false }
+              - { label: Band Height, name: minHeight, widget: string, required: false, hint: 'e.g. 853px.' }
+          - label: Find Us
+            name: details
+            widget: object
+            fields:
+              - { label: Heading, name: heading, widget: string }
+              - label: Contact Rows
+                name: rows
+                widget: list
+                summary: '{{fields.label}}'
+                fields:
+                  - { label: Icon, name: icon, widget: image, media_folder: /sites/test-2.com/public/media/icons, public_folder: /media/icons }
+                  - { label: Label, name: label, widget: string }
+                  - { label: Link, name: href, widget: string, required: false, hint: 'tel:, mailto: or a maps URL. Leave blank for plain text.' }
+              - label: Emergency Card
+                name: emergency
+                widget: object
+                fields:
+                  - { label: Icon, name: icon, widget: image, required: false, media_folder: /sites/test-2.com/public/media/icons, public_folder: /media/icons }
+                  - { label: Title, name: title, widget: string }
+                  - { label: Text, name: text, widget: text, hint: 'Shown before the highlighted phone number.' }
+                  - { label: Phone, name: phone, widget: string }
+                  - { label: Phone Link, name: phoneHref, widget: string, required: false }
+              - { label: Follow Label, name: followLabel, widget: string }
+              - label: Social Links
+                name: socials
+                widget: list
+                summary: '{{fields.platform}}'
+                fields:
+                  - { label: Platform, name: platform, widget: string }
+                  - { label: URL, name: url, widget: string }
+                  - { label: Icon, name: icon, widget: image, media_folder: /sites/test-2.com/public/media/icons, public_folder: /media/icons }
+              - { label: Map Embed URL, name: mapEmbedUrl, widget: string, required: false, hint: 'Google Maps embed URL (Share → Embed a map → copy the src).' }
+              - { label: Map Title, name: mapTitle, widget: string, required: false, hint: 'Describes the map for screen readers.' }
+
+  # -------------------------------------------------------------------------
   # Projects page — /projects/. A masonry photo gallery plus the shared FAQ and
   # inspection-form sections.
   # -------------------------------------------------------------------------

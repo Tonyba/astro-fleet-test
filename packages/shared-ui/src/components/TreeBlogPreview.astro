@@ -22,6 +22,17 @@ export interface TreeBlogPost {
 }
 
 export interface Props {
+  /** Unique id for the heading — needed when the section appears twice. */
+  id?: string;
+  /**
+   * 'grid' is the homepage 3-up. 'featured' is the blog page's lead row:
+   * one wide card with a 952x570 photo beside a standard one (Figma 123:1664).
+   */
+  layout?: 'grid' | 'featured';
+  /** Header alignment — centred on the homepage, flush left on the blog page. */
+  align?: 'center' | 'left';
+  /** The "View all" button — off on the blog page itself. */
+  showViewAll?: boolean;
   eyebrow?: string;
   title?: string;
   readMoreLabel?: string;
@@ -42,6 +53,10 @@ const defaultPost: TreeBlogPost = {
 };
 
 const {
+  id = 'tree-blog-title',
+  layout = 'grid',
+  align = 'center',
+  showViewAll = true,
   eyebrow = 'Recent Articles',
   title = 'our Blog',
   readMoreLabel = 'Keep Reading',
@@ -51,14 +66,14 @@ const {
 } = Astro.props;
 ---
 
-<section class="tree-blog" aria-labelledby="tree-blog-title">
+<section class:list={['tree-blog', `tree-blog--${align}`]} aria-labelledby={id}>
   <div class="tree-blog__inner tree-container">
     <header class="tree-blog__header">
-      <p class="tree-blog__eyebrow">{eyebrow}</p>
-      <h2 class="tree-blog__title" id="tree-blog-title">{title}</h2>
+      {eyebrow && <p class="tree-blog__eyebrow">{eyebrow}</p>}
+      <h2 class="tree-blog__title" id={id}>{title}</h2>
     </header>
 
-    <ul class="tree-blog__grid">
+    <ul class:list={['tree-blog__grid', `tree-blog__grid--${layout}`]}>
       {posts.map((post) => (
         <li class="tree-blog__card">
           <figure class="tree-blog__media">
@@ -106,7 +121,7 @@ const {
       ))}
     </ul>
 
-    <a href={viewAllHref} class="tree-blog__view-all">{viewAllLabel}</a>
+    {showViewAll && <a href={viewAllHref} class="tree-blog__view-all">{viewAllLabel}</a>}
   </div>
 </section>
 
@@ -155,6 +170,16 @@ const {
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
   }
+  /* Blog page lead row: a wide card beside a standard one (Figma 123:1664). */
+  .tree-blog__grid--featured { grid-template-columns: 952fr 476fr; gap: 22px; }
+  .tree-blog__grid--featured .tree-blog__card:first-child .tree-blog__media { aspect-ratio: 952 / 570; }
+  .tree-blog__grid--featured .tree-blog__card:first-child :global(.tree-blog__img) {
+    width: 100%; height: 100%; object-fit: cover;
+  }
+
+  /* Blog page: heading flush left, 30px to the cards (Figma 123:1662). */
+  .tree-blog--left .tree-blog__inner { align-items: stretch; gap: 30px; }
+  .tree-blog--left .tree-blog__header { align-items: flex-start; text-align: left; }
   .tree-blog__card {
     display: flex;
     flex-direction: column;

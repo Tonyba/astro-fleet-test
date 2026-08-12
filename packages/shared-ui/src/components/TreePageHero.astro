@@ -37,6 +37,14 @@ export interface Props {
    * 123:4218). The full-height variant is 551px with copy and CTAs.
    */
   compact?: boolean;
+  /** Override the band height, e.g. '396px' for the About Us hero (123:1395). */
+  minHeight?: string;
+  /** Title size — 36px on the contact hero (123:2087), 42px everywhere else. */
+  titleSize?: string;
+  /** Title casing — the contact hero sets its heading uppercase. */
+  titleTransform?: 'none' | 'uppercase';
+  /** Space between title, copy and actions. 12px on the blog hero (123:2044). */
+  copyGap?: string;
 }
 
 const {
@@ -49,6 +57,10 @@ const {
   imageAlt,
   imageSplit = '53.75%',
   compact = false,
+  minHeight,
+  titleSize,
+  titleTransform,
+  copyGap,
 } = Astro.props;
 
 const telHref = phoneCta ? `tel:${phoneCta.number.replace(/[^\d+]/g, '')}` : undefined;
@@ -56,7 +68,13 @@ const telHref = phoneCta ? `tel:${phoneCta.number.replace(/[^\d+]/g, '')}` : und
 
 <section
   class:list={['tree-page-hero', { 'tree-page-hero--compact': compact }]}
-  style={`--tree-page-hero-split-desktop: ${imageSplit};`}
+  style={[
+    `--tree-page-hero-split-desktop: ${imageSplit};`,
+    minHeight ? `--tree-page-hero-height: ${minHeight};` : '',
+    titleSize ? `--tree-page-hero-title-size: ${titleSize};` : '',
+    titleTransform ? `--tree-page-hero-title-transform: ${titleTransform};` : '',
+    copyGap ? `--tree-page-hero-copy-gap: ${copyGap};` : '',
+  ].join('')}
 >
   <div class="tree-container tree-page-hero__inner">
     <div class="tree-page-hero__copy">
@@ -88,6 +106,10 @@ const telHref = phoneCta ? `tel:${phoneCta.number.replace(/[^\d+]/g, '')}` : und
           )}
         </div>
       )}
+
+      {/* Interior pages can drop a block into the copy column — the contact
+          hero puts its quote form here (Figma 123:2085). */}
+      <slot />
     </div>
   </div>
 
@@ -110,7 +132,7 @@ const telHref = phoneCta ? `tel:${phoneCta.number.replace(/[^\d+]/g, '')}` : und
   .tree-page-hero {
     position: relative;
     isolation: isolate;
-    min-height: 551px;
+    min-height: var(--tree-page-hero-height, 551px);
     display: flex;
     align-items: center;
     background: var(--color-bg-brand-strong, #1e372e);
@@ -145,12 +167,13 @@ const telHref = phoneCta ? `tel:${phoneCta.number.replace(/[^\d+]/g, '')}` : und
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 30px;
+    gap: var(--tree-page-hero-copy-gap, 30px);
     max-width: 729px;
   }
 
   .tree-page-hero__title {
-    font-size: 42px;
+    font-size: var(--tree-page-hero-title-size, 42px);
+    text-transform: var(--tree-page-hero-title-transform, none);
     font-weight: 500;
     line-height: 1.2;
     color: var(--color-text-inverse, #fff);
@@ -243,7 +266,7 @@ const telHref = phoneCta ? `tel:${phoneCta.number.replace(/[^\d+]/g, '')}` : und
     .tree-page-hero { min-height: 440px; }
     .tree-page-hero__inner { padding-block: 60px; }
     .tree-page-hero__copy { gap: 24px; max-width: 60%; }
-    .tree-page-hero__title { font-size: 34px; }
+    .tree-page-hero__title { font-size: var(--tree-page-hero-title-size, 34px); }
     .tree-page-hero__desc { font-size: 16px; line-height: 1.7; }
     .tree-page-hero__actions { flex-wrap: wrap; gap: 12px; }
     .tree-page-hero__btn { height: 54px; font-size: 16px; }
@@ -268,7 +291,8 @@ const telHref = phoneCta ? `tel:${phoneCta.number.replace(/[^\d+]/g, '')}` : und
     .tree-page-hero--compact .tree-page-hero__inner { padding-block: 28px 32px; }
     .tree-page-hero--compact :global(.tree-page-hero__img) { height: 180px; }
     .tree-page-hero__copy { max-width: none; gap: 20px; }
-    .tree-page-hero__title { font-size: 30px; }
+    /* Contact keeps its 36px heading at every width (Figma 123:37912). */
+    .tree-page-hero__title { font-size: var(--tree-page-hero-title-size, 30px); }
     .tree-page-hero__desc { font-size: 15px; }
     .tree-page-hero__actions { flex-direction: column; align-items: stretch; gap: 12px; }
     .tree-page-hero__btn { width: 100%; height: 52px; }

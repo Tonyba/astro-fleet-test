@@ -16,6 +16,12 @@ export interface Props {
   eyebrow?: string;
   heading?: string;
   stats?: TreeStat[];
+  /**
+   * The pill hangs 80px into whatever follows — that overlap is the homepage
+   * composition (Figma 123:263). Pages that stand it on its own, like About Us
+   * (123:1156), pass `overlap={false}` so the next section keeps its own space.
+   */
+  overlap?: boolean;
 }
 
 const {
@@ -27,10 +33,11 @@ const {
     { value: '24/7', label: 'Emergency Services' },
     { value: '100%', label: 'Commitment to Safety' },
   ],
+  overlap = true,
 } = Astro.props;
 ---
 
-<section class="tree-stats">
+<section class:list={['tree-stats', { 'tree-stats--flush': !overlap }]}>
   <div class="tree-container">
     <div class="tree-stats__bar">
       <div class="tree-stats__intro">
@@ -58,6 +65,10 @@ const {
     background: transparent;
     padding: 40px 0 0;
     margin-bottom: -80px;
+  }
+  /* Standalone: no overlap, so the following section's own padding applies. */
+  .tree-stats--flush {
+    margin-bottom: 0;
   }
 
   .tree-stats__bar {

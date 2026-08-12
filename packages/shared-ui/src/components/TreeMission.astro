@@ -1,0 +1,167 @@
+---
+/**
+ * TreeMission.astro
+ * -----------------
+ * "Our mission" band — Figma nodes 123:1303 (copy) on 123:1302 (background).
+ * A full-bleed photograph sits to the right; a left-to-right wash of #d0e0f9
+ * (solid to 37.76%, transparent by 53.49%) keeps the copy legible over it.
+ * <=767px the wash goes vertical so the text still reads on the narrow band.
+ */
+import TreePicture from "./TreePicture.astro";
+
+export interface Props {
+  heading: string;
+  description?: string;
+  backgroundImage: string;
+  backgroundImageAlt?: string;
+}
+
+const {
+  heading,
+  description,
+  backgroundImage,
+  backgroundImageAlt = "",
+} = Astro.props;
+---
+
+<section class="tree-mission">
+  <TreePicture
+    class="tree-mission__bg"
+    src={backgroundImage}
+    alt={backgroundImageAlt}
+    ariaHidden={!backgroundImageAlt}
+    width={1520}
+    height={437}
+    variant="hero"
+    loading="lazy"
+    decoding="async"
+  />
+  <div class="tree-mission__wash" aria-hidden="true"></div>
+
+  <div class="tree-container tree-mission__inner">
+    <div class="tree-mission__copy">
+      <h2 class="tree-mission__heading">{heading}</h2>
+      {description && <p class="tree-mission__desc">{description}</p>}
+    </div>
+  </div>
+</section>
+
+<style>
+  .tree-mission {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    min-height: 437px;
+    display: flex;
+    align-items: center;
+    background: #d0e0f9;
+  }
+
+  /* Photo occupies the right ~79% of the band (Figma: left 20.73%, w 79.27%). */
+  .tree-mission > :global(picture) {
+    display: contents;
+  }
+  .tree-mission :global(.tree-mission__bg) {
+    position: absolute;
+    z-index: -2;
+    top: 0;
+    left: 20.73%;
+    width: 79.27%;
+    height: 100%;
+    max-width: none;
+    object-fit: cover;
+  }
+
+  .tree-mission__wash {
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    background: linear-gradient(
+      to right,
+      #d0e0f9 37.76%,
+      rgba(208, 224, 249, 0) 53.49%
+    );
+  }
+
+  .tree-mission__inner {
+    position: relative;
+    z-index: 1;
+    padding-block: 97px;
+  }
+
+  .tree-mission__copy {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 667px;
+    color: var(--color-bg-brand-strong, #1e372e);
+  }
+
+  .tree-mission__heading {
+    font-size: 42px;
+    font-weight: 500;
+    line-height: 1.248;
+    text-transform: capitalize;
+  }
+
+  .tree-mission__desc {
+    font-size: 18px;
+    line-height: 1.66;
+  }
+
+  @media (max-width: 1024px) {
+    .tree-mission {
+      min-height: 0;
+    }
+    .tree-mission__inner {
+      padding-block: 64px;
+    }
+    .tree-mission__heading {
+      font-size: 34px;
+    }
+    .tree-mission__wash {
+      background: linear-gradient(
+        to right,
+        #d0e0f9 50%,
+        rgba(208, 224, 249, 0.55) 100%
+      );
+    }
+  }
+
+  /* Mobile is a different composition, not a narrowed desktop
+     (Figma 123:31725 + 123:31726): a near-flat blue gradient fills the band,
+     the photo drops into the lower ~59% and bleeds past both edges, and the
+     copy is centred over the open sky at the top. No horizontal wash here —
+     the gradient IS the background. */
+  @media (max-width: 767px) {
+    .tree-mission {
+      min-height: 554px;
+      align-items: flex-start;
+      background: linear-gradient(to bottom, #c1d7f6, #b7d0f6);
+    }
+    .tree-mission__wash {
+      display: none;
+    }
+    .tree-mission :global(.tree-mission__bg) {
+      top: 46.71%;
+      left: -25.21%;
+      width: 126%;
+      height: 59.34%;
+    }
+    .tree-mission__inner {
+      padding-block: 65px 0;
+    }
+    .tree-mission__copy {
+      max-width: none;
+      align-items: center;
+      text-align: center;
+      gap: 12px;
+    }
+    .tree-mission__heading {
+      font-size: 30px;
+    }
+    .tree-mission__desc {
+      font-size: 14px;
+    }
+  }
+</style>

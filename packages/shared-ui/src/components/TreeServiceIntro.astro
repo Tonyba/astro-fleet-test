@@ -10,6 +10,8 @@
 import TreePicture from './TreePicture.astro';
 
 export interface Props {
+  /** Small label above the heading (the About Us "Our Story" block, 123:1146). */
+  eyebrow?: string;
   heading: string;
   paragraphs?: string[];
   ctaLabel?: string;
@@ -18,13 +20,16 @@ export interface Props {
   imageAlt: string;
 }
 
-const { heading, paragraphs = [], ctaLabel, ctaHref = '#free-inspection', image, imageAlt } = Astro.props;
+const { eyebrow, heading, paragraphs = [], ctaLabel, ctaHref = '#free-inspection', image, imageAlt } = Astro.props;
 ---
 
 <section class="tree-service-intro">
   <div class="tree-container tree-service-intro__inner">
     <div class="tree-service-intro__copy">
-      <h2 class="tree-service-intro__heading">{heading}</h2>
+      <div class="tree-service-intro__head">
+        {eyebrow && <p class="tree-service-intro__eyebrow">{eyebrow}</p>}
+        <h2 class="tree-service-intro__heading">{heading}</h2>
+      </div>
       {paragraphs.length > 0 && (
         <div class="tree-service-intro__prose">
           {paragraphs.map((p) => <p>{p}</p>)}
@@ -66,6 +71,20 @@ const { heading, paragraphs = [], ctaLabel, ctaHref = '#free-inspection', image,
     gap: 40px;
   }
 
+  .tree-service-intro__head {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .tree-service-intro__eyebrow {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.248;
+    text-transform: uppercase;
+    color: var(--color-text-primary, #013b2d);
+  }
+
   .tree-service-intro__heading {
     font-size: 42px;
     font-weight: 500;
@@ -87,7 +106,7 @@ const { heading, paragraphs = [], ctaLabel, ctaHref = '#free-inspection', image,
   }
 
   /* The heading and prose sit in one 12px-gap group, the CTA 40px below. */
-  .tree-service-intro__copy > .tree-service-intro__heading + .tree-service-intro__prose {
+  .tree-service-intro__copy > .tree-service-intro__head + .tree-service-intro__prose {
     margin-top: -28px;
   }
 
@@ -128,7 +147,7 @@ const { heading, paragraphs = [], ctaLabel, ctaHref = '#free-inspection', image,
     .tree-service-intro__inner { grid-template-columns: 1fr; gap: 36px; }
     .tree-service-intro__copy { gap: 28px; }
     .tree-service-intro__heading { font-size: 34px; }
-    .tree-service-intro__copy > .tree-service-intro__heading + .tree-service-intro__prose { margin-top: -16px; }
+    .tree-service-intro__copy > .tree-service-intro__head + .tree-service-intro__prose { margin-top: -16px; }
     .tree-service-intro__media { min-height: 0; height: 360px; }
   }
 

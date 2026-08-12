@@ -1,0 +1,140 @@
+---
+/**
+ * TreeCoreValues.astro
+ * --------------------
+ * "Core Values" — Figma node 123:1170. Centred eyebrow + heading, then a row of
+ * four 342px cards, each an accent 74px icon square above a title and blurb.
+ * <=1024px the row goes 2-up, <=767px 1-up.
+ */
+export interface CoreValue {
+  icon: string;
+  title: string;
+  description: string;
+}
+
+export interface Props {
+  eyebrow?: string;
+  heading?: string;
+  values?: CoreValue[];
+}
+
+const { eyebrow, heading, values = [] } = Astro.props;
+---
+
+<section class="tree-values">
+  <div class="tree-container tree-values__inner">
+    {(eyebrow || heading) && (
+      <header class="tree-values__head">
+        {eyebrow && <p class="tree-values__eyebrow">{eyebrow}</p>}
+        {heading && <h2 class="tree-values__heading">{heading}</h2>}
+      </header>
+    )}
+
+    <ul class="tree-values__grid">
+      {values.map((v) => (
+        <li class="tree-values__card">
+          <span class="tree-values__icon">
+            <img src={v.icon} alt="" width="54" height="54" loading="lazy" decoding="async" />
+          </span>
+          <div class="tree-values__body">
+            <h3 class="tree-values__title">{v.title}</h3>
+            <p class="tree-values__desc">{v.description}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .tree-values { padding-block: 76px; background: var(--color-bg-surface, #fff); }
+
+  .tree-values__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 60px;
+  }
+
+  .tree-values__head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+    color: var(--color-text-primary, #013b2d);
+  }
+  .tree-values__eyebrow {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.248;
+    text-transform: uppercase;
+  }
+  .tree-values__heading {
+    font-size: 42px;
+    font-weight: 500;
+    line-height: 1.248;
+    text-transform: capitalize;
+  }
+
+  .tree-values__grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 28px;
+    align-items: start;
+  }
+
+  .tree-values__card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 30px;
+  }
+
+  .tree-values__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 74px;
+    height: 74px;
+    border-radius: 6px;
+    background: var(--color-bg-accent, #c8f08f);
+  }
+  .tree-values__icon img { width: 53.783px; height: 53.783px; object-fit: contain; }
+
+  .tree-values__body { display: flex; flex-direction: column; gap: 12px; }
+  .tree-values__title {
+    font-size: 21px;
+    font-weight: 600;
+    line-height: 1.248;
+    color: var(--color-text-primary, #013b2d);
+  }
+  .tree-values__desc {
+    font-size: 18px;
+    line-height: 1.66;
+    color: var(--color-text-secondary, #373434);
+  }
+
+  @media (max-width: 1024px) {
+    .tree-values { padding-block: 56px; }
+    .tree-values__inner { gap: 40px; }
+    .tree-values__heading { font-size: 34px; }
+    .tree-values__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 28px; }
+  }
+
+  @media (max-width: 767px) {
+    .tree-values { padding-block: 40px; }
+    .tree-values__inner { gap: 28px; }
+    .tree-values__heading { font-size: 26px; }
+    .tree-values__grid { grid-template-columns: 1fr; gap: 28px; }
+    .tree-values__card { gap: 20px; }
+    .tree-values__icon { width: 60px; height: 60px; }
+    .tree-values__icon img { width: 44px; height: 44px; }
+    .tree-values__title { font-size: 19px; }
+    .tree-values__desc { font-size: 15px; }
+  }
+</style>
