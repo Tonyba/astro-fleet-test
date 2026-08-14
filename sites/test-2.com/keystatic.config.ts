@@ -59,6 +59,31 @@ const photo = ({ label, description, required = false }: ImageOpts) =>
     validation: { isRequired: required },
   });
 
+/**
+ * Photograph stored in a folder of its own, e.g. src/assets/photos/about/.
+ *
+ * Keystatic derives an image's path from the FIELD path alone — the singleton
+ * it belongs to is not part of it. Two singletons that share a field shape
+ * therefore resolve to the SAME file: every page built from `pageHero` wanted
+ * `photos/hero/image.jpg`, and all three `projectsCarousel` pages wanted
+ * `photos/projects/items/0/image.jpg`. Saving one page then relocated that file
+ * and left the others pointing at a path that no longer existed, which GitHub
+ * rejects outright ("A path was requested for deletion which does not exist").
+ *
+ * Passing the page's own scope into the shared helpers keeps each page's photos
+ * apart, so saving one can never disturb another.
+ */
+const scopedPhoto =
+  (scope: string) =>
+  ({ label, description, required = false }: ImageOpts) =>
+    fields.image({
+      label,
+      description,
+      directory: `src/assets/photos/${scope}`,
+      publicPath: `/src/assets/photos/${scope}/`,
+      validation: { isRequired: required },
+    });
+
 /** Trust / accreditation badge. */
 const badge = ({ label, description, required = false }: ImageOpts) =>
   fields.image({
@@ -192,14 +217,15 @@ const emergencyBanner = fields.object(
   { label: 'Emergency Banner' }
 );
 
-const projectsCarousel = fields.object(
+const projectsCarousel = (scope: string) =>
+  fields.object(
   {
     eyebrow: str('Eyebrow'),
     heading: str('Heading'),
     description: textArea('Description'),
     items: fields.array(
       fields.object({
-        image: photo({ label: 'Photo', required: true }),
+        image: scopedPhoto(scope)({ label: 'Photo', required: true }),
         alt: str('Alt Text'),
       }),
       { label: 'Project Photos', itemLabel: (props) => props.fields.alt.value || 'Photo' }
@@ -243,12 +269,12 @@ const statsList = fields.array(
 );
 
 /** The split hero band used by every interior page. */
-const pageHero = (opts: { imageSplit?: boolean; minHeight?: boolean } = {}) =>
+const pageHero = (scope: string, opts: { imageSplit?: boolean; minHeight?: boolean } = {}) =>
   fields.object(
     {
       title: str('Title'),
       description: textAreaOpt('Description'),
-      image: photo({ label: 'Photo', required: true }),
+      image: scopedPhoto(scope)({ label: 'Photo', required: true }),
       imageAlt: str('Photo Alt Text'),
       ...(opts.imageSplit
         ? {
@@ -696,8 +722,8 @@ export default config({
               },
               { label: 'Phone' }
             ),
-            backgroundImage: photo({ label: 'Background Image (desktop)', required: true }),
-            backgroundImageMobile: photo({ label: 'Background Image (mobile/tablet)', required: true }),
+            backgroundImage: scopedPhoto('homepage')({ label: 'Background Image (desktop)', required: true }),
+            backgroundImageMobile: scopedPhoto('homepage')({ label: 'Background Image (mobile/tablet)', required: true }),
             badges: fields.array(
               fields.object({
                 src: badge({ label: 'Image', required: true }),
@@ -741,7 +767,7 @@ export default config({
             secondaryCta: ctaFields('Secondary Button'),
             photo: fields.object(
               {
-                src: photo({ label: 'Photo', required: true }),
+                src: scopedPhoto('homepage')({ label: 'Photo', required: true }),
                 alt: str('Photo Alt Text'),
                 width: fields.integer({ label: 'Width', defaultValue: 616, validation: { isRequired: true } }),
                 height: fields.integer({ label: 'Height', defaultValue: 566, validation: { isRequired: true } }),
@@ -752,7 +778,7 @@ export default config({
               {
                 name: str('Reviewer Name'),
                 quote: textArea('Quote'),
-                avatarSrc: photo({ label: 'Reviewer Photo', required: true }),
+                avatarSrc: scopedPhoto('homepage')({ label: 'Reviewer Photo', required: true }),
                 avatarAlt: str('Reviewer Photo Alt Text'),
                 starsSrc: icon({ label: 'Stars Image', required: true }),
                 verifiedSrc: icon({ label: 'Verified Badge', required: true }),
@@ -773,7 +799,7 @@ export default config({
             secondaryCta: ctaFields('Secondary Button'),
             photo: fields.object(
               {
-                src: photo({ label: 'Photo', required: true }),
+                src: scopedPhoto('homepage')({ label: 'Photo', required: true }),
                 alt: str('Photo Alt Text'),
               },
               { label: 'Photo' }
@@ -820,7 +846,7 @@ export default config({
           },
           { label: 'CTA Banner' }
         ),
-        projects: projectsCarousel,
+        projects: projectsCarousel('homepage'),
         emergency: emergencyBanner,
         process: fields.object(
           {
@@ -937,7 +963,7 @@ export default config({
               },
               { label: 'Phone Button' }
             ),
-            image: photo({ label: 'Photo', required: true }),
+            image: scopedPhoto('services-commercial')({ label: 'Photo', required: true }),
             imageAlt: str('Photo Alt Text'),
           },
           { label: 'Page Hero' }
@@ -948,7 +974,7 @@ export default config({
           description: 'Cards come from the Single Service collection.',
         }),
         emergency: emergencyBanner,
-        projects: projectsCarousel,
+        projects: projectsCarousel('services-commercial'),
         faq: faqSection,
         inspection: inspectionSection,
       },
@@ -987,7 +1013,7 @@ export default config({
               },
               { label: 'Phone Button' }
             ),
-            image: photo({ label: 'Photo', required: true }),
+            image: scopedPhoto('services-residential')({ label: 'Photo', required: true }),
             imageAlt: str('Photo Alt Text'),
             imageSplit: strOpt(
               'Photo Start (desktop)',
@@ -1006,7 +1032,7 @@ export default config({
           description: 'Cards come from the Single Service collection.',
         }),
         emergency: emergencyBanner,
-        projects: projectsCarousel,
+        projects: projectsCarousel('services-residential'),
         faq: faqSection,
         inspection: inspectionSection,
       },
@@ -1040,7 +1066,7 @@ export default config({
               },
               { label: 'Phone Button' }
             ),
-            image: photo({ label: 'Photo', required: true }),
+            image: scopedPhoto('about')({ label: 'Photo', required: true }),
             imageAlt: str('Photo Alt Text'),
             imageSplit: strOpt('Photo Start (desktop)'),
             minHeight: strOpt('Band Height', 'e.g. 396px. Blank uses the standard 551px hero.'),
@@ -1054,7 +1080,7 @@ export default config({
             paragraphs: paragraphs(),
             ctaLabel: strOpt('Button Label'),
             ctaHref: strOpt('Button Link'),
-            image: photo({ label: 'Photo', required: true }),
+            image: scopedPhoto('about')({ label: 'Photo', required: true }),
             imageAlt: str('Photo Alt Text'),
           },
           { label: 'Our Story' }
@@ -1087,7 +1113,7 @@ export default config({
             ),
             ctaLabel: strOpt('Button Label'),
             ctaHref: strOpt('Button Link'),
-            image: photo({ label: 'Photo', required: true }),
+            image: scopedPhoto('about')({ label: 'Photo', required: true }),
             imageAlt: str('Photo Alt Text'),
           },
           { label: 'Our Approach' }
@@ -1096,7 +1122,7 @@ export default config({
           {
             heading: str('Heading'),
             description: textAreaOpt('Description'),
-            backgroundImage: photo({ label: 'Background Photo', required: true }),
+            backgroundImage: scopedPhoto('about')({ label: 'Background Photo', required: true }),
             backgroundImageAlt: strOpt(
               'Background Alt Text',
               'Leave blank if the photo is purely decorative.'
@@ -1134,11 +1160,11 @@ export default config({
       format: { data: 'json' },
       schema: {
         seo,
-        hero: pageHero({ imageSplit: true }),
+        hero: pageHero('blog', { imageSplit: true }),
         recentHeading: str('Lead Row Heading', 'Above the first two posts.'),
         allHeading: str('Listing Heading', 'Above the remaining posts.'),
         emptyMessage: str('Empty Message', 'Shown when no posts are published.'),
-        fallbackImage: photo({
+        fallbackImage: scopedPhoto('blog')({
           label: 'Fallback Photo',
           description: 'Used for posts with no featured image.',
           required: true,
@@ -1156,7 +1182,7 @@ export default config({
       format: { data: 'json' },
       schema: {
         seo,
-        hero: pageHero({ imageSplit: true, minHeight: true }),
+        hero: pageHero('contact', { imageSplit: true, minHeight: true }),
         details: fields.object(
           {
             heading: str('Heading'),
@@ -1211,7 +1237,7 @@ export default config({
         hero: fields.object(
           {
             title: str('Title'),
-            image: photo({ label: 'Photo', required: true }),
+            image: scopedPhoto('projects')({ label: 'Photo', required: true }),
             imageAlt: str('Photo Alt Text'),
             imageSplit: strOpt(
               'Photo Start (desktop)',
@@ -1231,7 +1257,7 @@ export default config({
             loadMoreLabel: str('Load More Button Label'),
             items: fields.array(
               fields.object({
-                image: photo({ label: 'Photo', required: true }),
+                image: scopedPhoto('projects')({ label: 'Photo', required: true }),
                 alt: str('Alt Text'),
               }),
               { label: 'Photos', itemLabel: (props) => props.fields.alt.value || 'Photo' }
@@ -1274,7 +1300,7 @@ export default config({
         hub: fields.object(
           {
             seo,
-            hero: pageHero({ imageSplit: true }),
+            hero: pageHero('service-areas', { imageSplit: true }),
             eyebrow: str('Section Eyebrow'),
             heading: str('Section Heading', 'Tokens: {state} {county} {name}.'),
             description: textArea('Section Lead'),
@@ -1308,11 +1334,11 @@ export default config({
         cityDefaults: fields.object(
           {
             heroDescription: textAreaOpt('Hero Description', 'Used when a town leaves its hero blank.'),
-            heroImage: photo({ label: 'Hero Photo' }),
+            heroImage: scopedPhoto('service-areas')({ label: 'Hero Photo' }),
             heroImageAlt: strOpt('Hero Photo Alt Text'),
-            introImage: photo({ label: 'Intro Photo' }),
+            introImage: scopedPhoto('service-areas')({ label: 'Intro Photo' }),
             introImageAlt: strOpt('Intro Photo Alt Text'),
-            permitImage: photo({ label: 'Permits & Pricing Photo' }),
+            permitImage: scopedPhoto('service-areas')({ label: 'Permits & Pricing Photo' }),
             permitImageAlt: strOpt('Permits & Pricing Photo Alt Text'),
             ctaLabel: str('Button Label'),
             ctaHref: str('Button Link'),
@@ -1337,7 +1363,7 @@ export default config({
       format: { data: 'json' },
       schema: {
         seo,
-        hero: pageHero({ imageSplit: true }),
+        hero: pageHero('not-found', { imageSplit: true }),
         body: fields.object(
           {
             code: str('Code', 'The oversized number above the heading.'),
