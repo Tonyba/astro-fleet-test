@@ -24,7 +24,7 @@
       "label": "Call (203) 367-8219",
       "number": "(203) 367-8219"
     },
-    "image": "/src/assets/photos/services-hero.jpg",
+    "image": "/src/assets/photos/services-commercial/services-hero.jpg",
     "imageAlt": "Log loader stacking freshly cut timber at a commercial tree removal site"
   },
   "stats": [
@@ -60,23 +60,23 @@
     "description": "Explore our recent tree care projects across Connecticut, including tree removals, trimming, stump grinding, and emergency storm cleanup.",
     "items": [
       {
-        "image": "/src/assets/photos/project-1.jpg",
+        "image": "/src/assets/photos/services-commercial/project-1.jpg",
         "alt": "Tall tree removal in progress"
       },
       {
-        "image": "/src/assets/photos/project-2.jpg",
+        "image": "/src/assets/photos/services-commercial/project-2.jpg",
         "alt": "Storm-damaged tree cleanup"
       },
       {
-        "image": "/src/assets/photos/project-3.jpg",
+        "image": "/src/assets/photos/services-commercial/project-3.jpg",
         "alt": "Crane-assisted tree removal"
       },
       {
-        "image": "/src/assets/photos/project-4.jpg",
+        "image": "/src/assets/photos/services-commercial/project-4.jpg",
         "alt": "Completed tree care project"
       },
       {
-        "image": "/src/assets/photos/project-5.jpg",
+        "image": "/src/assets/photos/services-commercial/project-5.jpg",
         "alt": "Professional tree service work"
       }
     ]

@@ -21,7 +21,7 @@
       "label": "Call (203) 367-8219",
       "number": "(203) 367-8219"
     },
-    "image": "/src/assets/photos/hero/image.jpg",
+    "image": "/src/assets/photos/about/hero-image.jpg",
     "imageAlt": "Erick’s Tree Services crew on site",
     "imageSplit": "56.46%",
     "minHeight": "396px"
@@ -37,7 +37,7 @@
     ],
     "ctaLabel": "Get free quote now",
     "ctaHref": "#free-inspection",
-    "image": "/src/assets/photos/story/image.jpg",
+    "image": "/src/assets/photos/about/story-image.jpg",
     "imageAlt": "Arborist working on a mature tree"
   },
   "stats": {
@@ -82,13 +82,13 @@
     ],
     "ctaLabel": "Get free quote now",
     "ctaHref": "#free-inspection",
-    "image": "/src/assets/photos/approach/image.jpg",
+    "image": "/src/assets/photos/about/approach-image.jpg",
     "imageAlt": "Crew operating tree care equipment on site"
   },
   "mission": {
     "heading": "Our mission",
     "description": "Our mission is to bring beauty, innovation, and sustainability to your outdoor spaces. We are dedicated to providing top-notch tree removal, tree installation, tree trimming, landscape lighting maintenance, landscape lighting design, and holiday lighting services. With a focus on quality workmanship and customer satisfaction, we strive to exceed your expectations and create stunning landscapes that inspire and impress.",
-    "backgroundImage": "/src/assets/photos/mission/backgroundImage.jpg"
+    "backgroundImage": "/src/assets/photos/about/mission-backgroundImage.jpg"
   },
   "coreValues": {
     "eyebrow": "Core Values",
