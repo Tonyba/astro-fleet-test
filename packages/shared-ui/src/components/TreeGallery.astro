@@ -1,0 +1,164 @@
+---
+/**
+ * TreeGallery.astro
+ * -----------------
+ * Masonry photo gallery for the projects page. Figma node 123:4250.
+ * Four 350px columns with a 12px gutter; within a column the photos alternate
+ * tall (545px) and short (327px) on a 6px rhythm, so the columns interlock:
+ *
+ *   col 1: short, tall  |  col 2: tall, short  |  col 3: short, tall  |  …
+ *
+ * Built on CSS multi-column rather than a masonry library. The design's
+ * staggering comes from that fixed two-height pattern, not from measuring
+ * content, so `columns` reproduces it exactly with no JavaScript, no layout
+ * shift on load, and no dependency. Because columns fill top-to-bottom, the
+ * nth-child cycle below (short, tall, tall, short) lays the photos out in the
+ * Figma's visual order.
+ *
+ * "Load More" reveals the next batch; it is plain vanilla JS and removes itself
+ * once everything is shown. With JS off, every photo is visible from the start.
+ */
+import TreePicture from './TreePicture.astro';
+
+export interface GalleryItem {
+  image: string;
+  alt: string;
+}
+
+export interface Props {
+  items?: GalleryItem[];
+  /** Photos shown before "Load More" is pressed. 0 shows them all. */
+  initialCount?: number;
+  loadMoreLabel?: string;
+}
+
+const { items = [], initialCount = 8, loadMoreLabel = 'Load More' } = Astro.props;
+
+const hasMore = initialCount > 0 && items.length > initialCount;
+---
+
+<section class="tree-gallery" aria-label="Project photo gallery">
+  <div class="tree-container">
+    <div class="tree-gallery__grid" data-gallery-grid data-initial={initialCount}>
+      {items.map((item, i) => (
+        <figure
+          class="tree-gallery__item"
+          data-gallery-item
+          hidden={hasMore && i >= initialCount}
+        >
+          <TreePicture
+            class="tree-gallery__img"
+            src={item.image}
+            alt={item.alt}
+            width={350}
+            height={i % 4 === 0 || i % 4 === 3 ? 327 : 545}
+            variant="card"
+            sizes="(max-width: 767px) 100vw, (max-width: 1024px) 50vw, 350px"
+            loading="lazy"
+            decoding="async"
+          />
+        </figure>
+      ))}
+    </div>
+
+    {hasMore && (
+      <button type="button" class="tree-gallery__more" data-gallery-more>
+        {loadMoreLabel}
+      </button>
+    )}
+  </div>
+</section>
+
+<style>
+  .tree-gallery { padding-block: 35px 90px; background: var(--color-bg-surface, #fff); }
+
+  .tree-gallery__grid {
+    columns: 4;
+    column-gap: 12px;
+  }
+
+  .tree-gallery__item {
+    break-inside: avoid;
+    margin: 0 0 6px;
+  }
+  .tree-gallery__item[hidden] { display: none; }
+
+  .tree-gallery__item > :global(picture) { display: contents; }
+  .tree-gallery__item :global(.tree-gallery__img) {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 350 / 327; /* short */
+    object-fit: cover;
+    border-radius: 6px;
+  }
+  /* Columns fill vertically, so this cycle produces short/tall/tall/short —
+     the interlocking pattern in the Figma. */
+  .tree-gallery__item:nth-child(4n + 2) :global(.tree-gallery__img),
+  .tree-gallery__item:nth-child(4n + 3) :global(.tree-gallery__img) {
+    aspect-ratio: 350 / 545; /* tall */
+  }
+
+  .tree-gallery__more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 230px;
+    height: 60px;
+    margin: 64px auto 0;
+    border: 2px solid var(--color-border-strong, #013b2d);
+    border-radius: var(--tree-radius-btn, 6px);
+    background: transparent;
+    color: var(--color-text-primary, #013b2d);
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.8;
+    text-transform: capitalize;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+  .tree-gallery__more:hover {
+    background: var(--color-text-primary, #013b2d);
+    color: var(--color-text-inverse, #fff);
+  }
+
+  @media (max-width: 1024px) {
+    .tree-gallery { padding-block: 28px 64px; }
+    .tree-gallery__grid { columns: 2; }
+    .tree-gallery__more { margin-top: 44px; }
+  }
+
+  @media (max-width: 767px) {
+    .tree-gallery { padding-block: 24px 48px; }
+    .tree-gallery__grid { columns: 1; }
+    .tree-gallery__item :global(.tree-gallery__img) { aspect-ratio: 350 / 327; }
+    .tree-gallery__item:nth-child(4n + 2) :global(.tree-gallery__img),
+    .tree-gallery__item:nth-child(4n + 3) :global(.tree-gallery__img) { aspect-ratio: 350 / 327; }
+    .tree-gallery__more { width: 100%; height: 52px; font-size: 16px; margin-top: 32px; }
+  }
+</style>
+
+<script>
+  function initGallery() {
+    document.querySelectorAll<HTMLElement>('[data-gallery-grid]').forEach((grid) => {
+      const button = grid.parentElement?.querySelector<HTMLButtonElement>('[data-gallery-more]');
+      if (!button || button.dataset.bound === 'true') return;
+      button.dataset.bound = 'true';
+
+      const step = Number(grid.dataset.initial) || 8;
+
+      button.addEventListener('click', () => {
+        const hidden = grid.querySelectorAll<HTMLElement>('[data-gallery-item][hidden]');
+        Array.from(hidden)
+          .slice(0, step)
+          .forEach((item) => item.removeAttribute('hidden'));
+
+        if (grid.querySelectorAll('[data-gallery-item][hidden]').length === 0) {
+          button.remove();
+        }
+      });
+    });
+  }
+
+  initGallery();
+  document.addEventListener('astro:after-swap', initGallery);
+</script>

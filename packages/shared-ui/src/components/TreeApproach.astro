@@ -1,0 +1,191 @@
+---
+/**
+ * TreeApproach.astro
+ * ------------------
+ * "OUR APPROACH — Safety. Compliance. Peace of Mind" — Figma node 123:1203.
+ * Photo on the left (577px), copy on the right (799px) with a 40px gutter:
+ * eyebrow, heading, a paragraph, a row of 80px accreditation badges, and an
+ * accent CTA 60px below.
+ * <=1024px the photo moves above the copy.
+ */
+import TreePicture from './TreePicture.astro';
+
+export interface ApproachBadge {
+  src: string;
+  alt: string;
+}
+
+export interface Props {
+  eyebrow?: string;
+  heading: string;
+  description?: string;
+  badges?: ApproachBadge[];
+  ctaLabel?: string;
+  ctaHref?: string;
+  image: string;
+  imageAlt: string;
+}
+
+const {
+  eyebrow,
+  heading,
+  description,
+  badges = [],
+  ctaLabel,
+  ctaHref = '#free-inspection',
+  image,
+  imageAlt,
+} = Astro.props;
+---
+
+<section class="tree-approach">
+  <div class="tree-container tree-approach__inner">
+    <div class="tree-approach__media">
+      <TreePicture
+        class="tree-approach__img"
+        src={image}
+        alt={imageAlt}
+        width={577}
+        height={435}
+        variant="inline"
+        sizes="(max-width: 1024px) 100vw, 577px"
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+
+    <div class="tree-approach__copy">
+      <div class="tree-approach__block">
+        <div class="tree-approach__head">
+          {eyebrow && <p class="tree-approach__eyebrow">{eyebrow}</p>}
+          <h2 class="tree-approach__heading">{heading}</h2>
+        </div>
+        {description && <p class="tree-approach__desc">{description}</p>}
+        {badges.length > 0 && (
+          <ul class="tree-approach__badges">
+            {badges.map((b) => (
+              <li>
+                <TreePicture
+                  class="tree-approach__badge"
+                  src={b.src}
+                  alt={b.alt}
+                  width={80}
+                  height={80}
+                  variant="fixed"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      {ctaLabel && <a href={ctaHref} class="tree-approach__cta">{ctaLabel}</a>}
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Figma 123:1203 sits 72px below the stats pill and 80px above the mission band. */
+  .tree-approach { padding-block: 72px 80px; background: var(--color-bg-surface, #fff); }
+
+  .tree-approach__inner {
+    display: grid;
+    grid-template-columns: 577px minmax(0, 1fr);
+    gap: 40px;
+    align-items: center;
+  }
+
+  .tree-approach__media { position: relative; aspect-ratio: 577 / 435; }
+  .tree-approach__media > :global(picture) { display: contents; }
+  .tree-approach__media :global(.tree-approach__img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .tree-approach__copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 60px;
+  }
+  .tree-approach__block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 30px;
+  }
+  .tree-approach__head { display: flex; flex-direction: column; gap: 12px; }
+
+  .tree-approach__eyebrow {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.248;
+    text-transform: uppercase;
+    color: var(--color-text-primary, #013b2d);
+  }
+  .tree-approach__heading {
+    font-size: 42px;
+    font-weight: 500;
+    line-height: 1.248;
+    text-transform: capitalize;
+    color: var(--color-bg-brand-strong, #1e372e);
+  }
+  .tree-approach__desc {
+    font-size: 18px;
+    line-height: 1.66;
+    color: var(--color-text-secondary, #373434);
+  }
+
+  .tree-approach__badges {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 40px;
+  }
+  .tree-approach__badges :global(.tree-approach__badge) {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+  }
+
+  .tree-approach__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 339px;
+    height: 60px;
+    padding-inline: 24px;
+    border-radius: var(--tree-radius-btn, 6px);
+    background: var(--color-bg-accent, #c8f08f);
+    color: var(--color-text-primary, #013b2d);
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.8;
+    text-transform: capitalize;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+  .tree-approach__cta:hover {
+    background: var(--color-bg-action-hover, #368a2a);
+    color: var(--color-text-inverse, #fff);
+  }
+
+  @media (max-width: 1024px) {
+    .tree-approach { padding-block: 56px; }
+    .tree-approach__inner { grid-template-columns: 1fr; gap: 36px; }
+    .tree-approach__copy { gap: 40px; }
+    .tree-approach__heading { font-size: 34px; }
+  }
+
+  @media (max-width: 767px) {
+    .tree-approach { padding-block: 40px; }
+    .tree-approach__heading { font-size: 28px; }
+    .tree-approach__desc { font-size: 15px; }
+    .tree-approach__badges { gap: 24px; }
+    .tree-approach__badges :global(.tree-approach__badge) { width: 64px; height: 64px; }
+    .tree-approach__cta { min-width: 0; width: 100%; height: 52px; font-size: 16px; }
+  }
+</style>

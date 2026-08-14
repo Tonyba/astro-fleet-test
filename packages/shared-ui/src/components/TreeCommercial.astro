@@ -1,0 +1,231 @@
+---
+/**
+ * TreeCommercial.astro
+ * --------------------
+ * "Commercial Services" section for the tree-care template. Figma node 123:274
+ * (desktop page 123:55); left full-bleed photo is Figma node 123:57.
+ *
+ * Desktop: a photo bleeds to the left viewport edge while the copy + CTAs sit
+ * in the right half of the content column.
+ * <=1024px: photo shrinks toward a stacked layout.
+ * <=767px (mobile node 123:4526): single column — copy first, then a full-bleed
+ * photo below.
+ *
+ * Every string/image is a prop with a Figma-verbatim default, so it renders
+ * fully without props and stays CMS-editable.
+ */
+import TreePicture from './TreePicture.astro';
+
+export interface TreeCommercialCta {
+  text: string;
+  href: string;
+}
+export interface TreeCommercialPhoto {
+  src: string;
+  alt: string;
+}
+
+export interface Props {
+  eyebrow?: string;
+  heading?: string;
+  paragraphs?: string[];
+  primaryCta?: TreeCommercialCta;
+  secondaryCta?: TreeCommercialCta;
+  photo?: TreeCommercialPhoto;
+}
+
+const {
+  eyebrow = 'Commercial Services',
+  heading = 'Professional Tree Solutions for Commercial Properties',
+  paragraphs = [
+    'We provide reliable and professional tree care services for commercial properties across Connecticut, working with property managers, business owners, HOAs, construction companies, and real estate developers. Our team is equipped to handle everything from large-scale tree removal and land clearing to routine maintenance, stump grinding, and emergency storm response.',
+    'We help keep your properties safe, clean, and fully operational by delivering efficient work with minimal disruption to your daily operations. Every project is handled by experienced arborists using professional equipment, with a strong focus on safety, reliability, and long-term property value.',
+  ],
+  primaryCta = { text: 'Get free quote now', href: '#quote' },
+  secondaryCta = { text: 'See all services', href: '#services' },
+  photo = {
+    src: '/src/assets/photos/commercial-arborist.jpg',
+    alt: 'Professional arborist climbing a tree with rigging ropes and a chainsaw',
+  },
+} = Astro.props;
+
+---
+
+<section class="tree-commercial" aria-labelledby="tree-commercial-heading">
+  <TreePicture
+    src={photo.src}
+    alt={photo.alt}
+    width={1600}
+    height={1065}
+    variant="hero"
+    pictureClass="tree-commercial__media"
+    class="tree-commercial__media-img"
+    sizes="(max-width: 767px) 100vw, 50vw"
+    loading="lazy"
+    decoding="async"
+  />
+
+  <div class="tree-commercial__inner tree-container">
+    <div class="tree-commercial__body">
+      <div class="tree-commercial__block">
+        <p class="tree-commercial__eyebrow">{eyebrow}</p>
+        <h2 id="tree-commercial-heading" class="tree-commercial__heading">{heading}</h2>
+      </div>
+
+      <div class="tree-commercial__text">
+        {paragraphs.map((p) => <p class="tree-commercial__paragraph">{p}</p>)}
+      </div>
+
+      <div class="tree-commercial__actions">
+        <a href={primaryCta.href} class="tree-commercial__btn tree-commercial__btn--primary">{primaryCta.text}</a>
+        <a href={secondaryCta.href} class="tree-commercial__btn tree-commercial__btn--ghost">
+          <span>{secondaryCta.text}</span>
+          <img class="tree-commercial__btn-arrow" src="/media/icons/commercial-arrow.svg" alt="" width="25" height="25" aria-hidden="true" />
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .tree-commercial {
+    position: relative;
+    z-index: 1;
+    background: var(--color-bg-surface, #fff);
+    padding-block: 150px 100px;
+    overflow: hidden;
+  }
+
+  /* Full-section background photo (Figma node 123:57), fading to the surface
+     colour on the right so the copy stays legible. */
+  .tree-commercial__media {
+    display: block;
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .tree-commercial :global(.tree-commercial__media-img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .tree-commercial__inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Copy sits in a white card in the right half, over the background photo. */
+  .tree-commercial__body {
+    margin-left: auto;
+    width: min(720px, 52%);
+    background: var(--color-bg-surface, #fff);
+    padding: 56px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  .tree-commercial__block {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .tree-commercial__eyebrow {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.8;
+    color: var(--color-bg-brand-strong, #1e372e);
+  }
+  .tree-commercial__heading {
+    margin: 0;
+    font-size: 42px;
+    font-weight: 600;
+    line-height: 1;
+    text-transform: capitalize;
+    color: var(--color-bg-brand-strong, #1e372e);
+  }
+  .tree-commercial__text {
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+  }
+  .tree-commercial__paragraph {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.6;
+    color: var(--color-text-secondary, #373434);
+  }
+
+  /* ===== Buttons ===== */
+  .tree-commercial__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+  }
+  .tree-commercial__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 60px;
+    font-size: 18px;
+    white-space: nowrap;
+  }
+  .tree-commercial__btn--primary {
+    padding: 0 40px;
+    font-weight: 700;
+    text-transform: capitalize;
+    color: #0b171e;
+    background: var(--color-bg-accent, #c8f08f);
+    border-radius: var(--tree-radius-btn, 6px);
+    transition: filter 0.15s ease;
+  }
+  .tree-commercial__btn--primary:hover { filter: brightness(0.96); }
+  .tree-commercial__btn--ghost {
+    gap: 6px;
+    padding: 0 4px;
+    font-weight: 600;
+    color: var(--color-text-primary, #013b2d);
+    border-bottom: 1px solid var(--color-text-primary, #013b2d);
+  }
+  .tree-commercial__btn-arrow { display: block; width: 25px; height: 25px; }
+
+  /* ===== Tablet ===== */
+  @media (max-width: 1024px) {
+    .tree-commercial { padding-block: 120px 72px; }
+    .tree-commercial__body { width: min(560px, 60%); }
+    .tree-commercial__heading { font-size: 34px; }
+  }
+
+  /* ===== Mobile (matches mobile node 123:4526): copy, then full-bleed photo ===== */
+  @media (max-width: 767px) {
+    .tree-commercial {
+      display: flex;
+      flex-direction: column;
+      padding-block: 90px 0;
+      overflow: visible;
+    }
+    .tree-commercial__inner { order: 1; }
+    .tree-commercial__media {
+      order: 2;
+      position: static;
+      inset: auto;
+      width: 100vw;
+      margin-left: calc(50% - 50vw);
+      height: 287px;
+      margin-top: 48px;
+    }
+    .tree-commercial__body { width: 100%; padding: 0; background: transparent; }
+    .tree-commercial__eyebrow { font-size: 14px; }
+    .tree-commercial__heading { font-size: 30px; }
+    .tree-commercial__paragraph { font-size: 14px; }
+    .tree-commercial__actions { flex-direction: column; align-items: stretch; }
+    .tree-commercial__btn { width: 100%; height: 50px; font-size: 16px; }
+  }
+</style>

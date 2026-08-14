@@ -1,0 +1,97 @@
+---
+/**
+ * TreeInspectionForm.astro
+ * ------------------------
+ * "Get A Free Tree Inspection" closing section. Figma node 123:745.
+ * Dark brand-strong band with a decorative tree illustration background,
+ * a left copy column and a white form card (reuses TreeQuoteForm, plain variant).
+ */
+import TreePicture from './TreePicture.astro';
+import TreeQuoteForm from './TreeQuoteForm.astro';
+import type { Props as QuoteProps } from './TreeQuoteForm.astro';
+
+export interface Props {
+  heading?: string;
+  lead?: string;
+  paragraphs?: string[];
+  backgroundImage?: string;
+  quote?: QuoteProps;
+}
+
+const {
+  heading = 'Get A Free Tree Inspection No Call Out Fee!',
+  lead = 'Need professional tree removal, trimming, stump grinding, or emergency storm cleanup?',
+  paragraphs = [
+    'Fill out the form below and our team will review your request and get back to you with a fast, no-obligation estimate.',
+    'We provide safe, reliable, and professional tree services for residential and commercial properties across Connecticut — always focused on safety, efficiency, and quality results.',
+  ],
+  backgroundImage = '/src/assets/graphics/inspection-bg.jpg',
+  quote,
+} = Astro.props;
+---
+
+<section class="tree-inspection" id="free-inspection">
+  <TreePicture
+    class="tree-inspection__bg"
+    src={backgroundImage}
+    alt=""
+    ariaHidden
+    width={1919}
+    height={783}
+    variant="hero"
+    loading="lazy"
+    decoding="async"
+  />
+  <div class="tree-container tree-inspection__inner">
+    <div class="tree-inspection__copy">
+      <h2 class="tree-inspection__heading">{heading}</h2>
+      <span class="tree-inspection__divider" aria-hidden="true"></span>
+      <p class="tree-inspection__lead">{lead}</p>
+      {paragraphs.map((p) => <p class="tree-inspection__text">{p}</p>)}
+    </div>
+    <div class="tree-inspection__form">
+      <TreeQuoteForm variant="plain" showHeader={false} formName="inspection" id="inspection" {...quote} />
+    </div>
+  </div>
+</section>
+
+<style>
+  .tree-inspection {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background: var(--color-bg-brand-strong, #1e372e);
+  }
+  /* <Picture /> wraps the background in <picture>; that inline box would add a
+     stray line box to the section, so take it out of flow entirely. */
+  .tree-inspection > :global(picture) { display: contents; }
+  .tree-inspection :global(.tree-inspection__bg) {
+    position: absolute; inset: 0; z-index: -1;
+    width: 100%; height: 100%; object-fit: cover; object-position: center bottom;
+  }
+  .tree-inspection__inner {
+    display: flex; align-items: center; justify-content: center; gap: 67px;
+    padding-block: 94px;
+  }
+
+  .tree-inspection__copy { flex: 0 1 481px; color: var(--color-text-inverse, #fff); }
+  .tree-inspection__heading { font-size: 42px; font-weight: 600; line-height: 1.15; text-transform: capitalize; }
+  .tree-inspection__divider { display: block; width: 81px; height: 3px; background: var(--color-bg-accent, #c8f08f); margin: 20px 0; }
+  .tree-inspection__lead { font-size: 21px; font-weight: 600; line-height: 1.6; }
+  .tree-inspection__text { font-size: 18px; font-weight: 400; line-height: 1.6; margin-top: 20px; }
+
+  .tree-inspection__form { flex: 0 0 auto; width: 550px; max-width: 100%; }
+
+  @media (max-width: 1024px) {
+    .tree-inspection__inner { flex-direction: column; align-items: stretch; gap: 40px; padding-block: 64px; }
+    .tree-inspection__copy { max-width: none; }
+    .tree-inspection__form { width: 100%; max-width: 550px; margin-inline: auto; }
+  }
+  @media (max-width: 767px) {
+    /* Figma mobile centers the heading + divider; body copy stays left. */
+    .tree-inspection__heading { font-size: 30px; text-align: center; }
+    .tree-inspection__divider { margin-inline: auto; }
+    .tree-inspection__lead { font-size: 18px; }
+    .tree-inspection__text { font-size: 16px; }
+  }
+</style>

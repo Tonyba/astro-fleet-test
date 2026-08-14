@@ -1,0 +1,255 @@
+---
+/**
+ * TreeServices.astro
+ * ------------------
+ * "Our Services" 6-card grid. Figma node 123:382.
+ * Each card: photo with an accent-green icon badge, title, description, and a
+ * "View Services" link.
+ */
+import TreePicture from './TreePicture.astro';
+
+export interface ServiceItem {
+  title: string;
+  description: string;
+  image: string;
+  icon: string;
+  href: string;
+  linkText?: string;
+}
+
+export interface Props {
+  eyebrow?: string;
+  heading?: string;
+  services?: ServiceItem[];
+  viewAllLabel?: string;
+  viewAllHref?: string;
+  /**
+   * Header alignment. 'center' is the homepage block (Figma 123:382);
+   * 'left' is the services page's "Expert tree services for your business"
+   * variant (Figma 123:2780), which also drops the eyebrow.
+   */
+  align?: 'center' | 'left';
+  /** The mobile-only "View All Services" button — off on the services page itself. */
+  showViewAll?: boolean;
+  /**
+   * Vertical rhythm. 'default' is a standalone section (90px block padding).
+   * Use the group values when two grids share one section, as on the
+   * residential page (Figma 123:2243): 80px outer, 68px between the two.
+   */
+  spacing?: 'default' | 'group-start' | 'group-end';
+  /**
+   * Measure the heading wraps at. 758px matches the tree-services heading
+   * (Figma 123:2245); the outdoor-solutions heading is set to 1029px
+   * (Figma 123:2329) so it breaks over two lines rather than three.
+   */
+  headingWidth?: string;
+}
+
+const {
+  eyebrow = 'Our Services',
+  heading = 'Professional Tree Services for Residential & Commercial Properties',
+  viewAllLabel = 'View All Services',
+  viewAllHref = '/services/',
+  align = 'center',
+  showViewAll = true,
+  spacing = 'default',
+  headingWidth = '758px',
+  services = [
+    {
+      title: 'Tree Removal',
+      description: 'Safe and efficient removal of hazardous, damaged, fallen, or unwanted trees for residential and commercial properties.',
+      image: '/src/assets/photos/services-tree-removal.jpg',
+      icon: '/media/icons/svc-wood.png',
+      href: '/services/tree-removal/',
+    },
+    {
+      title: 'Tree Pruning & Trimming',
+      description: 'Professional trimming and pruning services designed to improve tree health, appearance, and overall property safety.',
+      image: '/src/assets/photos/services-pruning.jpg',
+      icon: '/media/icons/svc-tree.png',
+      href: '/services/tree-trimming/',
+    },
+    {
+      title: 'Stump Grinding',
+      description: 'Remove unwanted stumps quickly and efficiently to create a cleaner, safer, and more functional outdoor space',
+      image: '/src/assets/photos/services-stump.jpg',
+      icon: '/media/icons/svc-stump.png',
+      href: '/services/stump-grinding/',
+    },
+    {
+      title: 'Land Clearing & Lot Cleaning',
+      description: 'Reliable land and lot clearing solutions for construction projects, comamercial developments, and property improvements.',
+      image: '/src/assets/photos/services-land-clearing.jpg',
+      icon: '/media/icons/svc-earth.png',
+      href: '/services/land-clearing/',
+    },
+    {
+      title: 'Storm Damage Cleanup',
+      description: 'Fast-response emergency services for fallen trees, storm damage, and hazardous situations requiring immediate attention.',
+      image: '/src/assets/photos/services-storm.jpg',
+      icon: '/media/icons/svc-weather.png',
+      href: '/services/storm-damage/',
+    },
+    {
+      title: 'Cabling & Bracing',
+      description: 'Protect weakened or vulnerable trees with professional support systems designed to improve stability, reduce risk, and help preserve long-term tree health.',
+      image: '/src/assets/photos/services-cabling.jpg',
+      icon: '/media/icons/svc-wire.png',
+      href: '/services/cabling-bracing/',
+    },
+  ],
+} = Astro.props;
+---
+
+<section class:list={['tree-services', `tree-services--${spacing}`]}>
+  <div class="tree-container">
+    <header
+      class:list={['tree-services__header', `tree-services__header--${align}`]}
+      style={`--tree-services-heading-width: ${headingWidth};`}
+    >
+      {eyebrow && <p class="tree-services__eyebrow">{eyebrow}</p>}
+      <h2 class="tree-services__heading">{heading}</h2>
+    </header>
+
+    <ul class="tree-services__grid">
+      {services.map((s) => (
+        <li>
+          <article class="tree-services__card">
+            <div class="tree-services__media">
+              <TreePicture src={s.image} alt={s.title} width={430} height={240} variant="card" class="tree-services__img" loading="lazy" decoding="async" />
+              <span class="tree-services__icon">
+                <img src={s.icon} alt="" width="42" height="42" loading="lazy" />
+              </span>
+            </div>
+            <div class="tree-services__body">
+              <h3 class="tree-services__title">{s.title}</h3>
+              <p class="tree-services__desc">{s.description}</p>
+            </div>
+            <a href={s.href} class="tree-services__link">
+              {s.linkText ?? 'View Services'}
+              <svg width="25" height="25" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M7 17 17 7m0 0H8m9 0v9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </a>
+          </article>
+        </li>
+      ))}
+    </ul>
+
+    {showViewAll && <a href={viewAllHref} class="tree-services__view-all">{viewAllLabel}</a>}
+  </div>
+</section>
+
+<style>
+  .tree-services { padding-block: 90px; background: var(--color-bg-surface, #fff); }
+  /* Two grids sharing one section: 80px outer, 34px + 34px = 68px between. */
+  .tree-services--group-start { padding-block: 80px 34px; }
+  .tree-services--group-end { padding-block: 34px 80px; }
+
+  .tree-services__header {
+    max-width: var(--tree-services-heading-width, 758px);
+    margin-bottom: 45px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .tree-services__header--center { text-align: center; margin-inline: auto; }
+  /* Services page: flush left, no eyebrow, 45px to the grid (Figma 123:2780). */
+  .tree-services__header--left { text-align: left; margin-inline: 0; }
+  .tree-services__eyebrow {
+    font-size: 16px; font-weight: 600; line-height: 1.8; text-transform: uppercase;
+    color: var(--color-text-primary, #013b2d);
+  }
+  .tree-services__heading {
+    font-size: 42px; font-weight: 500; line-height: 1.2; color: var(--color-text-primary, #013b2d);
+  }
+
+  .tree-services__grid {
+    list-style: none; padding: 0; margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .tree-services__card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    border: 2px solid var(--color-border-subtle, #d9d9d9);
+    border-radius: 12px;
+    padding: 20px;
+    background: var(--color-bg-surface, #fff);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .tree-services__card:hover {
+    border-color: var(--color-border-accent, #c8f08f);
+    box-shadow: 0 12px 28px -14px rgba(1, 59, 45, 0.35);
+    transform: translateY(-3px);
+  }
+
+  .tree-services__media { position: relative; }
+  .tree-services__media :global(.tree-services__img) {
+    width: 100%; height: 240px; object-fit: cover; border-radius: 6px;
+  }
+  .tree-services__icon {
+    position: absolute; left: 12px; bottom: -22px;
+    width: 73px; height: 73px;
+    background: var(--color-bg-accent, #c8f08f);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .tree-services__icon img { width: 42px; height: 42px; object-fit: contain; }
+
+  .tree-services__body { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
+  .tree-services__title {
+    font-size: 24px; font-weight: 600; text-transform: uppercase; line-height: 1.2;
+    color: var(--color-text-primary, #013b2d);
+  }
+  .tree-services__desc { font-size: 16px; font-weight: 400; line-height: 1.6; color: var(--color-text-secondary, #373434); }
+
+  .tree-services__link {
+    margin-top: auto;
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 18px; font-weight: 600; color: var(--color-text-primary, #013b2d);
+    transition: gap 0.15s ease, color 0.15s ease;
+  }
+  .tree-services__link:hover { gap: 12px; color: var(--color-bg-action, #2f8328); }
+
+  /* Full-width outlined "View all services" button — mobile only (Figma 123:4708). */
+  .tree-services__view-all { display: none; }
+
+  @media (max-width: 1024px) {
+    .tree-services { padding-block: 64px; }
+    .tree-services--group-start { padding-block: 56px 24px; }
+    .tree-services--group-end { padding-block: 24px 56px; }
+    .tree-services__grid { grid-template-columns: repeat(2, 1fr); }
+    .tree-services__heading { font-size: 34px; }
+  }
+  @media (max-width: 767px) {
+    .tree-services__grid { grid-template-columns: 1fr; }
+    .tree-services__header { gap: 6px; margin-bottom: 25px; }
+    .tree-services__eyebrow { font-size: 14px; }
+    .tree-services__heading { font-size: 30px; }
+    .tree-services__card { gap: 20px; }
+    .tree-services__media :global(.tree-services__img) { height: 160px; }
+    .tree-services__icon { width: 60px; height: 60px; bottom: -18px; }
+    .tree-services__title { font-size: 21px; }
+    .tree-services__desc { font-size: 14px; }
+    .tree-services__link { font-size: 16px; }
+    .tree-services__view-all {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      margin-top: 25px;
+      padding: 13px 20px;
+      border: 2px solid var(--color-text-primary, #013b2d);
+      border-radius: var(--tree-radius-btn, 6px);
+      font-size: 16px;
+      font-weight: 600;
+      text-transform: capitalize;
+      color: var(--color-text-primary, #013b2d);
+    }
+  }
+</style>

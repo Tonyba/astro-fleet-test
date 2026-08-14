@@ -1,0 +1,164 @@
+---
+/**
+ * TreeTrustBar.astro
+ * ------------------
+ * Two-tone "trust strip" for the tree-care template. Figma node 123:469.
+ * Desktop (>1024px): full-bleed bar split into a light left half (brand slogan)
+ * and a red right half (alert icon + emergency phone).
+ * <=767px: the two halves stack into full-width bands (slogan on top, phone
+ * below), matching mobile node 123:4614.
+ * All copy/links are props so it can be driven from the CMS.
+ *
+ * Note: the red (#c61e17) and light (#e2e8e6) fields come straight from Figma;
+ * they intentionally do not map to the emergency/brand-soft tokens (different hues).
+ */
+export interface Props {
+  slogan?: string;
+  phoneNumber?: string;
+  phoneLabel?: string;
+  phoneHref?: string;
+  alertIconSrc?: string;
+  alertIconAlt?: string;
+}
+
+const {
+  slogan = 'WE GO OUT ON A LIMB FOR YOU.',
+  phoneNumber = '(203) 650-8519',
+  phoneLabel = 'Emergency line',
+  phoneHref,
+  alertIconSrc = '/media/icons/trust-alert.png',
+  alertIconAlt = 'Emergency alert',
+} = Astro.props;
+
+const telHref = phoneHref ?? `tel:${phoneNumber.replace(/[^\d+]/g, '')}`;
+---
+
+<section class="tree-trust-bar" aria-label="Emergency contact">
+  <div class="tree-trust-bar__inner tree-container">
+    <p class="tree-trust-bar__slogan">{slogan}</p>
+
+    <a href={telHref} class="tree-trust-bar__phone">
+      <img
+        class="tree-trust-bar__icon"
+        src={alertIconSrc}
+        alt={alertIconAlt}
+        width="40"
+        height="40"
+        loading="lazy"
+        decoding="async"
+      />
+      <span class="tree-trust-bar__phone-text">
+        <span class="tree-trust-bar__phone-number">{phoneNumber}</span>
+        {phoneLabel && <span class="tree-trust-bar__phone-label">{phoneLabel}</span>}
+      </span>
+    </a>
+  </div>
+</section>
+
+<style>
+  .tree-trust-bar {
+    position: relative;
+    overflow: hidden;
+    background: #c61e17; /* red field (Figma) — right half */
+  }
+  /* Light field — left half (Figma #e2e8e6). */
+  .tree-trust-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 50%;
+    background: #e2e8e6;
+    z-index: 0;
+  }
+
+  .tree-trust-bar__inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    min-height: 91px;
+  }
+
+  .tree-trust-bar__slogan {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: 28px;
+    font-weight: 500;
+    line-height: 1.1;
+    text-transform: uppercase;
+    color: var(--color-text-primary, #013b2d);
+    white-space: nowrap;
+  }
+
+  .tree-trust-bar__phone {
+    display: inline-flex;
+    align-items: center;
+    gap: 23px;
+    color: var(--color-text-inverse, #fff);
+    text-decoration: none;
+  }
+  .tree-trust-bar__icon {
+    display: block;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    object-fit: contain;
+  }
+  .tree-trust-bar__phone-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+  }
+  .tree-trust-bar__phone-number {
+    font-family: var(--font-heading);
+    font-size: 28px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .tree-trust-bar__phone-label {
+    font-size: 18.6px;
+    font-weight: 500;
+    text-transform: capitalize;
+  }
+
+  /* ===== Tablet (<=1024px) — keep the two-tone split, tighten type ===== */
+  @media (max-width: 1024px) {
+    .tree-trust-bar__slogan { font-size: 24px; }
+    .tree-trust-bar__phone-number { font-size: 24px; }
+    .tree-trust-bar__phone-label { font-size: 16px; }
+  }
+
+  /* ===== Mobile (<=767px) — stack into two full-width bands ===== */
+  @media (max-width: 767px) {
+    .tree-trust-bar::before {
+      right: 0;
+      bottom: 50%; /* light band on top */
+    }
+    .tree-trust-bar__inner {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      min-height: 0;
+    }
+    .tree-trust-bar__slogan {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 91px;
+      text-align: center;
+      white-space: normal;
+      font-size: 22px;
+    }
+    .tree-trust-bar__phone {
+      justify-content: center;
+      min-height: 91px;
+      gap: 20px;
+    }
+    .tree-trust-bar__phone-number { font-size: 24px; }
+    .tree-trust-bar__phone-label { font-size: 16px; }
+  }
+</style>

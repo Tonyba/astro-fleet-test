@@ -1,0 +1,260 @@
+---
+/**
+ * TreeContactDetails.astro
+ * ------------------------
+ * "FIND US" — Figma node 123:2122 beside the map (123:2121).
+ * Left column (596px): heading, a stack of muted contact rows each with an icon
+ * and a chevron affordance, a 24/7 emergency card, then "Follow us" with the
+ * bordered social circles. Right column (835px): the location map.
+ * <=1024px the map drops below the details.
+ */
+export interface ContactRow {
+  /** Icon shown at the start of the row (SVG from public/media/icons). */
+  icon: string;
+  label: string;
+  /** Makes the row a link — tel:, mailto: or a maps URL. */
+  href?: string;
+}
+
+export interface SocialLink {
+  platform: string;
+  url: string;
+  icon: string;
+}
+
+export interface Props {
+  heading?: string;
+  rows?: ContactRow[];
+  emergency?: {
+    icon?: string;
+    title: string;
+    /** Text before the highlighted phone number. */
+    text: string;
+    phone: string;
+    phoneHref?: string;
+  };
+  followLabel?: string;
+  socials?: SocialLink[];
+  /** Google Maps (or similar) embed URL rendered in an iframe. */
+  mapEmbedUrl?: string;
+  mapTitle?: string;
+}
+
+const {
+  heading = 'Find Us',
+  rows = [],
+  emergency,
+  followLabel = 'Follow us',
+  socials = [],
+  mapEmbedUrl,
+  mapTitle = 'Our location on the map',
+} = Astro.props;
+
+const telHref = emergency
+  ? (emergency.phoneHref ?? `tel:${emergency.phone.replace(/[^\d+]/g, '')}`)
+  : undefined;
+---
+
+<section class="tree-contact" aria-labelledby="tree-contact-heading">
+  <div class="tree-container tree-contact__inner">
+    <div class="tree-contact__details">
+      <h2 id="tree-contact-heading" class="tree-contact__heading">{heading}</h2>
+
+      <div class="tree-contact__stack">
+        <ul class="tree-contact__rows">
+          {rows.map((row) => {
+            const Tag = row.href ? 'a' : 'div';
+            return (
+              <li>
+                <Tag class="tree-contact__row" {...(row.href ? { href: row.href } : {})}>
+                  <span class="tree-contact__row-lead">
+                    <img class="tree-contact__row-icon" src={row.icon} alt="" width="19" height="20" aria-hidden="true" loading="lazy" />
+                    <span class="tree-contact__row-label">{row.label}</span>
+                  </span>
+                  <svg class="tree-contact__row-chevron" width="24" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </Tag>
+              </li>
+            );
+          })}
+
+          {emergency && (
+            <li>
+              <div class="tree-contact__row tree-contact__row--emergency">
+                <span class="tree-contact__emergency-icon">
+                  <img src={emergency.icon ?? '/media/icons/why-siren.png'} alt="" width="45" height="45" aria-hidden="true" loading="lazy" />
+                </span>
+                <span class="tree-contact__emergency-body">
+                  <span class="tree-contact__emergency-title">{emergency.title}</span>
+                  <span class="tree-contact__emergency-text">
+                    {emergency.text}{' '}
+                    <a class="tree-contact__emergency-phone" href={telHref}>{emergency.phone}</a>
+                  </span>
+                </span>
+              </div>
+            </li>
+          )}
+        </ul>
+
+        {socials.length > 0 && (
+          <div class="tree-contact__follow">
+            <p class="tree-contact__follow-label">{followLabel}</p>
+            <ul class="tree-contact__socials">
+              {socials.map((s) => (
+                <li>
+                  <a class="tree-contact__social" href={s.url} aria-label={s.platform} rel="noopener noreferrer" target="_blank">
+                    <img src={s.icon} alt="" width="22" height="22" aria-hidden="true" loading="lazy" />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </div>
+
+    {mapEmbedUrl && (
+      <div class="tree-contact__map">
+        <iframe
+          src={mapEmbedUrl}
+          title={mapTitle}
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          allowfullscreen
+        ></iframe>
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  .tree-contact { padding-block: 98px 41px; background: var(--color-bg-surface, #fff); }
+
+  .tree-contact__inner {
+    display: grid;
+    grid-template-columns: 596px minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+  }
+
+  .tree-contact__details { display: flex; flex-direction: column; gap: 42px; }
+
+  .tree-contact__heading {
+    font-size: 36px;
+    font-weight: 600;
+    line-height: 1;
+    text-transform: uppercase;
+    color: var(--color-bg-brand-strong, #1e372e);
+  }
+
+  .tree-contact__stack { display: flex; flex-direction: column; gap: 45px; }
+
+  .tree-contact__rows {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .tree-contact__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    min-height: 60px;
+    padding: 18px 39px;
+    border-radius: var(--tree-radius-card, 12px);
+    background: var(--color-bg-muted, #f5f6f7);
+    color: var(--color-text-primary, #013b2d);
+    transition: background-color 0.15s ease;
+  }
+  a.tree-contact__row:hover { background: var(--color-bg-brand-soft, #e5f1ed); }
+
+  .tree-contact__row-lead { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .tree-contact__row-icon { width: auto; height: 15px; flex-shrink: 0; }
+  .tree-contact__row-label {
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+  .tree-contact__row-chevron { flex-shrink: 0; width: 18px; height: 24px; }
+
+  /* 24/7 card — same muted shell, taller, icon beside a two-line block. */
+  .tree-contact__row--emergency { align-items: center; gap: 20px; padding-block: 30px; }
+  .tree-contact__emergency-icon { flex-shrink: 0; }
+  .tree-contact__emergency-icon img { width: 45px; height: 45px; object-fit: contain; }
+  .tree-contact__emergency-body { display: flex; flex-direction: column; gap: 12px; }
+  .tree-contact__emergency-title { font-size: 18px; font-weight: 600; line-height: 1.6; }
+  .tree-contact__emergency-text { font-size: 18px; font-weight: 400; line-height: 1.6; }
+  .tree-contact__emergency-phone {
+    font-weight: 600;
+    color: #fe5102; /* Figma 123:2156 — a one-off highlight, not a token */
+    white-space: nowrap;
+  }
+  .tree-contact__emergency-phone:hover { text-decoration: underline; }
+
+  .tree-contact__follow { display: flex; flex-direction: column; gap: 12px; }
+  .tree-contact__follow-label {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.6;
+    color: var(--color-text-primary, #013b2d);
+  }
+  .tree-contact__socials {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 16.463px;
+  }
+  .tree-contact__social {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 43.902px;
+    height: 43.902px;
+    border: 1px solid #9f9f9f;
+    border-radius: 50%;
+    background: var(--color-bg-surface, #fff);
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+  .tree-contact__social:hover {
+    border-color: var(--color-text-primary, #013b2d);
+    background: var(--color-bg-brand-soft, #e5f1ed);
+  }
+  .tree-contact__social img { width: 22px; height: 22px; object-fit: contain; }
+
+  .tree-contact__map {
+    aspect-ratio: 835 / 417;
+    border-radius: var(--tree-radius-card, 12px);
+    overflow: hidden;
+    /* The map is 64px lower than the heading in the design (Figma 123:2121). */
+    margin-top: 64px;
+  }
+  .tree-contact__map iframe { display: block; width: 100%; height: 100%; border: 0; }
+
+  @media (max-width: 1024px) {
+    .tree-contact { padding-block: 64px 32px; }
+    .tree-contact__inner { grid-template-columns: 1fr; gap: 36px; }
+    .tree-contact__details { gap: 32px; }
+    .tree-contact__stack { gap: 32px; }
+    .tree-contact__map { margin-top: 0; aspect-ratio: 16 / 9; }
+    /* Heading is 36px at every width (Figma 123:37950). */
+  }
+
+  @media (max-width: 767px) {
+    .tree-contact { padding-block: 44px 24px; }
+    .tree-contact__row { padding: 16px 20px; gap: 12px; }
+    .tree-contact__row-label,
+    .tree-contact__emergency-title,
+    .tree-contact__emergency-text { font-size: 15px; }
+    .tree-contact__row--emergency { align-items: flex-start; padding-block: 20px; }
+    .tree-contact__emergency-icon img { width: 36px; height: 36px; }
+    .tree-contact__map { aspect-ratio: 358 / 241; } /* Figma 123:37995 */
+  }
+</style>

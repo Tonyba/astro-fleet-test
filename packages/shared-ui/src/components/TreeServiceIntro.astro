@@ -1,0 +1,194 @@
+---
+/**
+ * TreeServiceIntro.astro
+ * ----------------------
+ * Opening block of a service detail page. Figma node 123:3567 ("Page Title").
+ * Left column: uppercase heading, prose paragraphs and an accent CTA.
+ * Right column: a full-height photograph (631px in the 1444px container).
+ * <=1024px the photo drops below the copy.
+ */
+import TreePicture from './TreePicture.astro';
+
+export interface Props {
+  /** Small label above the heading (the About Us "Our Story" block, 123:1146). */
+  eyebrow?: string;
+  heading: string;
+  paragraphs?: string[];
+  ctaLabel?: string;
+  ctaHref?: string;
+  image: string;
+  imageAlt: string;
+  /**
+   * Photo on the LEFT, copy on the right — the city page's "Why … homeowners
+   * trust us" block (Figma 2053:7799). Service pages keep the default.
+   */
+  reverse?: boolean;
+  /** Heading casing. The city block sets its own heading uppercase in Figma. */
+  headingTransform?: 'uppercase' | 'none';
+}
+
+const {
+  eyebrow,
+  heading,
+  paragraphs = [],
+  ctaLabel,
+  ctaHref = '#free-inspection',
+  image,
+  imageAlt,
+  reverse = false,
+  headingTransform,
+} = Astro.props;
+---
+
+<section
+  class:list={['tree-service-intro', { 'tree-service-intro--reverse': reverse }]}
+  style={headingTransform ? `--tree-intro-heading-transform: ${headingTransform};` : undefined}
+>
+  <div class="tree-container tree-service-intro__inner">
+    <div class="tree-service-intro__copy">
+      <div class="tree-service-intro__head">
+        {eyebrow && <p class="tree-service-intro__eyebrow">{eyebrow}</p>}
+        <h2 class="tree-service-intro__heading">{heading}</h2>
+      </div>
+      {paragraphs.length > 0 && (
+        <div class="tree-service-intro__prose">
+          {paragraphs.map((p) => <p>{p}</p>)}
+        </div>
+      )}
+      {ctaLabel && <a href={ctaHref} class="tree-service-intro__cta">{ctaLabel}</a>}
+    </div>
+
+    <div class="tree-service-intro__media">
+      <TreePicture
+        class="tree-service-intro__img"
+        src={image}
+        alt={imageAlt}
+        width={631}
+        height={546}
+        variant="inline"
+        sizes="(max-width: 1024px) 100vw, 631px"
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+  </div>
+</section>
+
+<style>
+  .tree-service-intro { padding-block: 76px; background: var(--color-bg-surface, #fff); }
+
+  .tree-service-intro__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 631px;
+    gap: 50px;
+    align-items: stretch;
+  }
+
+  /* Photo first, copy second — same grid, columns swapped (Figma 2053:7799). */
+  .tree-service-intro--reverse .tree-service-intro__inner {
+    grid-template-columns: 631px minmax(0, 1fr);
+  }
+  .tree-service-intro--reverse .tree-service-intro__copy {
+    order: 2;
+    justify-content: center;
+  }
+  .tree-service-intro--reverse .tree-service-intro__media {
+    order: 1;
+  }
+
+  .tree-service-intro__copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 40px;
+  }
+
+  .tree-service-intro__head {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .tree-service-intro__eyebrow {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.248;
+    text-transform: uppercase;
+    color: var(--color-text-primary, #013b2d);
+  }
+
+  .tree-service-intro__heading {
+    font-size: 42px;
+    font-weight: 500;
+    line-height: 1.248;
+    text-transform: var(--tree-intro-heading-transform, uppercase);
+    color: var(--color-text-primary, #013b2d);
+  }
+
+  .tree-service-intro__prose {
+    display: flex;
+    flex-direction: column;
+    gap: 1.66em;
+  }
+  .tree-service-intro__prose p {
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.66;
+    color: var(--color-text-secondary, #373434);
+  }
+
+  /* The heading and prose sit in one 12px-gap group, the CTA 40px below. */
+  .tree-service-intro__copy > .tree-service-intro__head + .tree-service-intro__prose {
+    margin-top: -28px;
+  }
+
+  .tree-service-intro__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 339px;
+    height: 60px;
+    padding-inline: 24px;
+    border-radius: var(--tree-radius-btn, 6px);
+    background: var(--color-bg-accent, #c8f08f);
+    color: var(--color-text-primary, #013b2d);
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.8;
+    text-transform: capitalize;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+  .tree-service-intro__cta:hover {
+    background: var(--color-bg-action-hover, #368a2a);
+    color: var(--color-text-inverse, #fff);
+  }
+
+  .tree-service-intro__media { position: relative; min-height: 546px; }
+  .tree-service-intro__media > :global(picture) { display: contents; }
+  .tree-service-intro__media :global(.tree-service-intro__img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--tree-radius-card, 12px);
+  }
+
+  @media (max-width: 1024px) {
+    .tree-service-intro { padding-block: 56px; }
+    .tree-service-intro__inner,
+    .tree-service-intro--reverse .tree-service-intro__inner { grid-template-columns: 1fr; gap: 36px; }
+    .tree-service-intro__copy { gap: 28px; }
+    .tree-service-intro__heading { font-size: 34px; }
+    .tree-service-intro__copy > .tree-service-intro__head + .tree-service-intro__prose { margin-top: -16px; }
+    .tree-service-intro__media { min-height: 0; height: 360px; }
+  }
+
+  @media (max-width: 767px) {
+    .tree-service-intro { padding-block: 40px; }
+    .tree-service-intro__heading { font-size: 28px; }
+    .tree-service-intro__prose p { font-size: 15px; }
+    .tree-service-intro__cta { min-width: 0; width: 100%; height: 52px; font-size: 16px; }
+    .tree-service-intro__media { height: 240px; }
+  }
+</style>

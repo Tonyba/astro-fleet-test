@@ -6,7 +6,130 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Astro Fleet is a multi-site Astro monorepo for agencies and multi-brand companies. Each site lives in `sites/<domain>/` and is independently deployable. Shared components and config live in `packages/`.
 
-**Stack:** Astro 6, Bun, Turborepo 2, Tailwind CSS 4, TypeScript (strict mode). Static-first — zero client-side JS by default. Fonts are self-hosted via the Astro 6 Fonts API (configured in each site's `astro.config.mjs`, no third-party Google Fonts requests).
+**Stack:** Astro 6, Bun, Turborepo 2, Tailwind CSS 4, TypeScript (strict mode). Static-first — zero client-side JS by default. Fonts are self-hosted via the Astro 6 Fonts API (configured in each site's `astro.config.mjs`, no third-party Google Fonts requests). 
+
+**CMS:** keystatic on every site which runs **Keystatic** (`keystatic.config.ts`, admin at `/keystatic`). Keystatic needs server routes, you can use `@astrojs/cloudflare` adapter; its pages are still all prerendered.
+
+## Main development rules
+- use figma-design-to-code skill if necessary
+- Use figma mcp and figma skills if necessary
+- FAQs accordion elements must have faqs schema 
+- Always keep in mind performance, accessibility, SEO best practices.
+- Use Brave as default browser
+- One dev instance at a time, on port 4321 unless it is taken — do not ask which port
+- Kill dev server after you are done using it
+- The implementation must be pixel-perfect (1:1) compared to the Figma design.
+- Do not redesign, reinterpret, or improve anything. Reproduce exactly what is in Figma.
+- Use semantic HTML5 structure (header, nav, section, main, footer, etc.).
+- Use taildwind for css. Minimal vanilla JavaScript only.
+- Menus can have submenus
+- The layout must be fully responsive:
+    * Desktop (default styles)
+    * Tablet (max-width: 1024px)
+    * Mobile (max-width: 767px)
+- Use Flexbox and/or CSS Grid where appropriate.
+- Maintain exact:
+    * spacing
+    * font sizes
+    * font weights
+    * colors
+    * border radius
+    * shadows
+    * line heights
+- Extract reusable design tokens into global reusable sites ui/layout, utils folder depending on which file must be used:
+    * colors
+    * font sizes
+    * spacing
+- All elements inside a section that are repeatable (ex: accordion items, tabs, carousel items, etc.) must be editable from CMS too
+- All sections or ui elements used in other pages for new created pages or edited pages if they got any section that look the same they must be reused
+- Images must use proper <img> tags with descriptive alt attributes.
+- Follow modern CSS best practices. Navbar Requirements:
+* On desktop: standard horizontal navigation layout.
+* On tablet and mobile (max-width: 1024px):
+    * Replace navigation links with a hamburger button.
+    * The hamburger must toggle the visibility of the navigation menu.
+    * The menu must expand/collapse smoothly (CSS transition required).
+    * Use minimal vanilla JavaScript for toggle functionality.
+    * The menu must be accessible (aria-expanded, proper button element).
+    * The menu must be offcanvas.
+    * No external libraries.
+- any reusable ui section or layout must be save in packages/shared-ui following same format used in files already there
+- all media files must be saved in public/media
+- Do not add features that are not present in the Figma design.
+- If spacing or font size is unclear, calculate proportionally from the design instead of guessing.
+- If something from the Figma link cannot be accessed, state what is missing before generating code.
+- Output only the code. No explanations.
+- All texts, links, button links, images, website logo, website favicon or videos must be editable from cms
+- all menus (header, footer) must be editable from cms
+- all global colors and fonts must be editable from cms if posible 
+- all media files must be saved in media files path
+- Skip `bun run lint`. Do NOT skip verification — see "Verify before reporting" below.
+- when asked for corrections or edits remember that you must follow figma design if links provided, IT MUST BE RESPONSIVE and also FOCUS ONLY IN MENTIONED SECTIONS OR UI ELEMENTS IF MENTIONED
+
+## Working autonomously
+
+Decide and proceed. Do not come back for input on things that can be inferred from the design, the existing code, or these rules.
+
+- **Pick the option consistent with the existing code**, state the assumption in the final summary, and keep going. Reserve questions for decisions that change the deliverable and cannot be inferred — URL structure, page hierarchy, content-model shape — and ask them all at once, before building.
+- **Fix root causes, including pre-existing bugs found on the way.** Do not route around a broken thing and report it as blocked. Say what was broken and what was fixed.
+- **Never say something works without having run it.** "Should work" is not a result.
+- When a change spans many files (new content model, new route family, renamed field), finish every part: schema + content JSON + Astro collection + pages + CMS navigation. A half-wired feature is worse than none.
+
+## Verify before reporting
+
+Every change to a content model, CMS schema, route, or shared component gets verified before it is reported as done:
+
+1. `bun run build --filter=<domain>` — catches schema errors, broken routes and missing assets. Confirm the expected pages exist in `dist/`.
+2. Or run the dev server and `curl` the touched routes: expect `200` **and** grep the HTML for the text/markup that should have changed.
+3. For CMS work, prove the round trip: edit the field in `/keystatic`, confirm the value lands in the content file on disk, confirm the rendered page changes, then revert the test value.
+
+Verifying is not optional and does not need permission. Never ask the user to run the app to find out whether the change worked.
+
+## Keystatic — read before touching keystatic.config.ts or content files
+
+These are failure modes that have already cost hours. They are silent: the CMS looks fine and the Save button simply does nothing.
+
+- **Schema and content file must match exactly, both ways.** Adding a field to a singleton means adding the key to its JSON in the same change; removing a field means removing the key. A leftover key opens the entry as `Field validation failed: Key on object value "x" is not allowed` and nothing renders.
+- **An image inside `fields.array` is stored at `<directory>/<field-path>/<index>/<key>.<ext>`** — e.g. `hero.badges[0].src` with `directory: src/assets/badges` lands at `src/assets/badges/hero/badges/0/src.png`. Keystatic rewrites the value to that shape on save **and deletes the file it replaced**.
+- **Never point two entries at the same image file.** Saving one entry relocates the file and breaks the other: its required image resolves to empty and that entry can no longer be saved at all (`footer.badges.0.src: Image is required`). Give every entry its own copy of the photo/icon.
+- **Before deleting or moving any asset**, grep `src/content/` for its path. A dangling reference bricks the entry that holds it.
+- **"Save does nothing" is almost always client-side validation.** Scroll the form for red `… is required` text, or read the browser console: `Error: Field validation failed: …`.
+- **If the CMS shows stale data, or complains about files that clearly exist, its browser cache is stale.** Keystatic keeps a snapshot in IndexedDB (`keystatic`, `keystatic-blobs`). Fix: DevTools → Application → Clear site data for the dev origin, reload `/keystatic`. Editing content files directly on disk while the CMS is open is what causes this — prefer editing through the CMS, and clear the cache after any direct edit.
+- **In `src/content.config.ts`, every field inside an optional block must itself be optional.** Keystatic always writes an object for a field group, so a section left blank arrives as `hero: {}`. One required inner field turns that into `InvalidContentEntryDataError` — which takes down the whole dev server, for every page, until it is fixed.
+
+## Local dev server
+
+- Start: `bun run dev --filter=<domain> -- --port 4321`. Free the port first (kill stray `node` processes) — turbo stops its child, not always Astro's.
+- **A content-schema error in any single entry kills the entire dev server.** Keystatic's admin is served by that same server, so while it is down every CMS save silently fails and no page updates. Always read the terminal before believing the browser.
+- Windows: `UnknownFilesystemError … EPERM rename .astro/data-store.json.tmp` means a stuck or duplicated dev process. Kill all `node` processes and restart.
+- Kill the server when finished.
+
+## SEO
+- try to keep Seo title at 60 if posible
+- try to keep Seo description at 155 if posible
+
+## Images
+- **Photos never travel Figma → repo. Figma exports vectors only; photographs enter through the image pipeline.**
+- Photographs live in `sites/<domain>/src/assets/` (never `public/`) and render through `TreePicture.astro`, which wraps Astro's `<Picture />`: AVIF + WebP `<source>`s over a JPEG fallback at quality 90.
+- Import every photograph with `bun run import-photo <file> --out sites/<domain>/src/assets/photos [--max-width N]`. It re-encodes to JPEG q90 (PNG, or lossy WebP when large, if the alpha channel is load-bearing) and downscales it under budget.
+- `public/media/` is for SVG icons and the logo only — it is copied verbatim and nothing in it is optimized.
+- Widths per slot, set with the `variant` prop: `hero` full-bleed 640/1024/1440/1920w, `card` (service + project) 400/800w, `inline` photos 600/1200w, `fixed` (badges, step icons) 1x/2x. Always pass `width`/`height` so no layout shift is possible.
+- The hero image is `loading="eager"` + `fetchpriority="high"`. Everything below the fold is `loading="lazy"` + `decoding="async"`.
+- No image file in the repo or in `dist/` may exceed 1 MB — `bun run check:sizes` enforces this on every build and in CI.
+- If image is inside a content loop item then it must be wrapped inside a link to that content item
+
+## Carousels
+- Use Embla Carousel for carousels
+- use padding for slide items space separation instead of a column-gap
+
+## Forms
+- Save all forms submissions data in cms
+- Spam is handled by Turnstile — Cloudflare's free, invisible CAPTCHA replacement. 
+- for phone fields use intl-tel-input library. validate that is valid phone number and auto select country
+- all other fields must be validated according to its type (email, number, etc).
+- all forms and their fields must be editable from crm and also resuable through pages and if it's posible make forms a content model in cms
+- In Form fields you should be able to edit label, placeholder and field type
+
 
 ## Commands
 
@@ -23,12 +146,22 @@ bun run build --filter=<domain>                # single site
 # Lint
 bun run lint
 
+# Images
+bun run import-photo <file...> --out sites/<domain>/src/assets/photos --max-width 1920
+bun run check:sizes                            # fail if any repo/dist file > 1 MB
+
 # Scaffold a new site
 ./scripts/new-site.sh <domain> [corporate|saas|warm]
 bun install  # run after scaffolding
 
-# Deploy (Cloudflare Pages)
+# Deploy (Cloudflare Pages) — static sites
 wrangler pages deploy sites/<domain>/dist --project-name=<name> --branch=main
+
+# Deploy (Cloudflare Workers) — sites carrying the adapter, i.e. test-2.com.
+# The adapter emits dist/client (assets) + dist/server (worker) and generates
+# the wrangler config, so deploy that instead of the Pages command above.
+# The SESSION KV namespace in it is auto-provisioned on first deploy.
+wrangler deploy --config sites/<domain>/dist/server/wrangler.json
 
 # Self-hosted infra
 ./scripts/setup-infra.sh domain1.com,domain2.com

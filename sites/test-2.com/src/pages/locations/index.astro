@@ -1,0 +1,45 @@
+---
+import '../../styles/global.css';
+import LocationsHubPage from '../../components/LocationsHubPage.astro';
+
+import {
+  areaSettings,
+  fillTokens,
+  getAreaServices,
+  getLocationTree,
+  toHubCards,
+} from '../../lib/locations';
+import { resolveSeo } from '../../lib/seo';
+
+// Every town we serve, whatever the state. The state and county pages below
+// this one are the same template with the list narrowed.
+const [states, services] = await Promise.all([getLocationTree(), getAreaServices()]);
+const cities = states.flatMap((state) => state.cities);
+
+// Single-state client today, so the copy's {state} token reads the first state
+// in the tree; with several it falls back to the site's own state.
+const stateName = states[0]?.name ?? '';
+const tokens = { state: stateName, stateName };
+
+const hub = areaSettings.hub;
+const seo = resolveSeo({
+  pattern: 'locations',
+  tokens,
+  title: hub.seo.title,
+  description: hub.seo.description,
+  path: Astro.url.pathname,
+});
+---
+
+<LocationsHubPage
+  title={seo.title}
+  description={seo.description}
+  keywords={hub.seo.keywords}
+  heroTitle={fillTokens(hub.hero.title, tokens)}
+  heroDescription={fillTokens(hub.hero.description, tokens)}
+  eyebrow={hub.eyebrow}
+  heading={fillTokens(hub.heading, tokens)}
+  lead={fillTokens(hub.description, tokens)}
+  footnote={fillTokens(hub.footnote, tokens)}
+  areas={toHubCards(cities, services)}
+/>

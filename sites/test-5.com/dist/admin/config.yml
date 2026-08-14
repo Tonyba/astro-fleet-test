@@ -8,10 +8,10 @@
 # paths below are relative to the REPOSITORY ROOT — this is a monorepo, so every
 # path is prefixed with sites/test-5.com/.
 backend:
-  name: test-repo
- # name: github
- # repo: your-org/astro-fleet        # TODO: change to your real GitHub repo
- # branch: main
+  name: github
+  repo: tonyba/astro-fleet-test        # TODO: change to your real GitHub repo (only used for the remote/production backend)
+  branch: main
+
 
 # ---------------------------------------------------------------------------
 # Local development

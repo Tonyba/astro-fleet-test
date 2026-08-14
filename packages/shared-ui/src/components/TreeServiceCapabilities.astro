@@ -1,0 +1,213 @@
+---
+/**
+ * TreeServiceCapabilities.astro
+ * -----------------------------
+ * "WHAT WE CAN DO FOR YOU" — Figma node 123:3650, on the full-bleed green band
+ * 123:3493 (--color-bg-action-hover). Left column (713px): heading, intro and
+ * the done-for-you bullets, all reversed out in white, closed by a
+ * brand-strong CTA. Right column (652px): a wrapping set of 319x120 pale chips,
+ * each an accent icon square plus a label.
+ *
+ * Each bullet reads "<Label> – <description>"; the part up to and including the
+ * dash is emphasised, matching the bold lead-ins in the design.
+ * <=1024px the two columns stack and the chips go 2-up, then 1-up at <=767px.
+ */
+export interface CapabilityChip {
+  icon: string;
+  label: string;
+}
+
+export interface Props {
+  heading: string;
+  intro?: string;
+  bullets?: string[];
+  ctaLabel?: string;
+  ctaHref?: string;
+  chips?: CapabilityChip[];
+}
+
+const {
+  heading,
+  intro,
+  bullets = [],
+  ctaLabel,
+  ctaHref = '#free-inspection',
+  chips = [],
+} = Astro.props;
+
+/** Split "Safe Tree Removal – We remove…" into its bold lead-in and the rest. */
+const splitBullet = (text: string): [string, string] => {
+  const match = text.match(/^(.*?[–—])\s*(.*)$/s);
+  return match ? [match[1], match[2]] : ['', text];
+};
+---
+
+<section class="tree-capabilities">
+  <div class="tree-container tree-capabilities__inner">
+    <div class="tree-capabilities__copy">
+      <h2 class="tree-capabilities__heading">{heading}</h2>
+      {intro && <p class="tree-capabilities__intro">{intro}</p>}
+      {bullets.length > 0 && (
+        <ul class="tree-capabilities__bullets">
+          {bullets.map((b) => {
+            const [lead, rest] = splitBullet(b);
+            return (
+              <li>
+                {lead && <strong>{lead} </strong>}
+                {rest}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {ctaLabel && <a href={ctaHref} class="tree-capabilities__cta">{ctaLabel}</a>}
+    </div>
+
+    {chips.length > 0 && (
+      <ul class="tree-capabilities__chips">
+        {chips.map((c) => (
+          <li class="tree-capabilities__chip">
+            <span class="tree-capabilities__chip-icon">
+              <img src={c.icon} alt="" width="40" height="40" loading="lazy" decoding="async" />
+            </span>
+            <span class="tree-capabilities__chip-label">{c.label}</span>
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+</section>
+
+<style>
+  /* Full-bleed green band (Figma 123:3493) — the copy column reverses out. */
+  .tree-capabilities {
+    padding-block: 65px;
+    background: var(--color-bg-action-hover, #368a2a);
+  }
+
+  .tree-capabilities__inner {
+    display: grid;
+    grid-template-columns: 713px minmax(0, 1fr);
+    gap: 80px;
+    align-items: start;
+  }
+
+  .tree-capabilities__copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 30px;
+    color: var(--color-text-inverse, #fff);
+  }
+
+  .tree-capabilities__heading {
+    font-size: 42px;
+    font-weight: 500;
+    line-height: 1;
+    text-transform: capitalize;
+  }
+
+  .tree-capabilities__intro {
+    font-size: 18px;
+    line-height: 1.6;
+  }
+
+  .tree-capabilities__bullets {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .tree-capabilities__bullets li {
+    font-size: 18px;
+    line-height: 1.6;
+  }
+  .tree-capabilities__bullets strong { font-weight: 700; }
+
+  .tree-capabilities__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 286px;
+    height: 60px;
+    padding-inline: 24px;
+    border-radius: var(--tree-radius-btn, 6px);
+    background: var(--color-bg-brand-strong, #1e372e);
+    color: var(--color-text-inverse, #fff);
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.8;
+    text-transform: capitalize;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+  .tree-capabilities__cta:hover {
+    background: var(--color-bg-accent, #c8f08f);
+    color: var(--color-text-primary, #013b2d);
+  }
+
+  .tree-capabilities__chips {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 319px));
+    gap: 12px;
+    align-content: start;
+  }
+
+  .tree-capabilities__chip {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    min-height: 120px;
+    padding: 20px;
+    border-radius: var(--tree-radius-card, 12px);
+    background: var(--color-bg-brand-soft, #e5f1ed);
+  }
+
+  .tree-capabilities__chip-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 5px;
+    background: var(--color-bg-accent, #c8f08f);
+  }
+  .tree-capabilities__chip-icon img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+  }
+
+  .tree-capabilities__chip-label {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-transform: capitalize;
+    color: var(--color-text-primary, #013b2d);
+  }
+
+  @media (max-width: 1024px) {
+    .tree-capabilities { padding-block: 52px; }
+    .tree-capabilities__inner { grid-template-columns: 1fr; gap: 40px; }
+    .tree-capabilities__heading { font-size: 34px; }
+    .tree-capabilities__chips { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  @media (max-width: 767px) {
+    .tree-capabilities { padding-block: 40px; }
+    .tree-capabilities__heading { font-size: 28px; }
+    .tree-capabilities__intro,
+    .tree-capabilities__bullets li { font-size: 15px; }
+    .tree-capabilities__cta { min-width: 0; width: 100%; height: 52px; font-size: 16px; }
+    .tree-capabilities__chips { grid-template-columns: 1fr; }
+    .tree-capabilities__chip { min-height: 96px; padding: 16px; gap: 12px; }
+    .tree-capabilities__chip-icon { width: 48px; height: 48px; }
+    .tree-capabilities__chip-icon img { width: 30px; height: 30px; }
+    .tree-capabilities__chip-label { font-size: 16px; }
+  }
+</style>

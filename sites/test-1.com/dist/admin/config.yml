@@ -27,6 +27,19 @@ backend:
 media_folder: sites/test-1.com/public/images/home   # where uploads are stored (repo path)
 public_folder: /images/home                          # URL these files resolve to on the site
 
+media_libraries:
+  all:
+    max_file_size: 125829120
+    slugify_filename: true
+    transformations:
+      raster_image: # original format
+        format: webp # new format, only `webp` is supported
+        quality: 85 # default: 85
+        width: 2048 # default: original size
+        height: 2048 # default: original size
+      svg:
+        optimize: true
+
 # ---------------------------------------------------------------------------
 # Collections
 # ---------------------------------------------------------------------------

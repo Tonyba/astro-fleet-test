@@ -1,0 +1,223 @@
+---
+/**
+ * TreeProjects.astro
+ * ------------------
+ * "Real Projects, Real Results" — Figma nodes 123:288 (text/controls) +
+ * 123:303 (photo gallery). Narrow left column with heading, copy and CTAs;
+ * an Embla photo carousel on the right with a synced thumbnail strip.
+ */
+import TreePicture from './TreePicture.astro';
+
+export interface ProjectItem { image: string; alt: string; }
+
+export interface Props {
+  eyebrow?: string;
+  heading?: string;
+  description?: string;
+  primaryCta?: { text: string; href: string };
+  secondaryCta?: { text: string; href: string };
+  projects?: ProjectItem[];
+}
+
+const {
+  eyebrow = 'Proyects',
+  heading = 'Real Projects, Real Results',
+  description = 'Explore our recent tree care projects across Connecticut, including tree removals, trimming, stump grinding, and emergency storm cleanup.',
+  primaryCta = { text: 'Get a Free Estimate', href: '#quote' },
+  secondaryCta = { text: 'View all proyects', href: '/projects/' },
+  projects = [
+    { image: '/src/assets/photos/project-1.jpg', alt: 'Tall tree removal in progress' },
+    { image: '/src/assets/photos/project-2.jpg', alt: 'Storm-damaged tree cleanup' },
+    { image: '/src/assets/photos/project-3.jpg', alt: 'Crane-assisted tree removal' },
+    { image: '/src/assets/photos/project-4.jpg', alt: 'Completed tree care project' },
+    { image: '/src/assets/photos/project-5.jpg', alt: 'Professional tree service work' },
+  ],
+} = Astro.props;
+---
+
+<section class="tree-projects">
+  <div class="tree-projects__inner">
+    <div class="tree-projects__aside">
+      <p class="tree-projects__eyebrow">{eyebrow}</p>
+      <h2 class="tree-projects__heading">{heading}</h2>
+      <p class="tree-projects__desc">{description}</p>
+      <div class="tree-projects__ctas">
+        <a href={primaryCta.href} class="tree-projects__cta tree-projects__cta--primary">{primaryCta.text}</a>
+        <a href={secondaryCta.href} class="tree-projects__cta tree-projects__cta--outline">{secondaryCta.text}</a>
+      </div>
+      <div class="tree-projects__arrows">
+        <button type="button" class="tree-projects__arrow" data-embla-prev aria-label="Previous project">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button type="button" class="tree-projects__arrow" data-embla-next aria-label="Next project">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="tree-projects__gallery">
+      <div class="tree-projects__embla" data-embla-main>
+        <div class="tree-projects__viewport">
+          <div class="tree-projects__container">
+            {projects.map((p, i) => (
+              <div class:list={['tree-projects__slide', { 'is-active': i === 0 }]}>
+                <TreePicture src={p.image} alt={p.alt} width={510} height={544} variant="card" class="tree-projects__img" loading="lazy" decoding="async" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div class="tree-projects__thumbs" data-embla-thumbs>
+        <div class="tree-projects__thumbs-viewport">
+          <div class="tree-projects__thumbs-container">
+            {projects.map((p, i) => (
+              <button type="button" class="tree-projects__thumb" data-thumb-index={i} aria-label={`Go to project ${i + 1}`}>
+                <TreePicture src={p.image} alt="" width={96} height={82} variant="fixed" class="tree-projects__thumb-img" loading="lazy" decoding="async" />
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .tree-projects { padding-block: 90px; background: var(--color-bg-surface, #fff); overflow: hidden; }
+  /* Left column aligns with the site container's left edge; the gallery bleeds
+     to the right viewport edge (no right padding). */
+  .tree-projects__inner {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 40px;
+    align-items: center;
+    padding-left: max(var(--tree-gutter, 24px), calc(50% - 701px));
+    padding-right: 0;
+  }
+
+  .tree-projects__eyebrow { font-size: 16px; font-weight: 600; line-height: 1.8; color: var(--color-text-primary, #013b2d); }
+  .tree-projects__heading { font-size: 42px; font-weight: 600; line-height: 1; text-transform: capitalize; color: #0b171e; margin: 20px 0; max-width: 360px; }
+  .tree-projects__desc { font-size: 18px; font-weight: 400; line-height: 1.6; color: var(--color-text-secondary, #373434); }
+
+  .tree-projects__ctas { display: flex; flex-direction: column; gap: 12px; margin-top: 28px; max-width: 352px; }
+  .tree-projects__cta {
+    height: 60px; display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 6px; font-size: 18px; font-weight: 700; transition: filter 0.15s ease, background-color 0.15s ease;
+  }
+  .tree-projects__cta--primary { background: var(--color-bg-accent, #c8f08f); color: #0b171e; }
+  .tree-projects__cta--primary:hover { filter: brightness(0.96); }
+  .tree-projects__cta--outline { border: 1px solid #0b171e; color: #0b171e; font-weight: 600; }
+  .tree-projects__cta--outline:hover { background: #0b171e; color: #fff; }
+
+  .tree-projects__arrows { display: flex; gap: 36px; margin-top: 28px; }
+  .tree-projects__arrow {
+    width: 60px; height: 60px; border-radius: 50%; border: 0; cursor: pointer;
+    background: var(--color-bg-action, #2f8328); color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+  }
+  .tree-projects__arrow:hover { background: var(--color-bg-action-hover, #368a2a); }
+  .tree-projects__arrow:disabled { opacity: 0.4; cursor: default; }
+
+  /* Gallery / Embla */
+  .tree-projects__gallery { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+  .tree-projects__viewport { overflow: hidden; }
+  .tree-projects__container { display: flex; gap: 12px; }
+  .tree-projects__slide {
+    flex: 0 0 auto; width: 510px; max-width: 82%;
+    opacity: 0.5; transition: opacity 0.3s ease;
+  }
+  .tree-projects__slide.is-active { opacity: 1; }
+  .tree-projects__slide :global(.tree-projects__img) { width: 100%; height: 544px; object-fit: cover; border-radius: 8px; }
+
+  .tree-projects__thumbs-viewport { overflow: hidden; }
+  .tree-projects__thumbs-container { display: flex; gap: 8px; }
+  /* 12-column thumbnail strip. */
+  .tree-projects__thumb {
+    flex: 0 0 calc((100% - 11 * 8px) / 12); min-width: 0; padding: 0; cursor: pointer;
+    background: none; border-radius: 4px; overflow: hidden; opacity: 0.5;
+    border: 2px solid transparent; transition: opacity 0.15s ease, border-color 0.15s ease;
+  }
+  .tree-projects__thumb.is-selected { opacity: 1; border-color: #34a853; }
+  .tree-projects__thumb :global(.tree-projects__thumb-img) { width: 100%; height: 60px; object-fit: cover; }
+
+  @media (max-width: 1024px) {
+    .tree-projects { padding-block: 64px; }
+    .tree-projects__inner { grid-template-columns: 1fr; gap: 28px; }
+    .tree-projects__heading { font-size: 34px; max-width: none; }
+    .tree-projects__slide { width: 70%; }
+  }
+  @media (max-width: 767px) {
+    /* Figma mobile: centered copy + full-width CTAs, then a full-bleed carousel,
+       then the prev/next arrows centered below. display:contents lets the arrows
+       (nested in the aside) reorder after the gallery. Thumbnail strip is dropped. */
+    .tree-projects__inner {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      align-items: stretch;
+      padding-left: var(--tree-gutter, 24px);
+      padding-right: var(--tree-gutter, 24px);
+    }
+    .tree-projects__aside { display: contents; }
+    .tree-projects__eyebrow { font-size: 14px; text-align: center; }
+    .tree-projects__heading { font-size: 36px; text-align: center; margin: 0; max-width: none; }
+    .tree-projects__desc { font-size: 14px; text-align: center; }
+    .tree-projects__ctas { margin-top: 0; max-width: none; }
+    .tree-projects__cta { height: 50px; }
+
+    .tree-projects__gallery {
+      order: 1;
+      width: 100vw;
+      margin-left: calc(50% - 50vw);
+    }
+    .tree-projects__slide { width: 88%; }
+    .tree-projects__slide :global(.tree-projects__img) { height: 360px; }
+    .tree-projects__thumbs { display: none; }
+
+    .tree-projects__arrows { order: 2; justify-content: center; margin-top: 0; }
+  }
+</style>
+
+<script>
+  import EmblaCarousel from 'embla-carousel';
+
+  function initTreeProjects() {
+    document.querySelectorAll('.tree-projects').forEach((root) => {
+      const mainNode = root.querySelector('[data-embla-main] .tree-projects__viewport');
+      const thumbNode = root.querySelector('[data-embla-thumbs] .tree-projects__thumbs-viewport');
+      if (!mainNode) return;
+
+      const main = EmblaCarousel(mainNode as HTMLElement, { loop: true, align: 'start', containScroll: 'trimSnaps' });
+      // Only wire the thumbnail strip when it is actually visible (it is
+      // display:none on mobile) — Embla on a zero-size element misbehaves.
+      const thumbs =
+        thumbNode && (thumbNode as HTMLElement).offsetParent !== null
+          ? EmblaCarousel(thumbNode as HTMLElement, { containScroll: 'keepSnaps', dragFree: true })
+          : null;
+
+      const prev = root.querySelector('[data-embla-prev]');
+      const next = root.querySelector('[data-embla-next]');
+      prev?.addEventListener('click', () => main.scrollPrev());
+      next?.addEventListener('click', () => main.scrollNext());
+
+      const thumbBtns = Array.from(root.querySelectorAll('.tree-projects__thumb')) as HTMLElement[];
+      const slides = Array.from(root.querySelectorAll('.tree-projects__slide')) as HTMLElement[];
+      thumbBtns.forEach((btn, i) => btn.addEventListener('click', () => main.scrollTo(i)));
+
+      const onSelect = () => {
+        const selected = main.selectedScrollSnap();
+        slides.forEach((s, i) => s.classList.toggle('is-active', i === selected));
+        thumbBtns.forEach((b, i) => b.classList.toggle('is-selected', i === selected));
+        thumbs?.scrollTo(selected);
+      };
+      main.on('select', onSelect);
+      main.on('init', onSelect);
+      onSelect();
+    });
+  }
+
+  initTreeProjects();
+  document.addEventListener('astro:after-swap', initTreeProjects);
+</script>

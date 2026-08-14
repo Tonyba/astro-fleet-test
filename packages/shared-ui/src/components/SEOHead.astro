@@ -73,6 +73,13 @@ const normalizedTwitter = twitterHandle
   : undefined;
 
 const resolvedOgImageAlt = ogImageAlt || title;
+// og:image must be absolute for every crawler — resolve root-relative paths
+// against the configured site URL rather than emitting a relative value.
+const resolvedOgImage = ogImage
+  ? ogImage.startsWith('http')
+    ? ogImage
+    : new URL(ogImage, Astro.site || Astro.url.origin).href
+  : undefined;
 const resolvedRssTitle = rssTitle || (siteName ? `${siteName} — RSS` : 'RSS Feed');
 
 // Build a linked JSON-LD @graph from props. Pages can pass additional nodes
@@ -153,9 +160,9 @@ for (const node of userNodes) {
 <meta property="og:locale" content={locale} />
 <meta property="og:url" content={resolvedCanonical} />
 {siteName && <meta property="og:site_name" content={siteName} />}
-{ogImage && (
+{resolvedOgImage && (
   <>
-    <meta property="og:image" content={ogImage} />
+    <meta property="og:image" content={resolvedOgImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content={resolvedOgImageAlt} />
@@ -163,7 +170,7 @@ for (const node of userNodes) {
 )}
 
 <!-- Twitter Card -->
-<meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+<meta name="twitter:card" content={resolvedOgImage ? 'summary_large_image' : 'summary'} />
 {normalizedTwitter && <meta name="twitter:site" content={normalizedTwitter} />}
 {/* Twitter falls back to og:title/description/image; no need to duplicate unless they differ. */}
 

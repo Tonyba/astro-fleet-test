@@ -1,0 +1,163 @@
+{
+  "seo": {
+    "title": "About Us — Erick's Tree Service",
+    "description": "Connecticut's trusted tree and vegetation experts. ISO accredited in Quality, Environmental and Work Health & Safety, with 25+ years of professional tree care.",
+    "keywords": [
+      "about",
+      "tree service company",
+      "Connecticut arborists",
+      "ISO accredited"
+    ]
+  },
+  "hero": {
+    "title": "About us.",
+    "description": "Erick's Tree Services is committed to providing professional tree care and outdoor property solutions for residential and commercial clients across Connecticut.",
+    "primaryCta": {
+      "label": "Get free quote now",
+      "href": "#free-inspection"
+    },
+    "separator": "or",
+    "phoneCta": {
+      "label": "Call (203) 367-8219",
+      "number": "(203) 367-8219"
+    },
+    "image": "/src/assets/photos/hero/image.jpg",
+    "imageAlt": "Erick’s Tree Services crew on site",
+    "imageSplit": "56.46%",
+    "minHeight": "396px"
+  },
+  "story": {
+    "eyebrow": "Our Story",
+    "heading": "Connecticut'S TRUSTED TREE & VEGETATION EXPERTS",
+    "paragraphs": [
+      "Erick’s Tree Services has been proudly serving residential and commercial properties across Connecticut with professional, safe, and reliable tree care solutions. Built on a foundation of quality workmanship, dependable service, and customer satisfaction, our company is committed to helping property owners maintain safe, clean, and well-managed outdoor spaces.",
+      "Our experienced team specializes in tree removal, trimming, stump grinding, land clearing, emergency storm cleanup, and outdoor property services. Every project is approached with professionalism, precision, and a strong focus on safety, ensuring the work is completed efficiently while protecting your property and surrounding environment.",
+      "We take pride in delivering reliable service backed by experienced crews, professional equipment, and industry-standard safety practices. Whether handling routine maintenance or urgent emergency situations, our goal is to provide solutions our clients can trust.",
+      "At Erick’s Tree Services, we believe strong customer relationships are built through honest communication, dependable work, and consistent results. We are committed to delivering professional service that homeowners, businesses, and property managers across Connecticut can rely on."
+    ],
+    "ctaLabel": "Get free quote now",
+    "ctaHref": "#free-inspection",
+    "image": "/src/assets/photos/story/image.jpg",
+    "imageAlt": "Arborist working on a mature tree"
+  },
+  "stats": {
+    "eyebrow": "Some Numbers",
+    "heading": "What we did so far",
+    "items": [
+      {
+        "value": "25+",
+        "label": "Years Experience"
+      },
+      {
+        "value": "1,000+",
+        "label": "Projects Completed"
+      },
+      {
+        "value": "24/7",
+        "label": "Emergency Services"
+      },
+      {
+        "value": "100%",
+        "label": "Commitment to Safety"
+      }
+    ]
+  },
+  "approach": {
+    "eyebrow": "OUR APPROACH",
+    "heading": "Safety. Compliance. Peace of Mind",
+    "description": "We are fully ISO accredited in Quality, Environmental and Work Health & Safety. Our systems, training and processes ensure we meet the highest industry standards and deliver consistent, complian outcomes for our clients.",
+    "badges": [
+      {
+        "src": "/src/assets/badges/approach/badges/0/src.png",
+        "alt": "ISO 45001 accredited"
+      },
+      {
+        "src": "/src/assets/badges/approach/badges/1/src.png",
+        "alt": "ISO 14001 accredited"
+      },
+      {
+        "src": "/src/assets/badges/approach/badges/2/src.png",
+        "alt": "ISO 9001 accredited"
+      }
+    ],
+    "ctaLabel": "Get free quote now",
+    "ctaHref": "#free-inspection",
+    "image": "/src/assets/photos/approach/image.jpg",
+    "imageAlt": "Crew operating tree care equipment on site"
+  },
+  "mission": {
+    "heading": "Our mission",
+    "description": "Our mission is to bring beauty, innovation, and sustainability to your outdoor spaces. We are dedicated to providing top-notch tree removal, tree installation, tree trimming, landscape lighting maintenance, landscape lighting design, and holiday lighting services. With a focus on quality workmanship and customer satisfaction, we strive to exceed your expectations and create stunning landscapes that inspire and impress.",
+    "backgroundImage": "/src/assets/photos/mission/backgroundImage.jpg"
+  },
+  "coreValues": {
+    "eyebrow": "Core Values",
+    "heading": "Connecticut's Premier Tree Care Specialists",
+    "items": [
+      {
+        "icon": "/media/icons/coreValues/items/0/icon.png",
+        "title": "Safety First",
+        "description": "Safety is our top priority. We follow strict safety protocols on every job to protect our team, your property, and everyone around us."
+      },
+      {
+        "icon": "/media/icons/coreValues/items/1/icon.png",
+        "title": "Customer Focus",
+        "description": "We listen to your needs and provide personalized solutions. Your satisfaction is our measure of success."
+      },
+      {
+        "icon": "/media/icons/coreValues/items/2/icon.png",
+        "title": "Integrity & Honesty",
+        "description": "We provide transparent pricing, honest advice, and clear communication throughout every project."
+      },
+      {
+        "icon": "/media/icons/coreValues/items/3/icon.png",
+        "title": "Environmental Care",
+        "description": "We listen to your needs and provide personalized solutions. Your satisfaction is our measure of success."
+      }
+    ]
+  },
+  "faq": {
+    "eyebrow": "Common Questions",
+    "titleLead": "Questions?",
+    "titleRest": "We're here to help",
+    "subtitle": "Everything you need to know about our tree removal Connecticut services.",
+    "items": [
+      {
+        "question": "How much does tree removal cost?",
+        "answer": "The cost of tree removal depends on factors such as tree size, location, and job complexity. We offer free, personalized estimates for every customer. Contact us today for a no-obligation quote."
+      },
+      {
+        "question": "What method do you use for stump removal?",
+        "answer": "We use professional stump grinding equipment to grind the stump several inches below grade, then clean up the debris so the area is ready for grass, mulch, or replanting."
+      },
+      {
+        "question": "Do you provide 24/7 emergency services?",
+        "answer": "Yes. Storms and fallen limbs never wait for business hours, so our emergency crew is on call around the clock to make your property safe as quickly as possible."
+      },
+      {
+        "question": "Are you licensed and insured?",
+        "answer": "Absolutely. We are fully licensed and carry comprehensive liability and workers' compensation insurance, so you are protected on every job we perform."
+      },
+      {
+        "question": "What method do you use for stump removal?",
+        "answer": "For most residential jobs we grind the stump, but for larger commercial sites we can fully excavate the root ball when the space needs to be completely cleared."
+      },
+      {
+        "question": "How long does it take to remove or prune a tree?",
+        "answer": "Most standard removals and pruning jobs are completed within a single day. Larger or more complex trees near structures or power lines may take longer, and we will give you a clear timeline up front."
+      },
+      {
+        "question": "Do you offer any discounts?",
+        "answer": "We offer seasonal promotions as well as discounts for seniors, veterans, and repeat customers. Ask us about current offers when you request your free quote."
+      }
+    ]
+  },
+  "inspection": {
+    "heading": "Get A Free Tree Inspection. No call out fee!",
+    "lead": "Need professional tree removal, trimming, stump grinding, or emergency storm cleanup?",
+    "paragraphs": [
+      "Fill out the form below and our team will review your request and get back to you with a fast, no-obligation estimate.",
+      "We provide safe, reliable, and professional tree services for residential and commercial properties across Connecticut — always focused on safety, efficiency, and quality results."
+    ]
+  }
+}

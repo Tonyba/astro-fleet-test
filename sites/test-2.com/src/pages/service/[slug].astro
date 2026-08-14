@@ -1,0 +1,54 @@
+---
+import '../../styles/global.css';
+import TreeLayout from '@astro-fleet/shared-ui/src/layouts/TreeLayout.astro';
+import ServiceSections from '../../components/ServiceSections.astro';
+
+import { getCollection, render } from 'astro:content';
+import site from '../../content/settings/site.json';
+import { getHeader } from '../../lib/header';
+import { resolveSeo } from '../../lib/seo';
+
+// One page per entry in the `services` collection — the same collection that
+// feeds every services grid on the site. The section stack itself lives in
+// ServiceSections, shared with the service×city pages under /locations/.
+export async function getStaticPaths() {
+  const services = await getCollection('services', ({ data }) => !data.draft);
+  return services.map((service) => ({
+    params: { slug: service.id.replace(/\.md$/, '') },
+    props: { service },
+  }));
+}
+
+const { service } = Astro.props;
+const d = service.data;
+const { Content } = await render(service);
+
+const header = await getHeader();
+
+// The site-wide "service" pattern localises every service title the same way;
+// the entry's own SEO title is the fallback when that pattern is blank.
+const seo = resolveSeo({
+  pattern: 'service',
+  tokens: { service: d.title },
+  title: d.seo?.title || `${d.title} — ${site.siteName}`,
+  description: d.seo?.description || d.card.description,
+  path: Astro.url.pathname,
+});
+---
+
+<TreeLayout
+  title={seo.title}
+  description={seo.description}
+  keywords={d.seo?.keywords?.length ? d.seo.keywords : undefined}
+  siteName={site.siteName}
+  logoSrc={site.logo}
+  faviconSrc={site.favicon}
+  header={header}
+  footer={site.footer}
+  colors={site.theme.colors}
+  fonts={site.theme.fonts}
+>
+  <ServiceSections service={d}>
+    <Content />
+  </ServiceSections>
+</TreeLayout>

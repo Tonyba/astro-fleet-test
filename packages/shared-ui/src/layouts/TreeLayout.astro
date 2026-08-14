@@ -1,0 +1,243 @@
+---
+/**
+ * TreeLayout.astro
+ * ----------------
+ * Document shell for the tree-care template (Figma: "erik-tree-services").
+ * Emits Libre Franklin via the Astro Fonts API, declares the design-token
+ * :root variables (semantic colours taken verbatim from Figma), a base reset,
+ * and composes TreeHeader (top) + a <main> slot + TreeFooter (bottom).
+ *
+ * Global palette + fonts are CMS-editable via the `colors` / `fonts` props,
+ * injected as :root overrides after the static defaults.
+ */
+import { Font } from 'astro:assets';
+import SEOHead from '../components/SEOHead.astro';
+import TreeHeader from '../components/TreeHeader.astro';
+import TreeFooter from '../components/TreeFooter.astro';
+import type { Props as HeaderProps } from '../components/TreeHeader.astro';
+import type { Props as FooterProps } from '../components/TreeFooter.astro';
+
+export interface ThemeColors {
+  textInverse?: string;
+  textAccent?: string;
+  textPrimary?: string;
+  textSecondary?: string;
+  textMuted?: string;
+  bgSurface?: string;
+  bgAccent?: string;
+  bgBrand?: string;
+  bgBrandStrong?: string;
+  bgBrandSoft?: string;
+  bgSubtle?: string;
+  bgAction?: string;
+  bgActionHover?: string;
+  bgEmergency?: string;
+  borderSubtle?: string;
+  borderAccent?: string;
+}
+export interface ThemeFonts {
+  /** Family for headings + body (default Libre Franklin). */
+  sans?: string;
+}
+
+export interface Props {
+  title: string;
+  description: string;
+  keywords?: string[];
+  canonicalUrl?: string;
+  ogImage?: string;
+  siteName: string;
+  logoSrc: string;
+  logoAlt?: string;
+  /** Browser tab icon. The MIME type is derived from the extension. */
+  faviconSrc?: string;
+  header: HeaderProps;
+  footer: FooterProps;
+  /** CMS-editable global palette. */
+  colors?: ThemeColors;
+  /** CMS-editable global font families. */
+  fonts?: ThemeFonts;
+}
+
+const {
+  title,
+  description,
+  keywords,
+  canonicalUrl,
+  ogImage,
+  siteName,
+  logoSrc,
+  logoAlt = "Erick's Tree Service",
+  faviconSrc = '/favicon.svg',
+  header,
+  footer,
+  colors = {},
+  fonts = {},
+} = Astro.props;
+
+// The CMS accepts any icon format, so the <link> type follows the file itself.
+const FAVICON_TYPES: Record<string, string> = {
+  svg: 'image/svg+xml',
+  png: 'image/png',
+  ico: 'image/x-icon',
+  gif: 'image/gif',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  webp: 'image/webp',
+};
+const faviconType =
+  FAVICON_TYPES[faviconSrc.split('?')[0].split('.').pop()?.toLowerCase() ?? ''] ?? 'image/svg+xml';
+
+// ---- CMS-driven theme (colors + fonts) injected as :root overrides ----
+const colorVarMap: Record<keyof ThemeColors, string> = {
+  textInverse: '--color-text-inverse',
+  textAccent: '--color-text-accent',
+  textPrimary: '--color-text-primary',
+  textSecondary: '--color-text-secondary',
+  textMuted: '--color-text-muted',
+  bgSurface: '--color-bg-surface',
+  bgAccent: '--color-bg-accent',
+  bgBrand: '--color-bg-brand',
+  bgBrandStrong: '--color-bg-brand-strong',
+  bgBrandSoft: '--color-bg-brand-soft',
+  bgSubtle: '--color-bg-subtle',
+  bgAction: '--color-bg-action',
+  bgActionHover: '--color-bg-action-hover',
+  bgEmergency: '--color-bg-emergency',
+  borderSubtle: '--color-border-subtle',
+  borderAccent: '--color-border-accent',
+};
+const colorDecls = (Object.keys(colorVarMap) as (keyof ThemeColors)[])
+  .filter((k) => colors[k])
+  .map((k) => `${colorVarMap[k]}: ${colors[k]};`)
+  .join(' ');
+
+const fontDecl = fonts.sans
+  ? `--font-heading: '${fonts.sans}', system-ui, sans-serif; --font-body: '${fonts.sans}', system-ui, sans-serif;`
+  : '';
+const themeCss = colorDecls || fontDecl ? `:root { ${colorDecls} ${fontDecl} }` : '';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <SEOHead
+      title={title}
+      description={description}
+      keywords={keywords}
+      canonicalUrl={canonicalUrl}
+      ogImage={ogImage}
+      siteName={siteName}
+      logoUrl={logoSrc}
+      faviconHref={faviconSrc}
+      faviconType={faviconType}
+    />
+    <Font cssVariable="--font-heading" preload />
+    <Font cssVariable="--font-body" />
+    <style is:global>
+      :root {
+        /* ===== Colours (Figma semantic tokens) ===== */
+        --color-text-inverse: #ffffff;
+        --color-text-accent: #c8f08f;
+        --color-text-primary: #013b2d;
+        --color-text-secondary: #373434;
+        --color-text-muted: #9f9f9f;
+        --color-bg-surface: #ffffff;
+        --color-bg-accent: #c8f08f;
+        --color-bg-brand: #013b2d;
+        --color-bg-brand-strong: #1e372e;
+        --color-bg-brand-soft: #e5f1ed;
+        --color-bg-subtle: #f9f9f9;
+        --color-bg-action: #2f8328;
+        --color-bg-action-hover: #368a2a;
+        --color-bg-emergency: #ae1d20;
+        --color-bg-image-placeholder: #d9d9d9;
+        --color-border-inverse: #ffffff;
+        --color-border-strong: #013b2d;
+        --color-border-subtle: #d9d9d9;
+        --color-border-default: #e0dfda;
+        --color-border-accent: #c8f08f;
+
+        /* ===== Fonts ===== */
+        --font-heading: 'Libre Franklin', system-ui, sans-serif;
+        --font-body: 'Libre Franklin', system-ui, sans-serif;
+
+        /* ===== Radius ===== */
+        --tree-radius-btn: 6px;
+        --tree-radius-card: 12px;
+
+        /* ===== Layout ===== */
+        --tree-container: 1450px;
+        --tree-gutter: 24px;
+      }
+
+      *, *::before, *::after { box-sizing: border-box; }
+      * { margin: 0; }
+
+      html {
+        scroll-behavior: smooth;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+      }
+
+      body {
+        font-family: var(--font-body);
+        color: var(--color-text-secondary);
+        background-color: var(--color-bg-surface);
+        line-height: 1.6;
+        min-height: 100svh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      img, svg, picture, video, canvas { display: block; max-width: 100%; }
+      input, button, textarea, select { font: inherit; color: inherit; }
+      a { color: inherit; text-decoration: none; }
+      h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); overflow-wrap: break-word; }
+      p { overflow-wrap: break-word; }
+      main {
+        flex: 1 0 auto;
+        /* Clip full-bleed (100vw) section overflow so it never creates a
+           horizontal scrollbar (which would feed a ResizeObserver loop with the
+           carousels). `clip` on <main> leaves page scroll + the sticky header
+           (outside <main>) untouched. */
+        overflow-x: clip;
+      }
+
+      :focus-visible { outline: 2px solid var(--color-bg-action); outline-offset: 2px; }
+
+      /* ===== Shared layout helper ===== */
+      .tree-container {
+        width: 100%;
+        max-width: var(--tree-container);
+        margin-inline: auto;
+        padding-inline: var(--tree-gutter);
+      }
+
+      .tree-skip-link {
+        position: absolute;
+        top: -100%;
+        left: 1rem;
+        padding: 0.75rem 1.5rem;
+        background: var(--color-bg-action);
+        color: #fff;
+        font-weight: 600;
+        border-radius: 0 0 0.5rem 0.5rem;
+        z-index: 9999;
+      }
+      .tree-skip-link:focus { top: 0; }
+    </style>
+    {/* CMS-editable palette + fonts — overrides the static defaults above. */}
+    {themeCss && <style is:global set:html={themeCss}></style>}
+  </head>
+  <body>
+    <a href="#main-content" class="tree-skip-link">Skip to main content</a>
+    <TreeHeader {...header} logoSrc={logoSrc} logoAlt={logoAlt} siteName={siteName} />
+    <main id="main-content">
+      <slot />
+    </main>
+    <TreeFooter {...footer} logoSrc={logoSrc} logoAlt={logoAlt} />
+    <slot name="footer-scripts" />
+  </body>
+</html>

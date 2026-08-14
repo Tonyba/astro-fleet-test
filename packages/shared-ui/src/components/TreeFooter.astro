@@ -1,0 +1,257 @@
+---
+/**
+ * TreeFooter.astro
+ * ----------------
+ * Site footer for the tree-care template. Figma node 123:871.
+ * Four columns: brand (logo + blurb + trust badges + socials), two link
+ * columns, and a soft-green contact panel with an emergency-line button.
+ * A bottom bar carries the copyright + legal links.
+ * All content is driven by props for CMS editing.
+ */
+import TreePicture from './TreePicture.astro';
+
+export interface FooterLink { label: string; href: string; }
+export interface FooterColumn { title: string; links: FooterLink[]; }
+export interface FooterBadge { src: string; alt: string; width: number; height: number; }
+export interface FooterSocial { platform: string; url: string; icon: string; }
+export interface FooterContact { phone?: string; email?: string; address?: string; }
+export interface FooterEmergency { label: string; number: string; }
+
+export interface Props {
+  description?: string;
+  badges?: FooterBadge[];
+  social?: FooterSocial[];
+  columns?: FooterColumn[];
+  contact?: FooterContact;
+  emergency?: FooterEmergency;
+  copyright?: string;
+  legalLinks?: FooterLink[];
+  /** Provided by TreeLayout. */
+  logoSrc?: string;
+  logoAlt?: string;
+}
+
+const {
+  description = 'Safe, reliable, and professional tree removal, trimming, stump grinding, and emergency storm cleanup for residential and commercial properties.',
+  badges = [],
+  social = [],
+  columns = [],
+  contact = {},
+  emergency,
+  copyright = "Erick's Tree Services. All rights reserved.",
+  legalLinks = [],
+  logoSrc = '/media/logo.png',
+  logoAlt = "Erick's Tree Service",
+} = Astro.props;
+
+const telHref = (n: string) => `tel:${n.replace(/[^\d+]/g, '')}`;
+---
+
+<footer class="tree-footer">
+  <div class="tree-footer__inner tree-container">
+    <div class="tree-footer__grid">
+      <!-- Brand column -->
+      <div class="tree-footer__brand">
+        <img class="tree-footer__logo" src={logoSrc} alt={logoAlt} width="246" height="80" />
+        <p class="tree-footer__desc">{description}</p>
+        {badges.length > 0 && (
+          <div class="tree-footer__badges">
+            {badges.map((b) => (
+              <TreePicture src={b.src} alt={b.alt} width={b.width} height={b.height} variant="fixed" loading="lazy" decoding="async" />
+            ))}
+          </div>
+        )}
+        {social.length > 0 && (
+          <ul class="tree-footer__social">
+            {social.map((s) => (
+              <li>
+                <a href={s.url} class="tree-footer__social-link" aria-label={s.platform} target="_blank" rel="noopener noreferrer">
+                  <img src={s.icon} alt="" width="22" height="22" loading="lazy" />
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <!-- Link columns -->
+      {columns.map((col) => (
+        <nav class="tree-footer__col" aria-label={col.title}>
+          <h2 class="tree-footer__col-title">{col.title}</h2>
+          <ul class="tree-footer__links">
+            {col.links.map((l) => (
+              <li><a href={l.href} class="tree-footer__link">{l.label}</a></li>
+            ))}
+          </ul>
+        </nav>
+      ))}
+
+      <!-- Contact panel -->
+      <div class="tree-footer__contact">
+        <h2 class="tree-footer__contact-title">Contact Us</h2>
+        <ul class="tree-footer__contact-list">
+          {contact.phone && (
+            <li class="tree-footer__contact-row">
+              <svg width="25" height="25" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M6.5 3h3l1.5 4-2 1.5a12 12 0 0 0 5 5L18.5 16l4 1.5v3a2 2 0 0 1-2 2A17 17 0 0 1 4.5 5a2 2 0 0 1 2-2Z" fill="currentColor"/>
+              </svg>
+              <a href={telHref(contact.phone)}>{contact.phone}</a>
+            </li>
+          )}
+          {contact.email && (
+            <li class="tree-footer__contact-row">
+              <svg width="25" height="20" viewBox="0 0 24 20" fill="none" aria-hidden="true">
+                <rect x="1.5" y="1.5" width="21" height="17" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                <path d="m2 3 10 7 10-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <a href={`mailto:${contact.email}`}>{contact.email}</a>
+            </li>
+          )}
+          {contact.address && (
+            <li class="tree-footer__contact-row">
+              <svg width="21" height="25" viewBox="0 0 21 25" fill="none" aria-hidden="true">
+                <path d="M10.5 1C5.8 1 2 4.8 2 9.5c0 6 8.5 14 8.5 14s8.5-8 8.5-14C19 4.8 15.2 1 10.5 1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                <circle cx="10.5" cy="9.5" r="3" stroke="currentColor" stroke-width="1.8"/>
+              </svg>
+              <span>{contact.address}</span>
+            </li>
+          )}
+        </ul>
+        {emergency && (
+          <a href={telHref(emergency.number)} class="tree-footer__emergency">
+            <svg width="25" height="25" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M6.5 3h3l1.5 4-2 1.5a12 12 0 0 0 5 5L18.5 16l4 1.5v3a2 2 0 0 1-2 2A17 17 0 0 1 4.5 5a2 2 0 0 1 2-2Z" fill="currentColor"/>
+            </svg>
+            <span class="tree-footer__emergency-text">
+              <span class="tree-footer__emergency-label">{emergency.label}</span>
+              <span class="tree-footer__emergency-number">{emergency.number}</span>
+            </span>
+          </a>
+        )}
+      </div>
+    </div>
+
+    <div class="tree-footer__bottom">
+      <p class="tree-footer__copyright">{copyright}</p>
+      {legalLinks.length > 0 && (
+        <ul class="tree-footer__legal">
+          {legalLinks.map((l, i) => (
+            <li class:list={['tree-footer__legal-item', { 'has-dot': i > 0 }]}>
+              <a href={l.href}>{l.label}</a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  </div>
+</footer>
+
+<style>
+  .tree-footer { background: var(--color-bg-surface, #fff); padding-block: 64px; }
+
+  .tree-footer__grid {
+    display: grid;
+    grid-template-columns: 325px 1fr 1fr 470px;
+    gap: 58px;
+    align-items: start;
+  }
+
+  /* ===== Brand column ===== */
+  .tree-footer__brand { display: flex; flex-direction: column; gap: 27px; }
+  .tree-footer__logo { height: 80px; width: auto; object-fit: contain; }
+  .tree-footer__desc { font-size: 16px; font-weight: 400; line-height: 1.6; color: var(--color-text-primary, #013b2d); }
+  .tree-footer__badges { display: flex; align-items: center; gap: 8px; }
+  /* <Picture /> wraps each badge in <picture>; keep the <img> as the flex item. */
+  .tree-footer__badges :global(picture) { display: contents; }
+  .tree-footer__badges img { height: 77px; width: auto; object-fit: contain; }
+  .tree-footer__social { display: flex; gap: 16px; list-style: none; padding: 0; margin: 0; }
+  .tree-footer__social-link {
+    display: flex; align-items: center; justify-content: center;
+    width: 44px; height: 44px;
+    background: var(--color-bg-surface, #fff);
+    border: 1px solid var(--color-text-muted, #9f9f9f);
+    border-radius: 50%;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .tree-footer__social-link:hover { border-color: var(--color-bg-action, #2f8328); transform: translateY(-2px); }
+  .tree-footer__social-link img { width: 22px; height: 22px; }
+
+  /* ===== Link columns ===== */
+  .tree-footer__col-title {
+    font-size: 22px; font-weight: 600; text-transform: uppercase;
+    color: var(--color-text-primary, #013b2d); margin-bottom: 20px;
+  }
+  .tree-footer__links { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 20px; }
+  .tree-footer__link { font-size: 18px; font-weight: 500; color: var(--color-text-primary, #013b2d); transition: color 0.15s ease; }
+  .tree-footer__link:hover { color: var(--color-bg-action, #2f8328); }
+
+  /* ===== Contact panel ===== */
+  .tree-footer__contact {
+    background: var(--color-bg-brand-soft, #e5f1ed);
+    padding: 44px 56px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-height: 363px;
+  }
+  .tree-footer__contact-title {
+    font-size: 22px; font-weight: 600; text-transform: uppercase; color: #1e372e;
+  }
+  .tree-footer__contact-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 20px; }
+  .tree-footer__contact-row {
+    display: flex; align-items: center; gap: 20px;
+    font-size: 18px; font-weight: 500; line-height: 1.6; color: #1e372e;
+  }
+  .tree-footer__contact-row svg { flex-shrink: 0; color: #1e372e; }
+  .tree-footer__emergency {
+    display: flex; align-items: center; justify-content: center; gap: 20px;
+    height: 70px; margin-top: auto;
+    background: var(--color-bg-emergency, #ae1d20);
+    color: var(--color-text-inverse, #fff);
+    border-radius: var(--tree-radius-btn, 6px);
+    transition: filter 0.15s ease;
+  }
+  .tree-footer__emergency:hover { filter: brightness(1.06); }
+  .tree-footer__emergency-text { display: flex; flex-direction: column; line-height: 1.2; }
+  .tree-footer__emergency-label { font-size: 18px; font-weight: 500; text-transform: capitalize; }
+  .tree-footer__emergency-number { font-size: 22px; font-weight: 600; text-transform: uppercase; }
+
+  /* ===== Bottom bar ===== */
+  .tree-footer__bottom {
+    margin-top: 30px;
+    padding-top: 15px;
+    border-top: 1px solid var(--color-border-subtle, #d9d9d9);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .tree-footer__copyright { font-size: 14px; font-weight: 500; line-height: 1.6; color: #1e372e; }
+  .tree-footer__legal { display: flex; align-items: center; gap: 16px; list-style: none; padding: 0; margin: 0; }
+  .tree-footer__legal-item { font-size: 14px; font-weight: 500; color: #1e372e; }
+  .tree-footer__legal-item.has-dot::before {
+    content: ''; display: inline-block; width: 5px; height: 5px; margin-right: 16px;
+    border-radius: 50%; background: #1e372e; vertical-align: middle;
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 1024px) {
+    .tree-footer__grid { grid-template-columns: 1fr 1fr; gap: 40px; }
+    .tree-footer__brand,
+    .tree-footer__contact { grid-column: 1 / -1; }
+    .tree-footer__contact { min-height: 0; }
+  }
+  @media (max-width: 767px) {
+    .tree-footer { padding-block: 48px; }
+    .tree-footer__grid { grid-template-columns: 1fr; }
+    /* Brand block is centered on mobile (Figma): logo, blurb, badges, socials. */
+    .tree-footer__brand { text-align: center; }
+    .tree-footer__logo { align-self: center; }
+    .tree-footer__badges { justify-content: center; }
+    .tree-footer__social { justify-content: center; }
+    .tree-footer__contact { padding: 32px 24px; }
+    .tree-footer__contact-title { text-align: center; }
+    /* Bottom bar is centered on mobile (Figma). */
+    .tree-footer__bottom { flex-direction: column; align-items: center; text-align: center; gap: 12px; }
+  }
+</style>

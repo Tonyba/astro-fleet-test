@@ -1,0 +1,100 @@
+---
+/**
+ * TreeStatsRow.astro
+ * ------------------
+ * Plain four-up credentials row that sits directly under an interior page
+ * hero. Figma node 123:2864 (+ the 123:2869 rule beneath it).
+ * Not to be confused with TreeStatsBar — that is the homepage's two-tone
+ * rounded pill; this one is bare type on the page background, closed by a
+ * full-width hairline.
+ */
+export interface TreeStatItem {
+  value: string;
+  label: string;
+}
+
+export interface Props {
+  stats?: TreeStatItem[];
+}
+
+const {
+  stats = [
+    { value: '25+', label: 'Years Experience' },
+    { value: '1,000+', label: 'Projects Completed' },
+    { value: '24/7', label: 'Emergency Services' },
+    { value: '100%', label: 'Commitment to Safety' },
+  ],
+} = Astro.props;
+---
+
+<section class="tree-stats-row" aria-label="Our track record">
+  <ul class="tree-stats-row__list">
+    {stats.map((stat) => (
+      <li class="tree-stats-row__item">
+        <span class="tree-stats-row__value">{stat.value}</span>
+        <span class="tree-stats-row__label">{stat.label}</span>
+      </li>
+    ))}
+  </ul>
+</section>
+
+<style>
+  .tree-stats-row {
+    padding: 40px var(--tree-gutter, 24px) 29px;
+    background: var(--color-bg-surface, #fff);
+    border-bottom: 1px solid var(--color-border-subtle, #d9d9d9);
+  }
+
+  .tree-stats-row__list {
+    list-style: none;
+    margin: 0 auto;
+    padding: 0;
+    width: 100%;
+    max-width: 1040px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .tree-stats-row__item {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    color: var(--color-text-primary, #013b2d);
+  }
+
+  .tree-stats-row__value {
+    font-family: var(--font-heading);
+    font-size: 34.884px;
+    font-weight: 700;
+    line-height: 1.66;
+  }
+
+  .tree-stats-row__label {
+    font-size: 15.698px;
+    font-weight: 400;
+    line-height: 1.66;
+  }
+
+  @media (max-width: 1024px) {
+    .tree-stats-row { padding-block: 32px 24px; }
+    .tree-stats-row__list { gap: 16px; }
+    .tree-stats-row__value { font-size: 30px; }
+    .tree-stats-row__label { font-size: 14px; }
+  }
+
+  /* Mobile stacks into a single centred column (Figma 123:6070): four 78px
+     rows on a 20px rhythm, closed by the same full-width hairline. */
+  @media (max-width: 767px) {
+    .tree-stats-row { padding-block: 24px 20px; }
+    .tree-stats-row__list {
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .tree-stats-row__item { align-items: center; }
+    .tree-stats-row__value { font-size: 32px; line-height: 1.5; }
+    .tree-stats-row__label { font-size: 15px; line-height: 1.5; }
+  }
+</style>

@@ -1,80 +1,59 @@
 ---
-import BaseLayout from '@astro-fleet/shared-ui/src/layouts/BaseLayout.astro';
-import Breadcrumb from '@astro-fleet/shared-ui/src/components/Breadcrumb.astro';
-import ContactForm from '@astro-fleet/shared-ui/src/components/ContactForm.astro';
-import { CORPORATE } from '@astro-fleet/config/tokens';
-import {
-  SITE_NAME,
-  TAGLINE,
-  LOGO_SRC,
-  navigation,
-  footerColumns,
-  contactInfo,
-  socialLinks,
-} from '../lib/site-config';
+import '../styles/global.css';
+import TreeLayout from '@astro-fleet/shared-ui/src/layouts/TreeLayout.astro';
+import TreePageHero from '@astro-fleet/shared-ui/src/components/TreePageHero.astro';
+import TreeQuoteForm from '@astro-fleet/shared-ui/src/components/TreeQuoteForm.astro';
+import TreeContactDetails from '@astro-fleet/shared-ui/src/components/TreeContactDetails.astro';
+
+import { getForm } from '../lib/forms';
+import { resolveSeo } from '../lib/seo';
+import { getHeader } from '../lib/header';
+
+// CMS-editable content (Keystatic commits these JSON files; the build imports them).
+import site from '../content/settings/site.json';
+import page from '../content/pages/contact.json';
+
+// Same form model every other page uses — one definition, reused.
+const quoteForm = await getForm('quote');
+
+const seo = resolveSeo({
+  pattern: 'contact',
+  title: page.seo.title,
+  description: page.seo.description,
+  path: Astro.url.pathname,
+});
+
+// The Areas We Serve submenu is generated from the Service Areas content.
+const header = await getHeader();
 ---
 
-<BaseLayout
-  title={`Contact Us — ${SITE_NAME}`}
-  description="Get in touch with our team. Fill in the form and we'll get back to you within 24 hours."
-  keywords={['contact', 'enquiry', 'get in touch', 'support']}
-  {navigation}
-  footerColumns={footerColumns}
-  {contactInfo}
-  {socialLinks}
-  siteName={SITE_NAME}
-  tagline={TAGLINE}
-  logoSrc={LOGO_SRC}
-  ctaText="Get Started"
-  ctaHref="/contact/"
-  designTokens={CORPORATE}
+<TreeLayout
+  title={seo.title}
+  description={seo.description}
+  keywords={page.seo.keywords}
+  siteName={site.siteName}
+  logoSrc={site.logo}
+  faviconSrc={site.favicon}
+  header={header}
+  footer={site.footer}
+  colors={site.theme.colors}
+  fonts={site.theme.fonts}
 >
-  <div class="container">
-    <Breadcrumb
-      items={[
-        { label: 'Home', href: '/' },
-        { label: 'Contact' },
-      ]}
+  {/*
+    The contact form sits inside the hero band, reversed out over the dark
+    panel with the photo alongside (Figma 123:2055 + 123:2085). The heading and
+    intro stay on the hero so the page keeps a real <h1>; the form renders
+    header-less beneath them.
+  */}
+  <TreePageHero {...page.hero} titleSize="36px" titleTransform="uppercase">
+    <TreeQuoteForm
+      {...quoteForm}
+      variant="inverse"
+      showHeader={false}
+      formName="contact"
+      id="contact"
     />
-  </div>
+  </TreePageHero>
 
-  <!-- Page hero -->
-  <section class="contact-hero section">
-    <div class="container">
-      <h1 class="contact-hero__title">Get in Touch</h1>
-      <p class="contact-hero__sub">
-        Have a question or ready to start a project? Fill in the form below and
-        we'll get back to you within one business day.
-      </p>
-    </div>
-  </section>
-
-  <!-- Contact form -->
-  <ContactForm
-    formAction="#"
-    heading="Send Us a Message"
-    description="Tell us about your project and we'll get back to you within 24 hours."
-  />
-</BaseLayout>
-
-<style>
-  .contact-hero {
-    background: linear-gradient(160deg, #f0f4ff 0%, #ffffff 60%);
-    padding-bottom: 0;
-  }
-
-  .contact-hero__title {
-    font-size: clamp(2rem, 5vw, 3.25rem);
-    font-weight: 900;
-    letter-spacing: -0.03em;
-    color: var(--color-primary, #1e3a5f);
-    margin-bottom: 1rem;
-  }
-
-  .contact-hero__sub {
-    font-size: 1.125rem;
-    color: #475569;
-    line-height: 1.7;
-    max-width: 520px;
-  }
-</style>
+  <TreeContactDetails {...page.details} />
+</TreeLayout>

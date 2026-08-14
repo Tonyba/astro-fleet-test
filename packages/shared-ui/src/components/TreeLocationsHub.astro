@@ -1,0 +1,248 @@
+---
+/**
+ * TreeLocationsHub.astro
+ * ----------------------
+ * Coverage hub — Figma node 2052:131 (desktop 2053:6625 / mobile 2053:7301).
+ * Centred eyebrow + heading + lead, then one bordered card per served town
+ * carrying that town's service links, closed by a "don't see your town" note.
+ *
+ * Appears on the locations hub page (and its state / county variants) and in
+ * the tail of every city and service×city page, so every card and link is
+ * prop-driven and generated from the CMS locations content.
+ *
+ * Desktop: cards share one row (flex 1 each, 24px gutter).
+ * <=1024px: two columns. <=767px: single column, copy left-aligned (Figma
+ * 2052:130 sets the mobile block to items-start).
+ */
+export interface LocationServiceLink {
+  label: string;
+  href: string;
+}
+
+export interface LocationCard {
+  /** Card title as designed — "Bridgeport, CT". */
+  title: string;
+  href: string;
+  services?: LocationServiceLink[];
+}
+
+export interface Props {
+  eyebrow?: string;
+  heading?: string;
+  description?: string;
+  areas?: LocationCard[];
+  /** Closing line under the grid. */
+  footnote?: string;
+}
+
+const { eyebrow, heading, description, areas = [], footnote } = Astro.props;
+---
+
+<section class="tree-locations" aria-label={heading || 'Service areas'}>
+  <div class="tree-container tree-locations__inner">
+    {
+      (eyebrow || heading || description) && (
+        <header class="tree-locations__head">
+          {eyebrow && <p class="tree-locations__eyebrow">{eyebrow}</p>}
+          {heading && <h2 class="tree-locations__heading">{heading}</h2>}
+          {description && <p class="tree-locations__lead">{description}</p>}
+        </header>
+      )
+    }
+
+    <ul class="tree-locations__grid">
+      {
+        areas.map((area) => (
+          <li class="tree-locations__card">
+            <h3 class="tree-locations__card-title">
+              <a href={area.href} class="tree-locations__card-link">
+                {area.title}
+              </a>
+            </h3>
+            {area.services && area.services.length > 0 && (
+              <ul class="tree-locations__links">
+                {area.services.map((service) => (
+                  <li>
+                    <a href={service.href} class="tree-locations__link">
+                      {service.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        ))
+      }
+    </ul>
+
+    {footnote && <p class="tree-locations__note" set:html={footnote} />}
+  </div>
+</section>
+
+<style>
+  .tree-locations {
+    padding-block: 80px;
+    background: var(--color-bg-subtle, #f9f9f9);
+  }
+
+  .tree-locations__inner {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  /* ===== Heading block ===== */
+  .tree-locations__head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+  }
+
+  .tree-locations__eyebrow {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.5;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--color-bg-action, #2f8328);
+  }
+
+  .tree-locations__heading {
+    font-size: 36px;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.5px;
+    color: var(--color-text-primary, #013b2d);
+  }
+
+  .tree-locations__lead {
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.65;
+    color: var(--color-text-secondary, #373434);
+  }
+
+  /* ===== Town cards ===== */
+  .tree-locations__grid {
+    display: flex;
+    align-items: stretch;
+    gap: 24px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tree-locations__card {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 24px;
+    background: var(--color-bg-surface, #fff);
+    border: 1px solid var(--color-border-default, #e0dfda);
+    border-radius: var(--tree-radius-card, 12px);
+  }
+
+  .tree-locations__card-title {
+    font-size: 21px;
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--color-text-primary, #013b2d);
+  }
+
+  .tree-locations__card-link {
+    transition: color 0.15s ease;
+  }
+  .tree-locations__card-link:hover,
+  .tree-locations__card-link:focus-visible {
+    color: var(--color-bg-action, #2f8328);
+  }
+
+  .tree-locations__links {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tree-locations__link {
+    display: inline-block;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.65;
+    color: var(--color-bg-action, #2f8328);
+    transition: color 0.15s ease;
+  }
+  .tree-locations__link:hover,
+  .tree-locations__link:focus-visible {
+    color: var(--color-text-primary, #013b2d);
+    text-decoration: underline;
+  }
+
+  .tree-locations__note {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.5;
+    text-align: center;
+    color: var(--color-text-secondary, #373434);
+  }
+  /* The note carries the phone number as a link when the CMS supplies one. */
+  .tree-locations__note :global(a) {
+    color: var(--color-bg-action, #2f8328);
+    font-weight: 600;
+  }
+
+  /* ===== Tablet (<=1024px) — two columns ===== */
+  @media (max-width: 1024px) {
+    .tree-locations {
+      padding-block: 64px;
+    }
+    .tree-locations__inner {
+      gap: 32px;
+    }
+    .tree-locations__grid {
+      flex-wrap: wrap;
+    }
+    .tree-locations__card {
+      flex: 1 1 calc(50% - 12px);
+    }
+    .tree-locations__heading {
+      font-size: 32px;
+    }
+    .tree-locations__lead {
+      font-size: 17px;
+    }
+  }
+
+  /* ===== Mobile (<=767px) — stacked, left aligned (Figma 2052:130) ===== */
+  @media (max-width: 767px) {
+    .tree-locations {
+      padding-block: 48px;
+    }
+    .tree-locations__inner {
+      gap: 28px;
+    }
+    .tree-locations__head {
+      align-items: flex-start;
+      text-align: left;
+    }
+    .tree-locations__grid {
+      flex-direction: column;
+      gap: 16px;
+    }
+    .tree-locations__card {
+      flex: 0 0 auto;
+    }
+    .tree-locations__heading {
+      font-size: 30px;
+    }
+    .tree-locations__note {
+      text-align: left;
+    }
+  }
+</style>

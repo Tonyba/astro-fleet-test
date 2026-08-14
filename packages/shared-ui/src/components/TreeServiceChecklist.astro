@@ -1,0 +1,119 @@
+---
+/**
+ * TreeServiceChecklist.astro
+ * --------------------------
+ * "When Does a Tree… Need to Be Removed?" — Figma node 123:3578 on the tinted
+ * band 123:3566. Heading + intro, then the criteria split into two columns of
+ * green-tick rows (Figma fills the left column first, then the right).
+ * <=767px it collapses to a single column.
+ */
+export interface Props {
+  heading: string;
+  intro?: string;
+  items?: string[];
+  iconSrc?: string;
+}
+
+const { heading, intro, items = [], iconSrc = '/media/icons/check-list.svg' } = Astro.props;
+---
+
+<section class="tree-checklist">
+  <div class="tree-container tree-checklist__inner">
+    <div class="tree-checklist__head">
+      <h2 class="tree-checklist__heading">{heading}</h2>
+      {intro && <p class="tree-checklist__intro">{intro}</p>}
+    </div>
+
+    {items.length > 0 && (
+      <ul class="tree-checklist__list">
+        {items.map((item) => (
+          <li class="tree-checklist__item">
+            <img class="tree-checklist__tick" src={iconSrc} alt="" width="20" height="20" aria-hidden="true" loading="lazy" />
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+</section>
+
+<style>
+  .tree-checklist {
+    padding-block: 81px;
+    background: var(--color-bg-subtle, #f9f9f9); /* Figma 123:3566 */
+  }
+
+  .tree-checklist__inner {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .tree-checklist__head {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .tree-checklist__heading {
+    font-size: 42px;
+    font-weight: 500;
+    line-height: 1.248;
+    text-transform: uppercase;
+    color: var(--color-text-primary, #013b2d);
+  }
+
+  .tree-checklist__intro {
+    font-size: 18px;
+    line-height: 1.66;
+    color: var(--color-text-secondary, #373434);
+  }
+
+  /* Two columns, filled top-to-bottom then across — matching the Figma order. */
+  .tree-checklist__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 568px minmax(0, 1fr);
+    gap: 23px 60px;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(3, auto);
+  }
+
+  .tree-checklist__item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.66;
+    color: #000;
+  }
+
+  .tree-checklist__tick {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+  }
+
+  @media (max-width: 1024px) {
+    .tree-checklist { padding-block: 56px; }
+    .tree-checklist__heading { font-size: 34px; }
+    .tree-checklist__list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 32px; }
+  }
+
+  @media (max-width: 767px) {
+    .tree-checklist { padding-block: 40px; }
+    .tree-checklist__heading { font-size: 26px; }
+    .tree-checklist__intro { font-size: 15px; }
+    .tree-checklist__list {
+      grid-template-columns: 1fr;
+      grid-auto-flow: row;
+      grid-template-rows: none;
+      gap: 16px;
+    }
+    .tree-checklist__item { font-size: 16px; gap: 14px; align-items: flex-start; }
+    .tree-checklist__tick { margin-top: 4px; }
+  }
+</style>

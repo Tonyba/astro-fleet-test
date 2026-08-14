@@ -1,0 +1,412 @@
+---
+/**
+ * TreeQuoteForm.astro
+ * -------------------
+ * The "Get Your Free Quote" card used in the hero. Figma node 123:172.
+ * A real <form> with HTML5 validation; the phone field is progressively
+ * enhanced with intl-tel-input and Cloudflare Turnstile in a later phase
+ * (hooks: `.js-tel-input` and the Turnstile placeholder). Submits to the
+ * `action` endpoint (a Cloudflare Pages Function).
+ */
+/** A single, fully CMS-editable form field. */
+export interface FieldDef {
+  /** Submitted field name (also used to build ids). */
+  name: string;
+  /** Human label (visually-hidden for plain inputs, visible for select/radio). */
+  label?: string;
+  /** Placeholder text (text/email/tel/textarea only). */
+  placeholder?: string;
+  /**
+   * Controls how the field renders. Supported values:
+   * 'text' | 'email' | 'tel' | 'textarea' | 'select' | 'radio'.
+   * Typed as `string` so plain JSON (from the CMS) assigns without casting.
+   */
+  type: string;
+  /** Marks the field required for native validation. */
+  required?: boolean;
+  /** Options for select / radio types. */
+  options?: string[];
+}
+
+export interface Props {
+  id?: string;
+  title?: string;
+  subtitle?: string;
+  /** Ordered list of field definitions to render. */
+  fields?: FieldDef[];
+  submitText?: string;
+  action?: string;
+  /**
+   * 'bordered' = hero card (border, 20px radius); 'plain' = inset card
+   * (12px radius, no border); 'inverse' = reversed out on a dark band with
+   * transparent, white-outlined fields — the contact hero (Figma 123:2090).
+   */
+  variant?: 'bordered' | 'plain' | 'inverse';
+  /** Show the in-card title + subtitle (hidden when the heading lives beside the card). */
+  showHeader?: boolean;
+  /** Hidden field identifying which form submitted (for the CMS/endpoint). */
+  formName?: string;
+  /** Turnstile site key; when set the widget renders. */
+  turnstileSiteKey?: string;
+}
+
+const {
+  id = 'quote',
+  title = 'Get Your Free Quote',
+  subtitle = "Tell us about your project and we'll get back to you within 24 hours.",
+  variant = 'bordered',
+  showHeader = true,
+  formName = 'hero-quote',
+  fields = [
+    { name: 'full_name', label: 'Full Name', placeholder: 'Full Name*', type: 'text', required: true },
+    { name: 'email', label: 'Email Address', placeholder: 'Email Adress*', type: 'email', required: true },
+    { name: 'phone', label: 'Phone Number', placeholder: 'Phone Number*', type: 'tel', required: true },
+    { name: 'project_type', label: 'Proyect Type', type: 'radio', required: false, options: ['Residential', 'Commercial'] },
+    {
+      name: 'service',
+      label: 'What service do you need?',
+      type: 'select',
+      required: false,
+      options: [
+        'Tree Removal Services',
+        'Tree Trimming & Pruning',
+        'Stump Grinding',
+        'Land Clearing & Lot Cleaning',
+        'Storm Damage Cleanup',
+        'Cabling & Bracing',
+      ],
+    },
+    { name: 'message', label: 'Project details', placeholder: 'Tell us about your project...', type: 'textarea', required: false },
+  ],
+  submitText = 'Get Free Quote Now',
+  action = '/api/quote',
+  turnstileSiteKey,
+} = Astro.props;
+
+// Group consecutive text/email/tel inputs into a single .tree-quote__fields
+// block (so they keep the tight 12px gap) while preserving overall order.
+const PLAIN = new Set(['text', 'email', 'tel']);
+type Block = { kind: 'inputs'; fields: FieldDef[] } | { kind: 'field'; field: FieldDef };
+const blocks: Block[] = [];
+let run: FieldDef[] = [];
+const flushRun = () => {
+  if (run.length) {
+    blocks.push({ kind: 'inputs', fields: run });
+    run = [];
+  }
+};
+for (const field of fields) {
+  if (PLAIN.has(field.type)) {
+    run.push(field);
+  } else {
+    flushRun();
+    blocks.push({ kind: 'field', field });
+  }
+}
+flushRun();
+
+const autocompleteFor = (field: FieldDef): string | undefined =>
+  field.type === 'email' ? 'email' : field.type === 'tel' ? 'tel' : field.name === 'full_name' ? 'name' : undefined;
+---
+
+<div class:list={['tree-quote', `tree-quote--${variant}`]} id={id}>
+  <form class="tree-quote__form" method="post" action={action} novalidate>
+    <input type="hidden" name="form_name" value={formName} />
+    {showHeader && (
+      <div class="tree-quote__head">
+        <h2 class="tree-quote__title">{title}</h2>
+        <p class="tree-quote__subtitle">{subtitle}</p>
+      </div>
+    )}
+
+    {blocks.map((block) =>
+      block.kind === 'inputs' ? (
+        <div class="tree-quote__fields">
+          {block.fields.map((field) => (
+            <Fragment>
+              <label class="tree-quote__sr" for={`${id}-${field.name}`}>{field.label}</label>
+              <input
+                class:list={['tree-quote__input', field.type === 'tel' && 'js-tel-input']}
+                id={`${id}-${field.name}`}
+                name={field.name}
+                type={field.type}
+                placeholder={field.placeholder}
+                required={field.required}
+                autocomplete={autocompleteFor(field)}
+              />
+            </Fragment>
+          ))}
+        </div>
+      ) : block.field.type === 'radio' ? (
+        <fieldset class="tree-quote__group tree-quote__project">
+          <legend class="tree-quote__label">{block.field.label}</legend>
+          <div class="tree-quote__radios">
+            {(block.field.options ?? []).map((opt, i) => (
+              <label class="tree-quote__radio">
+                <input type="radio" name={block.field.name} value={opt} checked={i === 0} />
+                <span class="tree-quote__radio-dot"></span>
+                <span>{opt}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      ) : block.field.type === 'select' ? (
+        <div class="tree-quote__group">
+          <label class="tree-quote__label" for={`${id}-${block.field.name}`}>{block.field.label}</label>
+          <div class="tree-quote__select-wrap">
+            <select class="tree-quote__select" id={`${id}-${block.field.name}`} name={block.field.name}>
+              {(block.field.options ?? []).map((opt) => <option value={opt}>{opt}</option>)}
+            </select>
+            <svg class="tree-quote__chevron" width="24" height="18" viewBox="0 0 24 18" fill="none" aria-hidden="true">
+              <path d="M2 4l10 9 10-9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+        </div>
+      ) : block.field.type === 'textarea' ? (
+        <textarea class="tree-quote__textarea" name={block.field.name} placeholder={block.field.placeholder} rows="3"></textarea>
+      ) : null
+    )}
+
+    {turnstileSiteKey && (
+      <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="light"></div>
+    )}
+
+    <button type="submit" class="tree-quote__submit">{submitText}</button>
+    <p class="tree-quote__status" role="status" aria-live="polite" hidden></p>
+  </form>
+</div>
+
+<style>
+  .tree-quote {
+    background: var(--color-bg-surface, #fff);
+    width: 100%;
+    max-width: 603px;
+  }
+  .tree-quote--bordered {
+    border: 1px solid var(--color-border-subtle, #d9d9d9);
+    border-radius: 20px;
+    padding: 40px;
+  }
+  .tree-quote--plain {
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 550px;
+  }
+  /* On-dark: no card at all, fields are transparent with a white hairline. */
+  /* No card here — the dark band shows through, so the root must drop the
+     surface fill the other variants rely on. */
+  .tree-quote--inverse { max-width: 711px; padding: 0; border: 0; background: transparent; }
+  .tree-quote--inverse .tree-quote__head { text-align: left; }
+  .tree-quote--inverse .tree-quote__title,
+  .tree-quote--inverse .tree-quote__subtitle,
+  .tree-quote--inverse .tree-quote__label,
+  .tree-quote--inverse .tree-quote__radio { color: var(--color-text-inverse, #fff); }
+  .tree-quote--inverse .tree-quote__input,
+  .tree-quote--inverse .tree-quote__select,
+  .tree-quote--inverse .tree-quote__textarea {
+    background: transparent;
+    border-color: var(--color-border-inverse, #fff);
+    color: var(--color-text-inverse, #fff);
+  }
+  .tree-quote--inverse .tree-quote__input::placeholder,
+  .tree-quote--inverse .tree-quote__textarea::placeholder {
+    color: var(--color-text-inverse, #fff);
+    opacity: 0.85;
+  }
+  /* Native option lists render on the UA's own surface — keep them readable. */
+  .tree-quote--inverse .tree-quote__select option { color: #0b171e; }
+  .tree-quote--inverse .tree-quote__chevron { color: var(--color-text-inverse, #fff); }
+  .tree-quote--inverse .tree-quote__radio-dot {
+    background: transparent;
+    border-color: var(--color-border-inverse, #fff);
+  }
+  .tree-quote--inverse .tree-quote__radio input:checked + .tree-quote__radio-dot {
+    border: 6px solid var(--color-text-inverse, #fff);
+  }
+  .tree-quote--inverse .tree-quote__status.is-success { color: var(--color-bg-accent, #c8f08f); }
+  .tree-quote__form { display: flex; flex-direction: column; gap: 20px; }
+
+  .tree-quote__head { display: flex; flex-direction: column; gap: 12px; text-align: center; }
+  .tree-quote__title {
+    font-size: 36px; font-weight: 600; line-height: 1; text-transform: uppercase; color: #0b171e;
+  }
+  .tree-quote__subtitle { font-size: 16px; font-weight: 400; line-height: 1.6; color: #0b171e; }
+
+  .tree-quote__fields { display: flex; flex-direction: column; gap: 12px; }
+  .tree-quote__input,
+  .tree-quote__select,
+  .tree-quote__textarea {
+    width: 100%;
+    border: 1px solid #9f9f9f;
+    border-radius: 5px;
+    padding: 0 20px;
+    height: 50px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #0b171e;
+    background: var(--color-bg-surface, #fff);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .tree-quote__input::placeholder,
+  .tree-quote__textarea::placeholder { color: var(--color-text-muted, #9f9f9f); font-weight: 500; }
+  .tree-quote__input:focus,
+  .tree-quote__select:focus,
+  .tree-quote__textarea:focus {
+    outline: none;
+    border-color: var(--color-bg-action, #2f8328);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-bg-action, #2f8328) 18%, transparent);
+  }
+  .tree-quote__input:user-invalid { border-color: var(--color-bg-emergency, #ae1d20); }
+
+  .tree-quote__group { display: flex; flex-direction: column; gap: 6px; }
+  .tree-quote__label { font-size: 16px; font-weight: 600; color: #0b171e; padding: 0; }
+
+  /* Project type radios */
+  .tree-quote__project { border: 0; padding: 0; margin: 0; }
+  .tree-quote__radios { display: flex; gap: 24px; margin-top: 4px; }
+  .tree-quote__radio {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-size: 16px; font-weight: 600; color: #0b171e; cursor: pointer; padding: 8px 0;
+  }
+  .tree-quote__radio input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .tree-quote__radio-dot {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid var(--color-border-subtle, #d9d9d9);
+    background: var(--color-bg-surface, #fff);
+    display: inline-flex; flex-shrink: 0; transition: border-color 0.15s ease;
+  }
+  .tree-quote__radio input:checked + .tree-quote__radio-dot {
+    border: 6px solid #0b171e;
+  }
+  .tree-quote__radio input:focus-visible + .tree-quote__radio-dot {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-bg-action, #2f8328) 25%, transparent);
+  }
+
+  /* Service select */
+  .tree-quote__select-wrap { position: relative; }
+  .tree-quote__select {
+    border-color: #0b171e;
+    -webkit-appearance: none; appearance: none;
+    padding-right: 52px; cursor: pointer;
+  }
+  .tree-quote__chevron {
+    position: absolute; right: 19px; top: 50%; transform: translateY(-50%);
+    color: #0b171e; pointer-events: none;
+  }
+
+  .tree-quote__textarea { height: 87px; padding: 16px 20px; resize: vertical; line-height: 1.6; }
+
+  .tree-quote__submit {
+    height: 60px;
+    border: 0;
+    border-radius: 6px;
+    background: var(--color-bg-accent, #c8f08f);
+    color: var(--color-text-primary, #013b2d);
+    font-size: 18px;
+    font-weight: 700;
+    text-transform: capitalize;
+    cursor: pointer;
+    transition: filter 0.15s ease, transform 0.15s ease;
+  }
+  .tree-quote__submit:hover { filter: brightness(0.96); }
+  .tree-quote__submit:active { transform: translateY(1px); }
+
+  .tree-quote__status { font-size: 14px; text-align: center; }
+  .tree-quote__status.is-error { color: var(--color-bg-emergency, #ae1d20); }
+  .tree-quote__status.is-success { color: var(--color-bg-action, #2f8328); }
+
+  .tree-quote__sr {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+
+  @media (max-width: 767px) {
+    /* Figma mobile card: 12px radius, tighter gutters. */
+    .tree-quote--bordered { padding: 32px 16px; border-radius: 12px; }
+    .tree-quote__title { font-size: 27px; }
+    .tree-quote__subtitle { font-size: 13px; }
+  }
+
+  /* intl-tel-input theme tweaks */
+  .tree-quote :global(.iti) { width: 100%; display: block; }
+  .tree-quote :global(.iti__tel-input) { width: 100%; }
+</style>
+
+<script>
+  import intlTelInput from 'intl-tel-input';
+  import 'intl-tel-input/build/css/intlTelInput.css';
+
+  function enhanceQuoteForm(form: HTMLFormElement) {
+    if (form.dataset.enhanced) return;
+    form.dataset.enhanced = 'true';
+
+    const status = form.querySelector('.tree-quote__status') as HTMLElement | null;
+    const phone = form.querySelector('.js-tel-input') as HTMLInputElement | null;
+    let iti: any = null;
+    if (phone) {
+      iti = intlTelInput(phone, {
+        initialCountry: 'us',
+        loadUtils: () => import('intl-tel-input/utils') as any,
+      });
+    }
+
+    const setStatus = (msg: string, kind: 'error' | 'success') => {
+      if (!status) return;
+      status.textContent = msg;
+      status.hidden = false;
+      status.classList.remove('is-error', 'is-success');
+      status.classList.add(kind === 'error' ? 'is-error' : 'is-success');
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Native constraint validation first.
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+      // Phone validity via intl-tel-input.
+      if (iti && phone && phone.value.trim() && !iti.isValidNumber()) {
+        setStatus('Please enter a valid phone number.', 'error');
+        phone.focus();
+        return;
+      }
+      // Turnstile (when present) must have a token.
+      const turnstile = form.querySelector('[name="cf-turnstile-response"]') as HTMLInputElement | null;
+      if (form.querySelector('.cf-turnstile') && !(turnstile && turnstile.value)) {
+        setStatus('Please complete the anti-spam check.', 'error');
+        return;
+      }
+
+      const submit = form.querySelector('.tree-quote__submit') as HTMLButtonElement | null;
+      const original = submit?.textContent ?? '';
+      if (submit) { submit.disabled = true; submit.textContent = 'Sending…'; }
+
+      const data = new FormData(form);
+      if (iti && phone) data.set(phone.name, iti.getNumber() || phone.value);
+
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          body: data,
+          headers: { Accept: 'application/json' },
+        });
+        if (!res.ok) throw new Error('Request failed');
+        setStatus("Thanks! We'll get back to you within 24 hours.", 'success');
+        form.reset();
+      } catch {
+        setStatus('Something went wrong. Please call us or try again.', 'error');
+      } finally {
+        if (submit) { submit.disabled = false; submit.textContent = original; }
+      }
+    });
+  }
+
+  function initQuoteForms() {
+    document.querySelectorAll('.tree-quote__form').forEach((f) => enhanceQuoteForm(f as HTMLFormElement));
+  }
+
+  initQuoteForms();
+  document.addEventListener('astro:after-swap', initQuoteForms);
+</script>

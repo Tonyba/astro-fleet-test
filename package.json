@@ -11,7 +11,9 @@
   ],
   "scripts": {
     "dev": "turbo dev",
-    "build": "turbo build",
+    "build": "turbo build && bun run check:sizes",
+    "check:sizes": "node scripts/check-file-sizes.mjs",
+    "import-photo": "node scripts/import-photo.mjs",
     "lint": "turbo lint",
     "new-site": "./scripts/new-site.sh",
     "setup-infra": "./scripts/setup-infra.sh"

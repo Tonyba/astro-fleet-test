@@ -1,0 +1,120 @@
+---
+/**
+ * LocationsHubPage.astro
+ * ----------------------
+ * The coverage hub, Figma "🖥️ Template · 09 Locations Hub" (2053:6482).
+ * One template serves three URLs — /locations/, /locations/<state>/ and
+ * /locations/<state>/<county>/ — because the design is identical at every
+ * level: only the hero copy and which towns are listed change.
+ *
+ * Section order is taken from the Figma frame: Page Hero · Trust Bar ·
+ * Locations Hub · Why Choose Us · Stats Row · Testimonials · CTA Banner · FAQ ·
+ * Quote Form.
+ */
+import TreeLayout from '@astro-fleet/shared-ui/src/layouts/TreeLayout.astro';
+import TreePageHero from '@astro-fleet/shared-ui/src/components/TreePageHero.astro';
+import TreeTrustBar from '@astro-fleet/shared-ui/src/components/TreeTrustBar.astro';
+import TreeLocationsHub from '@astro-fleet/shared-ui/src/components/TreeLocationsHub.astro';
+import type { LocationCard } from '@astro-fleet/shared-ui/src/components/TreeLocationsHub.astro';
+import TreeWhyChoose from '@astro-fleet/shared-ui/src/components/TreeWhyChoose.astro';
+import TreeStatsRow from '@astro-fleet/shared-ui/src/components/TreeStatsRow.astro';
+import TreeTestimonials from '@astro-fleet/shared-ui/src/components/TreeTestimonials.astro';
+import TreeCtaBanner from '@astro-fleet/shared-ui/src/components/TreeCtaBanner.astro';
+import TreeFaq from '@astro-fleet/shared-ui/src/components/TreeFaq.astro';
+import TreeInspectionForm from '@astro-fleet/shared-ui/src/components/TreeInspectionForm.astro';
+
+import site from '../content/settings/site.json';
+import home from '../content/homepage/home.json';
+import { getForm } from '../lib/forms';
+import { getHeader } from '../lib/header';
+import { areaSettings } from '../lib/locations';
+
+export interface Props {
+  title: string;
+  description: string;
+  keywords?: string[];
+  heroTitle: string;
+  heroDescription?: string;
+  eyebrow?: string;
+  heading: string;
+  lead?: string;
+  footnote?: string;
+  areas: LocationCard[];
+}
+
+const {
+  title,
+  description,
+  keywords,
+  heroTitle,
+  heroDescription,
+  eyebrow,
+  heading,
+  lead,
+  footnote,
+  areas,
+} = Astro.props;
+
+const quoteForm = await getForm('quote');
+const header = await getHeader();
+const hero = areaSettings.hub.hero;
+---
+
+<TreeLayout
+  title={title}
+  description={description}
+  keywords={keywords}
+  siteName={site.siteName}
+  logoSrc={site.logo}
+  faviconSrc={site.favicon}
+  header={header}
+  footer={site.footer}
+  colors={site.theme.colors}
+  fonts={site.theme.fonts}
+>
+  <TreePageHero
+    title={heroTitle}
+    description={heroDescription}
+    primaryCta={{ label: 'Get Free Quote Now', href: '#free-inspection' }}
+    phoneCta={{ label: `Call ${site.header.phone.number}`, number: site.header.phone.number }}
+    image={hero.image}
+    imageAlt={hero.imageAlt}
+    imageSplit={hero.imageSplit}
+  />
+  <TreeTrustBar {...home.trustBar} />
+
+  <TreeLocationsHub
+    eyebrow={eyebrow}
+    heading={heading}
+    description={lead}
+    areas={areas}
+    footnote={footnote}
+  />
+
+  <TreeWhyChoose
+    eyebrow={home.whyChoose.eyebrow}
+    heading={home.whyChoose.heading}
+    items={home.whyChoose.items}
+  />
+  <TreeStatsRow stats={home.stats.items} />
+  <TreeTestimonials
+    eyebrow={home.testimonials.eyebrow}
+    heading={home.testimonials.heading}
+    description={home.testimonials.description}
+    rating={home.testimonials.serviceRating}
+    reviews={home.testimonials.reviews}
+  />
+  <TreeCtaBanner {...home.ctaBanner} />
+  <TreeFaq
+    eyebrow={home.faq.eyebrow}
+    titleLead={home.faq.titleLead}
+    titleRest={home.faq.titleRest}
+    faqs={home.faq.items}
+  />
+  <TreeInspectionForm
+    heading={home.inspection.heading}
+    lead={home.inspection.lead}
+    paragraphs={home.inspection.paragraphs}
+    quote={quoteForm}
+  />
+</TreeLayout>

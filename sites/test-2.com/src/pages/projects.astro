@@ -1,0 +1,60 @@
+---
+import '../styles/global.css';
+import TreeLayout from '@astro-fleet/shared-ui/src/layouts/TreeLayout.astro';
+import TreePageHero from '@astro-fleet/shared-ui/src/components/TreePageHero.astro';
+import TreeGallery from '@astro-fleet/shared-ui/src/components/TreeGallery.astro';
+import TreeFaq from '@astro-fleet/shared-ui/src/components/TreeFaq.astro';
+import TreeInspectionForm from '@astro-fleet/shared-ui/src/components/TreeInspectionForm.astro';
+
+import { getForm } from '../lib/forms';
+import { resolveSeo } from '../lib/seo';
+import { getHeader } from '../lib/header';
+
+// CMS-editable content (Keystatic commits these JSON files; the build imports them).
+import site from '../content/settings/site.json';
+import page from '../content/pages/projects.json';
+
+const quoteForm = await getForm('quote');
+
+const seo = resolveSeo({
+  title: page.seo.title,
+  description: page.seo.description,
+  path: Astro.url.pathname,
+});
+
+// The Areas We Serve submenu is generated from the Service Areas content.
+const header = await getHeader();
+---
+
+<TreeLayout
+  title={seo.title}
+  description={seo.description}
+  keywords={page.seo.keywords}
+  siteName={site.siteName}
+  logoSrc={site.logo}
+  faviconSrc={site.favicon}
+  header={header}
+  footer={site.footer}
+  colors={site.theme.colors}
+  fonts={site.theme.fonts}
+>
+  <TreePageHero {...page.hero} compact />
+  <TreeGallery
+    items={page.gallery.items}
+    initialCount={page.gallery.initialCount}
+    loadMoreLabel={page.gallery.loadMoreLabel}
+  />
+  <TreeFaq
+    eyebrow={page.faq.eyebrow}
+    titleLead={page.faq.titleLead}
+    titleRest={page.faq.titleRest}
+    subtitle={page.faq.subtitle}
+    faqs={page.faq.items}
+  />
+  <TreeInspectionForm
+    heading={page.inspection.heading}
+    lead={page.inspection.lead}
+    paragraphs={page.inspection.paragraphs}
+    quote={quoteForm}
+  />
+</TreeLayout>

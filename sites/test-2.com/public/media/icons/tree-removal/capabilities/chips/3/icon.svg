@@ -1,0 +1,8 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Thunderstorm">
+<path id="Icon" d="M29.375 23.4375H32.5C35.9517 23.4375 38.4375 20.6392 38.4375 17.1875C38.4375 13.7358 35.9517 10.9375 32.5 10.9375H32.058C30.6641 5.55555 25.818 1.5625 20 1.5625C15.385 1.5625 11.399 4.0918 9.23359 7.8125H9.0625C4.74773 7.8125 1.5625 11.3102 1.5625 15.625C1.5625 19.9398 4.74773 23.4375 9.0625 23.4375H14.7916" stroke="#013B2D" stroke-width="3.125" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Icon_2" d="M13.75 38.4375L29.375 23.4375H23.125L26.25 17.1875H16.875L13.75 26.5625H16.875L13.75 38.4375Z" stroke="#013B2D" stroke-width="3.125" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Icon_3" d="M4.375 29.6875L7.5 35.9375" stroke="#013B2D" stroke-width="3.125" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Icon_4" d="M32.5 29.6875L26.25 35.9375" stroke="#013B2D" stroke-width="3.125" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</svg>

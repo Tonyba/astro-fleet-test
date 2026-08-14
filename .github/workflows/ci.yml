@@ -34,4 +34,9 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Build all sites
-        run: bun run build
+        run: bun run turbo build
+
+      # Fails the build if any file in the repo or in a site's dist/ is over
+      # 1 MB — the guard that keeps unprocessed photography out of the repo.
+      - name: Check file size budget
+        run: bun run check:sizes

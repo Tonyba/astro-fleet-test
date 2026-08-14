@@ -1,0 +1,342 @@
+---
+/**
+ * TreeServiceAreas.astro
+ * ----------------------
+ * "Service Areas" band for the tree-care template. Figma node 123:937
+ * (mobile cross-checked against 123:5016).
+ * Desktop: two columns — a text block (eyebrow, heading, description, the
+ * "We Serve In The Following Areas" label, a wrap of area pills and a dark
+ * CTA button) beside a rounded coverage photo with a 5-star award badge.
+ * <=1024px: single column, photo stacked on top.
+ * <=767px:  centered text, 2-up pill grid, full-width CTA.
+ * All content is prop-driven so it can be fed from the CMS.
+ */
+import TreePicture from './TreePicture.astro';
+
+export interface Props {
+  /** Small label above the heading. */
+  eyebrow?: string;
+  /** Section heading (h2). */
+  heading?: string;
+  /** Intro paragraph. */
+  description?: string;
+  /** Bold lead-in above the area pills. */
+  areasLabel?: string;
+  /** Area names rendered as pill badges. */
+  areas?: string[];
+  ctaText?: string;
+  ctaHref?: string;
+  /** Coverage photo (original raster path; AVIF sibling auto-served). */
+  imageSrc?: string;
+  imageAlt?: string;
+  /** 5-star rating award badge overlaid on the photo. */
+  awardSrc?: string;
+  awardAlt?: string;
+}
+
+const {
+  eyebrow = 'Service Areas',
+  heading = 'Discover Our Tree Services Coverage Across the Greater Toronto Area',
+  description = 'Erick’s Tree Services proudly serves homeowners and businesses throughout Connecticut. Whether you need tree removal, trimming, stump grinding, or emergency storm cleanup, our team provides fast, reliable, and professional service in your local area and surrounding communities.',
+  areasLabel = 'We Serve In The Following Areas:',
+  areas = ['Norwalk', 'Stamford', 'Fairfield', 'Bridgeport', 'Westport', 'surrounding areas in Connecticut'],
+  ctaText = 'Get free quote now',
+  ctaHref = '#quote',
+  imageSrc = '/src/assets/photos/areas-coverage.jpg',
+  imageAlt = "Erick's Tree Service crew and wood chipper working on a residential street",
+  awardSrc = '/src/assets/badges/five-star-award.png',
+  awardAlt = '5-Star Rating on Google',
+} = Astro.props;
+---
+
+<section class="tree-service-areas" aria-labelledby="tree-service-areas-title">
+  <div class="tree-service-areas__container tree-container">
+    <div class="tree-service-areas__body">
+      <header class="tree-service-areas__intro">
+        <p class="tree-service-areas__eyebrow">{eyebrow}</p>
+        <h2 id="tree-service-areas-title" class="tree-service-areas__heading">{heading}</h2>
+      </header>
+
+      <p class="tree-service-areas__description">{description}</p>
+
+      <p class="tree-service-areas__areas-label">{areasLabel}</p>
+
+      <ul class="tree-service-areas__areas" role="list">
+        {areas.map((area) => (
+          <li class="tree-service-areas__pill">
+            <svg
+              class="tree-service-areas__pin"
+              width="21"
+              height="25"
+              viewBox="0 0 20.9569 25"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path
+                d="M17.8908 3.06604C18.9016 4.09928 19.6653 5.25606 20.1819 6.53639C20.6986 7.81671 20.9569 9.13073 20.9569 10.4784C20.9569 11.8261 20.6986 13.1402 20.1819 14.4205C19.6653 15.7008 18.9016 16.8576 17.8908 17.8908L11.0175 24.7641C10.8603 24.9214 10.6806 25 10.4784 25C10.2763 25 10.0966 24.9214 9.93935 24.7641L3.06604 17.8908C2.05526 16.8801 1.29155 15.7233 0.774933 14.4205C0.258311 13.1177 0 11.8037 0 10.4784C0 9.15319 0.258311 7.83917 0.774933 6.53639C1.29155 5.2336 2.06087 4.07682 3.08288 3.06604C4.1049 2.05526 5.25606 1.29155 6.53639 0.774933C7.81671 0.258311 9.13073 0 10.4784 0C11.8261 0 13.1402 0.258311 14.4205 0.774933C15.7008 1.29155 16.8576 2.05526 17.8908 3.06604ZM12.9043 12.9043C13.2412 12.5674 13.4883 12.1855 13.6456 11.7588C13.8028 11.332 13.8814 10.9052 13.8814 10.4784C13.8814 10.0517 13.8028 9.62489 13.6456 9.19811C13.4883 8.77134 13.2412 8.38949 12.9043 8.05256C12.5674 7.71563 12.1855 7.46855 11.7588 7.31132C11.332 7.15409 10.9052 7.07547 10.4784 7.07547C10.0517 7.07547 9.62489 7.15409 9.19811 7.31132C8.77134 7.46855 8.38949 7.71563 8.05256 8.05256C7.71563 8.38949 7.46855 8.77134 7.31132 9.19811C7.15409 9.62489 7.06424 10.0517 7.04178 10.4784C7.01932 10.9052 7.10916 11.332 7.31132 11.7588C7.51348 12.1855 7.76056 12.5674 8.05256 12.9043C8.34456 13.2412 8.72641 13.4883 9.19811 13.6456C9.66981 13.8028 10.0966 13.8926 10.4784 13.9151C10.8603 13.9376 11.2871 13.8477 11.7588 13.6456C12.2305 13.4434 12.6123 13.1963 12.9043 12.9043Z"
+                fill="currentColor"
+              />
+            </svg>
+            <span class="tree-service-areas__pill-label">{area}</span>
+          </li>
+        ))}
+      </ul>
+
+      <a href={ctaHref} class="tree-service-areas__cta">{ctaText}</a>
+    </div>
+
+    <figure class="tree-service-areas__figure">
+      <TreePicture
+        src={imageSrc}
+        alt={imageAlt}
+        width={611}
+        height={560}
+        variant="inline"
+        class="tree-service-areas__photo"
+        loading="lazy"
+        decoding="async"
+        sizes="(max-width: 767px) 100vw, 611px"
+      />
+      <div class="tree-service-areas__award">
+        <TreePicture
+          src={awardSrc}
+          alt={awardAlt}
+          width={181}
+          height={181}
+          variant="fixed"
+          class="tree-service-areas__award-img"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    </figure>
+  </div>
+</section>
+
+<style>
+  .tree-service-areas {
+    background: var(--color-bg-action-hover, #368a2a);
+    padding-block: 57px;
+    color: var(--color-text-inverse, #fff);
+  }
+
+  .tree-service-areas__container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 91px;
+  }
+
+  /* ===== Text column ===== */
+  .tree-service-areas__body {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    width: 748px;
+    flex-shrink: 0;
+  }
+
+  .tree-service-areas__intro {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .tree-service-areas__eyebrow {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.8;
+  }
+
+  .tree-service-areas__heading {
+    font-size: 42px;
+    font-weight: 600;
+    line-height: 1;
+    text-transform: capitalize;
+    margin: 0;
+  }
+
+  .tree-service-areas__description {
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+
+  .tree-service-areas__areas-label {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.6;
+  }
+
+  /* ===== Area pills ===== */
+  .tree-service-areas__areas {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 11px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .tree-service-areas__pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 50px;
+    padding: 0 26px;
+    border: 2px solid var(--color-text-inverse, #fff);
+    border-radius: 50px;
+    color: var(--color-text-inverse, #fff);
+  }
+
+  .tree-service-areas__pin {
+    flex-shrink: 0;
+    width: 21px;
+    height: 25px;
+  }
+
+  .tree-service-areas__pill-label {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: normal;
+    white-space: nowrap;
+  }
+
+  /* ===== CTA ===== */
+  .tree-service-areas__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-start;
+    height: 60px;
+    padding: 0 56px;
+    background: var(--color-bg-brand-strong, #1e372e);
+    color: var(--color-text-inverse, #fff);
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.8;
+    text-transform: capitalize;
+    white-space: nowrap;
+    border-radius: var(--tree-radius-btn, 6px);
+    transition: background-color 0.15s ease;
+  }
+
+  .tree-service-areas__cta:hover {
+    background: var(--color-bg-brand, #013b2d);
+  }
+
+  /* ===== Photo + award ===== */
+  .tree-service-areas__figure {
+    position: relative;
+    flex-shrink: 0;
+    width: 611px;
+    margin: 0;
+  }
+
+  .tree-service-areas__photo {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 611 / 560;
+    object-fit: cover;
+    border-radius: var(--tree-radius-card, 12px);
+  }
+
+  .tree-service-areas__award {
+    position: absolute;
+    top: 13px;
+    right: 17px;
+    width: 181px;
+  }
+
+  .tree-service-areas__award-img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* ===== Tablet ===== */
+  @media (max-width: 1024px) {
+    .tree-service-areas__container {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 40px;
+    }
+
+    .tree-service-areas__figure {
+      order: -1;
+      width: 100%;
+      max-width: 611px;
+      margin-inline: auto;
+    }
+
+    .tree-service-areas__body {
+      width: 100%;
+      max-width: 748px;
+      margin-inline: auto;
+    }
+  }
+
+  /* ===== Mobile ===== */
+  @media (max-width: 767px) {
+    .tree-service-areas {
+      padding-block: 40px;
+    }
+
+    .tree-service-areas__body {
+      align-items: center;
+      text-align: center;
+    }
+
+    .tree-service-areas__intro {
+      align-items: center;
+    }
+
+    .tree-service-areas__eyebrow {
+      font-size: 14px;
+    }
+
+    .tree-service-areas__heading {
+      font-size: 30px;
+    }
+
+    .tree-service-areas__description {
+      font-size: 14px;
+    }
+
+    .tree-service-areas__areas-label {
+      font-size: 16px;
+    }
+
+    .tree-service-areas__areas {
+      justify-content: center;
+    }
+
+    /* Two-up pill rows (short names ~half width) — Figma 123:5023. */
+    .tree-service-areas__pill {
+      height: 40px;
+      padding: 0 20px;
+      min-width: calc(50% - 6px);
+    }
+
+    .tree-service-areas__pill-label {
+      font-size: 16px;
+    }
+
+    .tree-service-areas__cta {
+      align-self: stretch;
+      width: 100%;
+      height: 50px;
+    }
+
+    /* Award badge sits inside the photo top-right — Figma 123:5046. */
+    .tree-service-areas__award {
+      top: 12px;
+      right: 13px;
+      width: 98px;
+    }
+  }
+</style>

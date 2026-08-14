@@ -1,0 +1,322 @@
+---
+/**
+ * TreeProcess.astro
+ * -----------------
+ * "Simple, Safe & Efficient Tree Service Process" — numbered process steps.
+ * Figma node 123:518 (desktop) / 123:4896 (mobile).
+ * Desktop: eyebrow + heading + intro, then four numbered step cards in a row
+ * joined by green connector lines, then a "Get a Free Estimate" button.
+ * <=1024px: steps reflow to a 2-column grid (connectors hidden).
+ * <=767px:  single column, each step an icon-left row.
+ * All content is prop-driven so it can be fed from the CMS.
+ */
+import TreePicture from './TreePicture.astro';
+
+export interface TreeProcessStep {
+  /** Two-digit step label shown in the badge, e.g. "01". */
+  number: string;
+  /** Path to the step's raster icon (rendered via TreePicture). */
+  icon: string;
+  iconAlt: string;
+  title: string;
+  description: string;
+}
+
+export interface Props {
+  eyebrow?: string;
+  heading?: string;
+  description?: string;
+  steps?: TreeProcessStep[];
+  ctaText?: string;
+  ctaHref?: string;
+}
+
+const {
+  eyebrow = 'How it works',
+  heading = 'Simple, Safe & Efficient Tree Service Process',
+  description =
+    'At Erick’s Tree Services, we make it easy to get the tree services you need without hassle. It’s easy and here is our process.',
+  steps = [
+    {
+      number: '01',
+      icon: '/src/assets/graphics/process-appointment.png',
+      iconAlt: 'Appointment calendar',
+      title: 'Book your request',
+      description:
+        'Contact our team by phone or online form. We’ll gather basic details about your project and schedule a convenient time for an assessment.',
+    },
+    {
+      number: '02',
+      icon: '/src/assets/graphics/process-checked.png',
+      iconAlt: 'Checklist with magnifier',
+      title: 'On-Site Evaluation',
+      description:
+        'Our experts visit your property to evaluate the situation, identify risks, and determine the best and safest approach for the work required.',
+    },
+    {
+      number: '03',
+      icon: '/src/assets/graphics/process-chainsaw.png',
+      iconAlt: 'Chainsaw',
+      title: 'Professional Service Execution',
+      description:
+        'Our trained crew completes the job using professional equipment and strict safety standards, ensuring efficient and precise results.',
+    },
+    {
+      number: '04',
+      icon: '/src/assets/graphics/process-broom.png',
+      iconAlt: 'Broom',
+      title: 'Cleanup & Final Inspection',
+      description:
+        'We thoroughly clean the site and perform a final inspection to make sure everything is safe, clear, and left in excellent condition.',
+    },
+  ],
+  ctaText = 'Get a Free Estimate',
+  ctaHref = '#free-estimate',
+} = Astro.props;
+---
+
+<section class="tree-process" aria-labelledby="tree-process-heading">
+  <div class="tree-process__inner tree-container">
+    <header class="tree-process__head">
+      <p class="tree-process__eyebrow">{eyebrow}</p>
+      <h2 id="tree-process-heading" class="tree-process__title">{heading}</h2>
+      <p class="tree-process__intro">{description}</p>
+    </header>
+
+    <ol class="tree-process__steps">
+      <span class="tree-process__lines" aria-hidden="true">
+        <img class="tree-process__line" src="/media/icons/process-connector.svg" alt="" width="188" height="15" />
+        <img class="tree-process__line" src="/media/icons/process-connector.svg" alt="" width="188" height="15" />
+        <img class="tree-process__line" src="/media/icons/process-connector.svg" alt="" width="188" height="15" />
+      </span>
+
+      {steps.map((step) => (
+        <li class="tree-process__step">
+          <div class="tree-process__icon-group">
+            <img class="tree-process__circle" src="/media/icons/process-circle.svg" alt="" width="100" height="100" aria-hidden="true" />
+            <span class="tree-process__icon">
+              <TreePicture src={step.icon} alt={step.iconAlt} width={44} height={44} variant="fixed" loading="lazy" decoding="async" />
+            </span>
+            <span class="tree-process__badge">{step.number}</span>
+          </div>
+          <div class="tree-process__step-text">
+            <h3 class="tree-process__step-title">{step.title}</h3>
+            <p class="tree-process__step-desc">{step.description}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+
+    <a class="tree-process__cta" href={ctaHref}>{ctaText}</a>
+  </div>
+</section>
+
+<style>
+  .tree-process {
+    padding-block: 100px;
+    background: var(--color-bg-surface, #fff);
+  }
+
+  .tree-process__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+  }
+
+  /* ===== Heading block ===== */
+  .tree-process__head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    text-align: center;
+  }
+  .tree-process__eyebrow {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.8;
+    color: var(--color-text-primary, #013b2d);
+  }
+  .tree-process__title {
+    margin: 0;
+    font-size: 42px;
+    font-weight: 600;
+    line-height: 1;
+    color: #0b171e;
+    text-transform: capitalize;
+  }
+  .tree-process__intro {
+    margin: 0;
+    max-width: 900px;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.6;
+    color: var(--color-text-secondary, #373434);
+  }
+
+  /* ===== Steps row ===== */
+  .tree-process__steps {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Decorative connector lines centered in the gaps between circles */
+  .tree-process__lines {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .tree-process__line {
+    position: absolute;
+    top: 42px;
+    width: 188px;
+    height: 15px;
+    transform: translateX(-50%);
+  }
+  .tree-process__line:nth-child(1) { left: 25%; }
+  .tree-process__line:nth-child(2) { left: 50%; }
+  .tree-process__line:nth-child(3) { left: 75%; }
+
+  .tree-process__step {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 29px;
+    width: 347px;
+    text-align: center;
+  }
+
+  /* ===== Icon group (circle + glyph + number badge) ===== */
+  .tree-process__icon-group {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    flex-shrink: 0;
+  }
+  .tree-process__circle {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100px;
+    height: 100px;
+  }
+  .tree-process__icon {
+    position: absolute;
+    top: 28px;
+    left: 28px;
+    width: 44px;
+    height: 44px;
+    line-height: 0;
+  }
+  .tree-process__icon :global(img) {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+  }
+  .tree-process__badge {
+    position: absolute;
+    top: 2px;
+    left: 74px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #1a1a1a;
+    color: var(--color-text-inverse, #fff);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  /* ===== Step text ===== */
+  .tree-process__step-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+  }
+  .tree-process__step-title {
+    margin: 0;
+    font-size: 21px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--color-text-primary, #013b2d);
+  }
+  .tree-process__step-desc {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.6;
+    color: var(--color-text-secondary, #373434);
+  }
+
+  /* ===== CTA ===== */
+  .tree-process__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 352px;
+    max-width: 100%;
+    height: 60px;
+    padding: 0 28px;
+    background: var(--color-bg-accent, #c8f08f);
+    color: #0b171e;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.8;
+    border-radius: var(--tree-radius-btn, 6px);
+    transition: filter 0.15s ease;
+  }
+  .tree-process__cta:hover { filter: brightness(0.96); }
+
+  /* ===== Tablet (<=1024px): 2-column grid ===== */
+  @media (max-width: 1024px) {
+    .tree-process { padding-block: 80px; }
+    .tree-process__steps {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 48px 40px;
+    }
+    .tree-process__step { width: 320px; }
+    .tree-process__lines { display: none; }
+    .tree-process__title { font-size: 34px; }
+  }
+
+  /* ===== Mobile (<=767px): single column, icon-left rows ===== */
+  @media (max-width: 767px) {
+    .tree-process { padding-block: 56px; }
+    .tree-process__eyebrow { font-size: 14px; }
+    .tree-process__title { font-size: 36px; }
+    .tree-process__intro { font-size: 14px; }
+    .tree-process__steps { gap: 20px; }
+    .tree-process__step {
+      flex-direction: row;
+      align-items: center;
+      gap: 20px;
+      width: 100%;
+      max-width: 420px;
+      text-align: left;
+    }
+    .tree-process__step-text { align-items: flex-start; }
+    .tree-process__step-desc { font-size: 14px; }
+    /* Circle scales 100 -> 80px on mobile (Figma 123:4905). */
+    .tree-process__icon-group { width: 80px; height: 80px; }
+    .tree-process__circle { width: 80px; height: 80px; }
+    .tree-process__icon { top: 22px; left: 22px; width: 35px; height: 35px; }
+    .tree-process__icon :global(img) { width: 35px; height: 35px; }
+    .tree-process__badge { top: 0; left: 52px; }
+    .tree-process__cta { width: 100%; }
+  }
+</style>

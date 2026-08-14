@@ -1,0 +1,269 @@
+---
+/**
+ * TreeWhyChoose.astro
+ * -------------------
+ * "Why Choose Us" section for the tree-care template. Figma node 123:478.
+ * Desktop: left column = eyebrow + heading + 2x2 grid of feature cards
+ * (accent icon square + title + copy); right column = full-height photo.
+ * <=1024px: photo drops below, cards go 2-up then 1-up.
+ * Everything is prop-driven so it can be fed from the CMS.
+ */
+import TreePicture from './TreePicture.astro';
+
+export interface TreeWhyChooseItem {
+  /** Icon asset in /media/icons (rendered as a brand-tinted CSS mask). */
+  icon: string;
+  title: string;
+  description: string;
+}
+
+export interface Props {
+  eyebrow?: string;
+  heading?: string;
+  items?: TreeWhyChooseItem[];
+  imageSrc?: string;
+  imageAlt?: string;
+}
+
+const {
+  eyebrow = 'Why choose us',
+  heading = 'Professional Tree Services With Care & Precision',
+  items = [
+    {
+      icon: '/media/icons/why-siren.png',
+      title: 'Emergency Response Services',
+      description:
+        'We provide fast-response emergency tree removal and storm cleanup services when hazardous situations require immediate attention.',
+    },
+    {
+      icon: '/media/icons/why-expertise.png',
+      title: '25+ Years Experience',
+      description:
+        'Our experienced team is committed to delivering the professional tree care and reliable service our clients deserve.',
+    },
+    {
+      icon: '/media/icons/why-tag.png',
+      title: 'Free Estimates & Discounts',
+      description: 'We offer free consultations and a 10% discount for seniors.',
+    },
+    {
+      icon: '/media/icons/why-security.png',
+      title: 'Fully Licensed & Insured',
+      description:
+        'Our certified arborists provide expert solutions to help protect your trees, landscape, and property investment.',
+    },
+  ],
+  imageSrc = '/src/assets/photos/why-photo.jpg',
+  imageAlt = 'Certified arborist rigging and removing a large tree',
+} = Astro.props;
+---
+
+<section class="tree-why" aria-labelledby="tree-why-heading">
+  <div class="tree-container tree-why__inner">
+    <div class="tree-why__content">
+      <div class="tree-why__intro">
+        <p class="tree-why__eyebrow">{eyebrow}</p>
+        <h2 id="tree-why-heading" class="tree-why__heading">{heading}</h2>
+      </div>
+
+      <ul class="tree-why__grid">
+        {items.map((item) => (
+          <li class="tree-why__card">
+            <span class="tree-why__icon" aria-hidden="true">
+              <span class="tree-why__icon-glyph" style={`--tree-why-mask:url(${item.icon})`}></span>
+            </span>
+            <h3 class="tree-why__card-title">{item.title}</h3>
+            <p class="tree-why__card-text">{item.description}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <figure class="tree-why__figure">
+      <TreePicture
+        src={imageSrc}
+        alt={imageAlt}
+        width={530}
+        height={875}
+        variant="inline"
+        class="tree-why__image"
+        loading="lazy"
+        decoding="async"
+      />
+    </figure>
+  </div>
+</section>
+
+<style>
+  .tree-why {
+    background: var(--color-bg-subtle, #f9f9f9);
+  }
+
+  .tree-why__inner {
+    display: flex;
+    align-items: stretch;
+    gap: 85px;
+    padding-top: 92px;
+    padding-bottom: 92px;
+  }
+
+  /* ===== Left content column ===== */
+  .tree-why__content {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 40px;
+  }
+
+  .tree-why__intro {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    color: var(--color-text-primary, #013b2d);
+  }
+  .tree-why__eyebrow {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.8;
+    text-transform: uppercase;
+  }
+  .tree-why__heading {
+    margin: 0;
+    max-width: 592px;
+    font-size: 42px;
+    font-weight: 500;
+    line-height: 1;
+    text-transform: capitalize;
+  }
+
+  /* ===== Feature cards (2x2) ===== */
+  .tree-why__grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 411px));
+    gap: 12px;
+  }
+  .tree-why__card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 15px;
+    min-height: 260px;
+    padding: 20px;
+    background: var(--color-bg-brand-soft, #e5f1ed);
+    border-radius: var(--tree-radius-card, 12px);
+    color: var(--color-text-primary, #013b2d);
+  }
+
+  /* Accent square with brand-tinted icon mask (matches Figma mask geometry). */
+  .tree-why__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+    background: var(--color-bg-accent, #c8f08f);
+    border-radius: 5px;
+  }
+  .tree-why__icon-glyph {
+    display: block;
+    width: 36.5px;
+    height: 36.5px;
+    background: var(--color-bg-brand, #013b2d);
+    -webkit-mask: var(--tree-why-mask) center / contain no-repeat;
+    mask: var(--tree-why-mask) center / contain no-repeat;
+  }
+
+  .tree-why__card-title {
+    margin: 0;
+    font-size: 21px;
+    font-weight: 600;
+    line-height: 1;
+    text-transform: capitalize;
+  }
+  .tree-why__card-text {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+
+  /* ===== Right photo column ===== */
+  .tree-why__figure {
+    flex: 0 0 530px;
+    margin: 0;
+    overflow: hidden;
+  }
+  .tree-why__figure :global(picture) {
+    display: block;
+    height: 100%;
+  }
+  .tree-why__figure :global(.tree-why__image) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* ===== Tablet (<=1024px) ===== */
+  @media (max-width: 1024px) {
+    .tree-why__inner {
+      flex-direction: column;
+      gap: 40px;
+      padding-top: 64px;
+      padding-bottom: 64px;
+    }
+    .tree-why__heading {
+      font-size: 36px;
+    }
+    .tree-why__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .tree-why__figure {
+      flex: 0 0 auto;
+      width: 100%;
+      height: 360px;
+      border-radius: var(--tree-radius-card, 12px);
+    }
+  }
+
+  /* ===== Mobile (<=767px) ===== */
+  @media (max-width: 767px) {
+    .tree-why__inner {
+      gap: 32px;
+      padding-top: 48px;
+      padding-bottom: 48px;
+    }
+    .tree-why__eyebrow {
+      font-size: 14px;
+    }
+    .tree-why__heading {
+      font-size: 30px;
+    }
+    .tree-why__grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .tree-why__card {
+      min-height: 0;
+    }
+    .tree-why__card-title {
+      font-size: 18px;
+    }
+    .tree-why__card-text {
+      font-size: 14px;
+    }
+    /* Photo runs full-bleed edge-to-edge on mobile (Figma 123:4712). */
+    .tree-why__figure {
+      width: calc(100% + 48px);
+      height: 295px;
+      margin-inline: -24px;
+      border-radius: 0;
+    }
+  }
+</style>

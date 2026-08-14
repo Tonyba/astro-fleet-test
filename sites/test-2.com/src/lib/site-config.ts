@@ -15,10 +15,21 @@ import type {
   ContactInfo,
   SocialLink,
 } from '@astro-fleet/shared-ui/src/components/Footer.astro';
+import settings from '../content/settings/site.json';
 
 // ---------------------------------------------------------------------------
 // Site identity
 // ---------------------------------------------------------------------------
+
+/**
+ * Canonical origin for the site — the single source of truth for every absolute
+ * URL we emit (canonical, og:url, sitemap, robots.txt).
+ *
+ * It is defined once in the CMS settings (`src/content/settings/site.json`) and
+ * re-exported here so pages and `astro.config.mjs` read the same value. Prefer
+ * `Astro.site` inside components; reach for this only where `Astro` is absent.
+ */
+export const SITE_URL = settings.siteUrl;
 
 /** The human-readable name of your site, used in the <title>, header, and footer. */
 export const SITE_NAME = 'Test-2';

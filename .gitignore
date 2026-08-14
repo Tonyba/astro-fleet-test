@@ -6,6 +6,10 @@ dist/
 .astro/
 .output/
 
+business.json
+claude-code-runs.md
+content-collections.md
+
 # Turborepo
 .turbo/
 
