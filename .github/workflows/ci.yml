@@ -177,13 +177,33 @@ jobs:
             bun run turbo build --affected
           fi
 
+      # A commit that touches no site — a workflow edit, a docs change — leaves
+      # `--affected` with nothing to build and no cache directory behind. Asking
+      # cache/save to store a path that does not exist is not harmful (it
+      # declines rather than storing an empty entry, so the prefix restore above
+      # cannot be poisoned by it) but it does print
+      # "##[warning]Cache save failed", which reads like a broken build. Check
+      # first instead. A directory test is O(1); `hashFiles` would walk ~2000
+      # files to answer the same question.
+      - name: Is there an image cache to save?
+        id: astro_cache_state
+        run: |
+          if ls -d sites/*/node_modules/.astro >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false  (nothing was built)"
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
       # Saved straight after the build, before deploy, so the work is kept even
       # if a later step fails. The restore key above is unique per commit, so an
       # exact hit is only possible on a re-run of the same commit — every other
       # run writes a fresh entry and GitHub evicts the oldest once the repo
       # passes its cache limit. ~62 MB per entry for this repo.
       - name: Save Astro image cache
-        if: steps.astro_cache.outputs.cache-hit != 'true'
+        if: >-
+          steps.astro_cache.outputs.cache-hit != 'true' &&
+          steps.astro_cache_state.outputs.exists == 'true'
         uses: actions/cache/save@v4
         with:
           path: sites/*/node_modules/.astro
