@@ -5,6 +5,7 @@ node_modules/
 dist/
 .astro/
 .output/
+.claude/
 
 business.json
 claude-code-runs.md
@@ -45,3 +46,5 @@ Thumbs.db
 
 # Internal docs (not published to the repo)
 .internal/
+
+.claude

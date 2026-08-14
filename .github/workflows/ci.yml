@@ -12,13 +12,17 @@ concurrency:
 
 jobs:
   build:
-    name: Build all sites
+    name: Build affected sites
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:
       - name: Checkout
+        # Full history: Turborepo works out which packages changed by diffing
+        # against the base commit, which a shallow clone cannot reach.
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -33,10 +37,39 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Build all sites
-        run: bun run turbo build
+      # Which commit to diff against. A pull request compares with its base
+      # branch; a push compares with whatever was on the branch before it. The
+      # all-zeroes SHA means the branch is brand new (nothing to diff), so the
+      # build falls back to every package.
+      - name: Resolve diff base
+        id: diff
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "base=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            echo "base=" >> "$GITHUB_OUTPUT"
+          else
+            echo "base=${{ github.event.before }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      # `--affected` builds only the packages touched since the base commit,
+      # plus anything that depends on them — so a CMS edit under
+      # sites/<domain>/src/content/ rebuilds that one site, while a change in
+      # packages/shared-ui still rebuilds every site that consumes it.
+      - name: Build affected packages
+        env:
+          TURBO_SCM_BASE: ${{ steps.diff.outputs.base }}
+          TURBO_SCM_HEAD: ${{ github.sha }}
+        run: |
+          if [ -z "$TURBO_SCM_BASE" ]; then
+            echo "No diff base — building every package."
+            bun run turbo build
+          else
+            bun run turbo build --affected
+          fi
 
       # Fails the build if any file in the repo or in a site's dist/ is over
       # 1 MB — the guard that keeps unprocessed photography out of the repo.
+      # Deliberately unscoped: it also guards files no build touches.
       - name: Check file size budget
         run: bun run check:sizes
