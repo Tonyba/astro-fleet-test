@@ -44,7 +44,7 @@ const ALPHA_THRESHOLD = 0.01;
  */
 const WEBP_ABOVE = 500 * 1024;
 
-async function hasMeaningfulAlpha(src) {
+export async function hasMeaningfulAlpha(src) {
   const { isOpaque } = await sharp(src, { limitInputPixels: false }).stats();
   if (isOpaque) return false;
 

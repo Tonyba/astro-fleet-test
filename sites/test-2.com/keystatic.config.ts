@@ -45,8 +45,13 @@ const storage = isDev
 // photo shared with a page (which has no slug, so stays flat) exists twice.
 // Renaming a service moves its folder — re-pick its images afterwards.
 //
-// Uploads here bypass `bun run import-photo`, so keep an eye on the 1 MB
-// per-file budget that `bun run check:sizes` enforces on every build.
+// Uploads here bypass `bun run import-photo` — an editor picks a file straight
+// off their phone and Keystatic commits it at full size. `scripts/optimize-
+// images.mjs` catches that afterwards: it runs in the pre-commit hook, on every
+// `bun run build`, and in CI before the build, re-encoding anything over the
+// 1 MB budget that `bun run check:sizes` enforces. A photographic PNG comes out
+// the other side as a JPEG, with the value below rewritten to match — so do not
+// be surprised to see an extension change in the diff after an upload.
 type ImageOpts = { label: string; description?: string; required?: boolean };
 
 /** Photograph — goes through <Picture />. */

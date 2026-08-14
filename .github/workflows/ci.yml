@@ -16,6 +16,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
+    # Write access is only for the image-optimization commit at the end of the
+    # run; nothing else here pushes.
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout
         # Full history: Turborepo works out which packages changed by diffing
@@ -36,6 +41,23 @@ jobs:
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
+
+      # A photograph uploaded through /keystatic bypasses `bun run import-photo`
+      # entirely: in production the CMS commits it straight to main from the
+      # editor's browser, at whatever size their camera produced, and this is
+      # the first machine that ever sees it. Re-encode it here — before the
+      # build, so the site ships the optimized file — and push the result back
+      # at the end of the run so the repo stops carrying the original.
+      - name: Optimize oversized images
+        id: optimize
+        run: |
+          node scripts/optimize-images.mjs --changed-list "$RUNNER_TEMP/optimized-files.txt"
+          if [ -s "$RUNNER_TEMP/optimized-files.txt" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "::warning::Re-encoded oversized image(s) — see the step log."
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
 
       # Which commit to diff against. A pull request compares with its base
       # branch; a push compares with whatever was on the branch before it. The
@@ -132,9 +154,16 @@ jobs:
             bun run turbo build --affected
           fi
 
-      # Fails the build if any file in the repo or in a site's dist/ is over
+      # Fails the build if any IMAGE in the repo or in a site's dist/ is over
       # 1 MB — the guard that keeps unprocessed photography out of the repo.
-      # Deliberately unscoped: it also guards files no build touches.
+      # Deliberately unscoped as to path: it also guards files no build touches.
+      # The step above repairs raster photographs, so anything surviving to here
+      # is either a vector/animated image or a source no re-encode could save.
+      #
+      # Oversized NON-image files (the Keystatic admin bundle, the Worker
+      # bundle) are reported as warnings and do not fail the run. Both lists are
+      # emitted as workflow commands, so they land on the run summary as
+      # annotations rather than only in this step's log.
       - name: Check file size budget
         run: bun run check:sizes
 
@@ -172,3 +201,27 @@ jobs:
             fi
             echo "::endgroup::"
           done
+
+      # Persist the re-encoded images, but only once everything above has
+      # passed — a failed run leaves the repo exactly as it was.
+      #
+      # Pushes made with GITHUB_TOKEN do not trigger workflows, so this cannot
+      # loop back into another CI run. If `main` is protected against direct
+      # pushes the push is refused; that is not worth failing a green build
+      # over, since the deployed site already carries the optimized images and
+      # the next run simply optimizes them again.
+      - name: Commit optimized images
+        if: github.event_name == 'push' && steps.optimize.outputs.changed == 'true'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          while IFS= read -r path; do
+            [ -n "$path" ] && git add -A -- "$path"
+          done < "$RUNNER_TEMP/optimized-files.txt"
+          if git diff --cached --quiet; then
+            echo "Nothing to commit."
+            exit 0
+          fi
+          git commit -m 'chore: optimize images over the 1 MB budget'
+          git push origin "HEAD:${GITHUB_REF_NAME}" || \
+            echo "::warning::Could not push the optimization commit (branch protection?). The deployed build is optimized; the repo still holds the original."

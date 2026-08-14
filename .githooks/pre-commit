@@ -1,0 +1,37 @@
+#!/bin/sh
+#
+# Re-encode any oversized image before it can be committed.
+#
+# In dev, Keystatic's storage is `local`: an upload through /keystatic is
+# written straight to disk at whatever size the editor picked, and the next
+# `git commit` would carry it into the repo. This hook runs the same optimizer
+# CI runs, then stages exactly what it rewrote — the image itself, plus any
+# content file that referenced it under its old extension.
+#
+# Wired up by the root `prepare` script: `bun install` points core.hooksPath
+# here. Skip a single commit with `git commit --no-verify`.
+set -e
+
+# Nothing image-shaped staged? Nothing to do.
+if ! git diff --cached --name-only --diff-filter=ACMR \
+     | grep -qiE '\.(png|jpe?g|webp|avif|tiff?)$'; then
+  exit 0
+fi
+
+root=$(git rev-parse --show-toplevel)
+list=$(mktemp)
+trap 'rm -f "$list"' EXIT
+
+# Only the files the optimizer itself touched get staged. Reading its own report
+# rather than diffing `git status` keeps unrelated work-in-progress out of the
+# commit.
+node "$root/scripts/optimize-images.mjs" --changed-list "$list"
+
+if [ -s "$list" ]; then
+  cd "$root"
+  # -A so a rename stages as both the deletion and the new file.
+  while IFS= read -r path; do
+    [ -n "$path" ] && git add -A -- "$path"
+  done < "$list"
+  echo "pre-commit: images optimized and staged."
+fi

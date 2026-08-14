@@ -115,7 +115,8 @@ These are failure modes that have already cost hours. They are silent: the CMS l
 - `public/media/` is for SVG icons and the logo only — it is copied verbatim and nothing in it is optimized.
 - Widths per slot, set with the `variant` prop: `hero` full-bleed 640/1024/1440/1920w, `card` (service + project) 400/800w, `inline` photos 600/1200w, `fixed` (badges, step icons) 1x/2x. Always pass `width`/`height` so no layout shift is possible.
 - The hero image is `loading="eager"` + `fetchpriority="high"`. Everything below the fold is `loading="lazy"` + `decoding="async"`.
-- No image file in the repo or in `dist/` may exceed 1 MB — `bun run check:sizes` enforces this on every build and in CI.
+- No image file in the repo or in `dist/` may exceed 1 MB — `bun run check:sizes` enforces this on every build and in CI. **Only images fail the build** (raster plus `.svg`/`.ico`). Non-image files over 1 MB are still reported, but as a warning that does not fail — a fat JS bundle is a real problem with a different fix, and blocking a build on it was never this guard's job. Expect two standing warnings: the Keystatic admin bundle (~2.7 MB, loaded only by CMS editors) and the Worker bundle (~1.1 MB, never sent to a browser). In CI both lists also surface as GitHub annotations on the run summary — `::warning` for the non-images, `::error` for the images that failed — capped at GitHub's 10-per-step limit with a notice when more were found.
+- **Oversized images repair themselves — `bun run optimize:images`.** CMS uploads bypass `import-photo`, so this re-encodes any over-budget raster in place using the same rules (quality/width ladder down from 1920/q90). When the right format differs from what was uploaded (a photographic PNG becomes a JPEG) it renames the file *and* rewrites every reference to it inside the owning site, so no content entry is left dangling. It runs automatically in three places: `bun run build`, the `.githooks/pre-commit` hook (wired up by `bun install`), and CI before the build — CI commits the result back to `main` so a Keystatic upload from the deployed admin gets fixed without anyone touching a terminal.
 - If image is inside a content loop item then it must be wrapped inside a link to that content item
 
 ## Carousels
@@ -148,7 +149,9 @@ bun run lint
 
 # Images
 bun run import-photo <file...> --out sites/<domain>/src/assets/photos --max-width 1920
-bun run check:sizes                            # fail if any repo/dist file > 1 MB
+bun run check:sizes                            # fail on repo/dist IMAGES > 1 MB; warn on other files
+bun run optimize:images                        # re-encode over-budget images in place + fix references
+bun run optimize:images -- --check             # report only, change nothing
 
 # Scaffold a new site
 ./scripts/new-site.sh <domain> [corporate|saas|warm]
