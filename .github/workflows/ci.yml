@@ -42,6 +42,29 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      # Astro re-encodes every image variant it has not seen before, and
+      # TreePicture asks for AVIF + WebP + JPEG at four widths apiece. On a cold
+      # runner that IS the build: a CMS content edit spent 2m57s of a 3m21s run
+      # here, while install took two seconds. Restoring Astro's cache is
+      # therefore the only change worth making — locally the same build goes
+      # 35.4s cold to 15.8s warm.
+      #
+      # Restored AFTER `bun install`, because the cache lives inside
+      # node_modules and install must not race with unpacking it.
+      #
+      # The cache is content-addressed by Astro, so one restored from an older
+      # commit is still correct: entries it no longer needs are ignored, and
+      # anything new is encoded as usual. That makes the key rolling — save
+      # under this commit, restore whatever the most recent run left behind.
+      - name: Restore Astro image cache
+        id: astro_cache
+        uses: actions/cache/restore@v4
+        with:
+          path: sites/*/node_modules/.astro
+          key: astro-assets-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            astro-assets-${{ runner.os }}-
+
       # A photograph uploaded through /keystatic bypasses `bun run import-photo`
       # entirely: in production the CMS commits it straight to main from the
       # editor's browser, at whatever size their camera produced, and this is
@@ -153,6 +176,18 @@ jobs:
           else
             bun run turbo build --affected
           fi
+
+      # Saved straight after the build, before deploy, so the work is kept even
+      # if a later step fails. The restore key above is unique per commit, so an
+      # exact hit is only possible on a re-run of the same commit — every other
+      # run writes a fresh entry and GitHub evicts the oldest once the repo
+      # passes its cache limit. ~62 MB per entry for this repo.
+      - name: Save Astro image cache
+        if: steps.astro_cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: sites/*/node_modules/.astro
+          key: astro-assets-${{ runner.os }}-${{ github.sha }}
 
       # Fails the build if any IMAGE in the repo or in a site's dist/ is over
       # 1 MB — the guard that keeps unprocessed photography out of the repo.
