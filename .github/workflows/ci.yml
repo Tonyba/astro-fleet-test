@@ -52,6 +52,53 @@ jobs:
             echo "base=${{ github.event.before }}" >> "$GITHUB_OUTPUT"
           fi
 
+      # Ask turbo which packages the diff touches before building, so the deploy
+      # step below knows whether test-2.com is even in play.
+      - name: Work out affected packages
+        id: affected
+        env:
+          TURBO_SCM_BASE: ${{ steps.diff.outputs.base }}
+          TURBO_SCM_HEAD: ${{ github.sha }}
+        run: |
+          # node rather than jq: node is already required by the build, so this
+          # cannot break on a runner image that ships without jq.
+          if [ -z "$TURBO_SCM_BASE" ]; then
+            bun run turbo build --dry=json > turbo-dry.json 2>/dev/null
+          else
+            bun run turbo build --affected --dry=json > turbo-dry.json 2>/dev/null
+          fi
+          PACKAGES=$(node -p "require('./turbo-dry.json').packages.join(' ')")
+          rm -f turbo-dry.json
+          echo "affected: $PACKAGES"
+          if echo " $PACKAGES " | grep -q ' test-2.com '; then
+            echo "test2=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "test2=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Deploying needs Cloudflare credentials AND the Keystatic app slug. The
+      # slug is a PUBLIC_ variable, so it is compiled into the admin bundle at
+      # BUILD time — deploying a build made without it ships a CMS whose
+      # sign-in links point nowhere. Fail loudly rather than ship that.
+      - name: Check deploy prerequisites
+        id: deploy_ready
+        env:
+          HAS_CLOUDFLARE: ${{ secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
+          APP_SLUG: ${{ vars.PUBLIC_KEYSTATIC_GITHUB_APP_SLUG }}
+        run: |
+          if [ "${{ github.event_name }}" != "push" ] || [ "${{ steps.affected.outputs.test2 }}" != "true" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if [ "$HAS_CLOUDFLARE" != "true" ]; then
+            echo "::notice::Cloudflare credentials not configured — skipping deploy."
+            echo "ready=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if [ -z "$APP_SLUG" ]; then
+            echo "::error::Repository variable PUBLIC_KEYSTATIC_GITHUB_APP_SLUG is empty. It is inlined at build time, so deploying without it ships a broken /keystatic."
+            exit 1
+          fi
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+
       # `--affected` builds only the packages touched since the base commit,
       # plus anything that depends on them — so a CMS edit under
       # sites/<domain>/src/content/ rebuilds that one site, while a change in
@@ -60,6 +107,8 @@ jobs:
         env:
           TURBO_SCM_BASE: ${{ steps.diff.outputs.base }}
           TURBO_SCM_HEAD: ${{ github.sha }}
+          # Compiled into the Keystatic admin bundle — see the check above.
+          PUBLIC_KEYSTATIC_GITHUB_APP_SLUG: ${{ vars.PUBLIC_KEYSTATIC_GITHUB_APP_SLUG }}
         run: |
           if [ -z "$TURBO_SCM_BASE" ]; then
             echo "No diff base — building every package."
@@ -73,3 +122,17 @@ jobs:
       # Deliberately unscoped: it also guards files no build touches.
       - name: Check file size budget
         run: bun run check:sizes
+
+      # test-2.com carries the Cloudflare adapter, so it ships as a Worker:
+      # dist/client holds the static assets, dist/server the worker plus the
+      # wrangler config the adapter generates. Secrets already set on the Worker
+      # (Keystatic OAuth, GITHUB_TOKEN, Turnstile) survive a deploy untouched.
+      #
+      # This is what closes the loop on CMS edits: Keystatic commits to main,
+      # that push lands here, and the site rebuilds and redeploys itself.
+      - name: Deploy test-2.com to Cloudflare Workers
+        if: steps.deploy_ready.outputs.ready == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: bunx wrangler deploy --config sites/test-2.com/dist/server/wrangler.json
