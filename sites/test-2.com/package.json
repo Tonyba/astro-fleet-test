@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "//deploy": "Opt this site into CI deploys. The mode is detected from the build: a site carrying the Cloudflare adapter emits dist/server/wrangler.json and ships as a Worker; anything else is a static Pages deploy and needs projectName.",
+  "deploy": {
+    "enabled": true
+  },
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",

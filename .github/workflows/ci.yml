@@ -52,8 +52,13 @@ jobs:
             echo "base=${{ github.event.before }}" >> "$GITHUB_OUTPUT"
           fi
 
-      # Ask turbo which packages the diff touches before building, so the deploy
-      # step below knows whether test-2.com is even in play.
+      # Ask turbo which packages the diff touches before building, then keep the
+      # ones that are sites opted into deploys. A site opts in with
+      #
+      #   "deploy": { "enabled": true }                     in its package.json
+      #   "deploy": { "enabled": true, "projectName": "…" } for a Pages site
+      #
+      # so adding a site to the pipeline is one field, not a workflow edit.
       - name: Work out affected packages
         id: affected
         env:
@@ -70,33 +75,43 @@ jobs:
           PACKAGES=$(node -p "require('./turbo-dry.json').packages.join(' ')")
           rm -f turbo-dry.json
           echo "affected: $PACKAGES"
-          if echo " $PACKAGES " | grep -q ' test-2.com '; then
-            echo "test2=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "test2=false" >> "$GITHUB_OUTPUT"
-          fi
 
-      # Deploying needs Cloudflare credentials AND the Keystatic app slug. The
-      # slug is a PUBLIC_ variable, so it is compiled into the admin bundle at
-      # BUILD time — deploying a build made without it ships a CMS whose
-      # sign-in links point nowhere. Fail loudly rather than ship that.
+          DEPLOYABLE=""
+          for pkg in $PACKAGES; do
+            manifest="sites/$pkg/package.json"
+            [ -f "$manifest" ] || continue
+            if [ "$(node -p "(require('./$manifest').deploy || {}).enabled === true")" = "true" ]; then
+              DEPLOYABLE="$DEPLOYABLE $pkg"
+            fi
+          done
+          DEPLOYABLE=$(echo "$DEPLOYABLE" | xargs || true)
+          echo "deployable: ${DEPLOYABLE:-<none>}"
+          echo "sites=$DEPLOYABLE" >> "$GITHUB_OUTPUT"
+
+      # Deploying needs Cloudflare credentials, and any site running Keystatic
+      # also needs the app slug: it is a PUBLIC_ variable, compiled into the
+      # admin bundle at BUILD time, so deploying a build made without it ships a
+      # CMS whose sign-in links point nowhere. Fail loudly rather than ship that.
       - name: Check deploy prerequisites
         id: deploy_ready
         env:
           HAS_CLOUDFLARE: ${{ secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
           APP_SLUG: ${{ vars.PUBLIC_KEYSTATIC_GITHUB_APP_SLUG }}
+          SITES: ${{ steps.affected.outputs.sites }}
         run: |
-          if [ "${{ github.event_name }}" != "push" ] || [ "${{ steps.affected.outputs.test2 }}" != "true" ]; then
+          if [ "${{ github.event_name }}" != "push" ] || [ -z "$SITES" ]; then
             echo "ready=false" >> "$GITHUB_OUTPUT"; exit 0
           fi
           if [ "$HAS_CLOUDFLARE" != "true" ]; then
             echo "::notice::Cloudflare credentials not configured — skipping deploy."
             echo "ready=false" >> "$GITHUB_OUTPUT"; exit 0
           fi
-          if [ -z "$APP_SLUG" ]; then
-            echo "::error::Repository variable PUBLIC_KEYSTATIC_GITHUB_APP_SLUG is empty. It is inlined at build time, so deploying without it ships a broken /keystatic."
-            exit 1
-          fi
+          for site in $SITES; do
+            if [ -f "sites/$site/keystatic.config.ts" ] && [ -z "$APP_SLUG" ]; then
+              echo "::error::$site runs Keystatic but the repository variable PUBLIC_KEYSTATIC_GITHUB_APP_SLUG is empty. It is inlined at build time, so deploying without it ships a broken /keystatic."
+              exit 1
+            fi
+          done
           echo "ready=true" >> "$GITHUB_OUTPUT"
 
       # `--affected` builds only the packages touched since the base commit,
@@ -123,16 +138,37 @@ jobs:
       - name: Check file size budget
         run: bun run check:sizes
 
-      # test-2.com carries the Cloudflare adapter, so it ships as a Worker:
-      # dist/client holds the static assets, dist/server the worker plus the
-      # wrangler config the adapter generates. Secrets already set on the Worker
-      # (Keystatic OAuth, GITHUB_TOKEN, Turnstile) survive a deploy untouched.
+      # How a site ships is read from what it just built, not from a list kept
+      # here: a site carrying the Cloudflare adapter emits
+      # dist/server/wrangler.json and goes out as a Worker (assets + on-demand
+      # routes); everything else is static and goes to Pages. Secrets already
+      # set on a Worker (Keystatic OAuth, GITHUB_TOKEN, Turnstile) survive a
+      # deploy untouched.
       #
       # This is what closes the loop on CMS edits: Keystatic commits to main,
       # that push lands here, and the site rebuilds and redeploys itself.
-      - name: Deploy test-2.com to Cloudflare Workers
+      - name: Deploy affected sites
         if: steps.deploy_ready.outputs.ready == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: bunx wrangler deploy --config sites/test-2.com/dist/server/wrangler.json
+          SITES: ${{ steps.affected.outputs.sites }}
+        run: |
+          for site in $SITES; do
+            dir="sites/$site"
+            worker_config="$dir/dist/server/wrangler.json"
+            echo "::group::deploy $site"
+            if [ -f "$worker_config" ]; then
+              echo "$site -> Cloudflare Workers"
+              bunx wrangler deploy --config "$worker_config"
+            else
+              project=$(node -p "(require('./$dir/package.json').deploy || {}).projectName || ''")
+              if [ -z "$project" ]; then
+                echo "::error::$site built no worker config, so it deploys to Pages — add deploy.projectName to $dir/package.json."
+                exit 1
+              fi
+              echo "$site -> Cloudflare Pages ($project)"
+              bunx wrangler pages deploy "$dir/dist" --project-name="$project" --branch=main
+            fi
+            echo "::endgroup::"
+          done
