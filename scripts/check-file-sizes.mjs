@@ -13,6 +13,7 @@
  * Usage:
  *   node scripts/check-file-sizes.mjs [--limit 1MB] [path...]
  */
+import { existsSync } from 'node:fs';
 import { readdir, stat } from 'node:fs/promises';
 import { relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -64,12 +65,27 @@ for (let i = 0; i < args.length; i++) {
     }
     const scale = { b: 1, kb: 1024, mb: 1024 * 1024 }[(match[2] ?? 'b').toLowerCase()];
     limit = Number(match[1]) * scale;
+  } else if (args[i].startsWith('-')) {
+    // Flags meant for another tool. `bun run build --filter=<site>` forwards
+    // turbo's flags to this script too, and treating `--filter=…` as a path to
+    // scan silently turned the guard into a no-op ("0 file(s) scanned"). Ignore
+    // anything we do not own rather than pretending to have checked it.
+    console.warn(`(ignoring unrecognised option ${args[i]})`);
   } else {
     roots.push(resolve(args[i]));
   }
 }
 
 if (roots.length === 0) roots.push(REPO_ROOT);
+
+// A path that does not exist can only mean a typo or a flag we failed to parse.
+// Either way the scan would quietly cover nothing, so fail loudly instead.
+for (const root of roots) {
+  if (!existsSync(root)) {
+    console.error(`✗ Path to scan does not exist: ${relative(REPO_ROOT, root) || root}`);
+    process.exit(2);
+  }
+}
 
 const oversized = [];
 let scanned = 0;
