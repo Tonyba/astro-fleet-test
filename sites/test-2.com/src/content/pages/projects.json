@@ -11,7 +11,7 @@
   },
   "hero": {
     "title": "Photo Gallery",
-    "image": "/src/assets/photos/projects-hero.jpg",
+    "image": "/src/assets/photos/projects/projects-hero.jpg",
     "imageAlt": "Arborist working high in a tree canopy",
     "imageSplit": "56.98%"
   },
@@ -20,55 +20,55 @@
     "loadMoreLabel": "Load More",
     "items": [
       {
-        "image": "/src/assets/photos/gallery-01.jpg",
+        "image": "/src/assets/photos/projects/gallery-01.jpg",
         "alt": "Crew clearing storm-felled timber"
       },
       {
-        "image": "/src/assets/photos/gallery-02.jpg",
+        "image": "/src/assets/photos/projects/gallery-02.jpg",
         "alt": "Arborist rigging a large limb"
       },
       {
-        "image": "/src/assets/photos/gallery-03.jpg",
+        "image": "/src/assets/photos/projects/gallery-03.jpg",
         "alt": "Tree removal beside a residential roofline"
       },
       {
-        "image": "/src/assets/photos/gallery-04.jpg",
+        "image": "/src/assets/photos/projects/gallery-04.jpg",
         "alt": "Chipper loading branches on site"
       },
       {
-        "image": "/src/assets/photos/gallery-05.jpg",
+        "image": "/src/assets/photos/projects/gallery-05.jpg",
         "alt": "Stump ground flush with the lawn"
       },
       {
-        "image": "/src/assets/photos/gallery-06.jpg",
+        "image": "/src/assets/photos/projects/gallery-06.jpg",
         "alt": "Climber topping a mature conifer"
       },
       {
-        "image": "/src/assets/photos/gallery-07.jpg",
+        "image": "/src/assets/photos/projects/gallery-07.jpg",
         "alt": "Cut logs stacked for removal"
       },
       {
-        "image": "/src/assets/photos/gallery-08.jpg",
+        "image": "/src/assets/photos/projects/gallery-08.jpg",
         "alt": "Finished site after a full clearance"
       },
       {
-        "image": "/src/assets/photos/project-1.jpg",
+        "image": "/src/assets/photos/projects/project-1.jpg",
         "alt": "Tall tree removal in progress"
       },
       {
-        "image": "/src/assets/photos/project-2.jpg",
+        "image": "/src/assets/photos/projects/project-2.jpg",
         "alt": "Storm-damaged tree cleanup"
       },
       {
-        "image": "/src/assets/photos/project-3.jpg",
+        "image": "/src/assets/photos/projects/project-3.jpg",
         "alt": "Crane-assisted tree removal"
       },
       {
-        "image": "/src/assets/photos/project-4.jpg",
+        "image": "/src/assets/photos/projects/project-4.jpg",
         "alt": "Completed tree care project"
       },
       {
-        "image": "/src/assets/photos/project-5.jpg",
+        "image": "/src/assets/photos/projects/project-5.jpg",
         "alt": "Professional tree service work"
       }
     ]
