@@ -7,6 +7,6 @@ categories:
 draft: false
 card:
   description: 'Custom stone wall installations built for long-lasting strength, natural beauty, and improved property definition and landscaping.'
-  image: '/src/assets/photos/outdoor-stone-wall.jpg'
-  icon: '/media/icons/svc-rock.png'
+  image: '/src/assets/photos/stone-wall/card/image.jpg'
+  icon: '/media/icons/stone-wall/card/icon.png'
 ---

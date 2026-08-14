@@ -22,6 +22,23 @@ const REPO_ROOT = resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
 /** 1 MB, the hard ceiling for any single file we commit or ship. */
 const DEFAULT_LIMIT = 1024 * 1024;
 
+/**
+ * Exempt from the budget. This guard exists to keep unprocessed PHOTOGRAPHY out
+ * of the repo and out of what visitors download — it is not a general
+ * code-splitting budget, so two kinds of build output are excluded:
+ *
+ *  1. The Keystatic admin bundle. `/keystatic` is a React application that only
+ *     CMS editors ever load; it is not referenced by any rendered page.
+ *  2. Server bundles. Worker code never reaches a browser, and Cloudflare
+ *     enforces its own (much larger) limit on it at deploy time.
+ *
+ * Images are still checked everywhere, including inside `dist/`.
+ */
+const EXEMPT = [
+  /\/dist\/client\/_astro\/KeystaticApp\.[\w-]+\.js$/,
+  /\/dist\/server\//,
+];
+
 /** Never walked: tooling caches and installed dependencies are not ours. */
 const SKIP_DIRS = new Set([
   '.git',
@@ -75,9 +92,12 @@ async function walk(dir) {
     }
     if (!entry.isFile()) continue;
 
+    const rel = relative(REPO_ROOT, full).split(sep).join('/');
+    if (EXEMPT.some((pattern) => pattern.test(`/${rel}`))) continue;
+
     const { size } = await stat(full);
     scanned++;
-    if (size > limit) oversized.push({ file: relative(REPO_ROOT, full).split(sep).join('/'), size });
+    if (size > limit) oversized.push({ file: rel, size });
   }
 }
 

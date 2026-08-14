@@ -1,76 +1,121 @@
 ---
-title: 'Tree Removal'
+title: Tree Removal
 order: 1
-group: tree-care
 categories:
   - residential
   - commercial
+group: tree-care
 draft: false
 card:
-  description: 'Safe and efficient removal of hazardous, damaged, fallen, or unwanted trees for residential and commercial properties.'
-  image: '/src/assets/photos/services-tree-removal.jpg'
-  icon: '/media/icons/svc-wood.png'
+  description: >-
+    Safe and efficient removal of hazardous, damaged, fallen, or unwanted trees
+    for residential and commercial properties.
+  image: /src/assets/photos/tree-removal/card/image.jpg
+  icon: /media/icons/tree-removal/card/icon.png
 seo:
-  title: 'Tree Removal in Connecticut — Erick''s Tree Service'
-  description: 'Safe, professional tree removal across Connecticut. Certified arborists, advanced rigging and cranes, full permit handling, and complete clean-up. Free estimates.'
+  title: Tree Removal in Connecticut — Erick's Tree Service
+  description: >-
+    Safe, professional tree removal across Connecticut. Certified arborists,
+    advanced rigging and cranes, full permit handling, and complete clean-up.
+    Free estimates.
   keywords:
     - tree removal
     - tree removal Connecticut
     - hazardous tree removal
     - certified arborist
 hero:
-  title: 'Trusted Tree Care Services for Residential Properties Across Connecticut'
-  description: 'Erick''s Tree Services is a tree service company that helps customers maintain beautiful, healthy trees and shrubs. At the heart of our success are our arborists, experts who know and champion every tree, no matter the species.'
-  image: '/src/assets/photos/residential-hero.jpg'
-  imageAlt: 'Arborist roping down a large limb above a residential property'
-  imageSplit: '56.72%'
+  title: Trusted Tree Care Services for Residential Properties Across Connecticut
+  description: >-
+    Erick's Tree Services is a tree service company that helps customers
+    maintain beautiful, healthy trees and shrubs. At the heart of our success
+    are our arborists, experts who know and champion every tree, no matter the
+    species.
+  image: /src/assets/photos/tree-removal/hero/image.jpg
+  imageAlt: Arborist roping down a large limb above a residential property
+  imageSplit: 56.72%
 intro:
-  heading: 'Safe, Professional Tree Removal Across Connecticut'
+  heading: Safe, Professional Tree Removal Across Connecticut
   paragraphs:
-    - 'At Erick''s Tree Services, we provide safe and efficient tree removals across Connecticut, from backyard jobs to complex, high-risk projects near homes, roads, and powerlines. Our qualified arborists use advanced rigging, cranes, and EWPs to work safely with minimal disruption.'
-    - 'We handle residential, commercial, and bushfire-prone properties, including projects under the NSW 10/50 Vegetation Clearing Scheme. With years of experience and modern equipment, we manage hazardous or non-compliant trees with precision and care.'
-    - 'Whether a tree is dead, storm-damaged, or unsafe, you can rely on Erick''s Tree Services for safe, compliant, and professional removal in line with Australian Standards AS4373, leaving your site clean, secure, and ready for what''s next.'
-  ctaLabel: 'Get free quote now'
+    - >-
+      At Erick's Tree Services, we provide safe and efficient tree removals
+      across Connecticut, from backyard jobs to complex, high-risk projects near
+      homes, roads, and powerlines. Our qualified arborists use advanced
+      rigging, cranes, and EWPs to work safely with minimal disruption.
+    - >-
+      We handle residential, commercial, and bushfire-prone properties,
+      including projects under the NSW 10/50 Vegetation Clearing Scheme. With
+      years of experience and modern equipment, we manage hazardous or
+      non-compliant trees with precision and care.
+    - >-
+      Whether a tree is dead, storm-damaged, or unsafe, you can rely on Erick's
+      Tree Services for safe, compliant, and professional removal in line with
+      Australian Standards AS4373, leaving your site clean, secure, and ready
+      for what's next.
+  ctaLabel: Get free quote now
   ctaHref: '#free-inspection'
-  image: '/src/assets/photos/service-tree-removal-intro.jpg'
-  imageAlt: 'Arborist felling a large tree with a chainsaw'
-whyChooseHeading: 'Why Choose Aesthetic Tree for Tree Removal in Connecticut?'
+  image: /src/assets/photos/tree-removal/intro/image.jpg
+  imageAlt: Arborist felling a large tree with a chainsaw
+whyChooseHeading: Why Choose Aesthetic Tree for Tree Removal in Connecticut?
 capabilities:
-  heading: 'WHAT WE CAN DO FOR YOU'
-  intro: 'When you choose Erick''s Tree Services for your tree removal, we provide you a complete done for you tree service:'
+  heading: WHAT WE CAN DO FOR YOU
+  intro: >-
+    When you choose Erick's Tree Services for your tree removal, we provide you
+    a complete done for you tree service:
   bullets:
-    - 'Safe Tree Removal – We remove trees of all sizes, from small backyard trees to large, hazardous ones near structures or power lines.'
-    - 'Hazard Reduction – Our team specialises in taking down dead, diseased, or storm-damaged trees before they cause costly damage.'
-    - 'Stump Grinding & Removal – We can grind or fully remove stumps to prevent regrowth and leave your yard ready for replanting or landscaping.'
-    - 'Clean-Up & Disposal – All debris, branches, and logs are cleared from your property. We can even recycle wood into mulch upon request.'
-    - 'Expert Advice – Unsure if your tree really needs to go? Our certified arborists will assess the tree and recommend the safest and most cost-effective solution.'
-  ctaLabel: 'Get free quote now'
+    - >-
+      Safe Tree Removal – We remove trees of all sizes, from small backyard
+      trees to large, hazardous ones near structures or power lines.
+    - >-
+      Hazard Reduction – Our team specialises in taking down dead, diseased, or
+      storm-damaged trees before they cause costly damage.
+    - >-
+      Stump Grinding & Removal – We can grind or fully remove stumps to prevent
+      regrowth and leave your yard ready for replanting or landscaping.
+    - >-
+      Clean-Up & Disposal – All debris, branches, and logs are cleared from your
+      property. We can even recycle wood into mulch upon request.
+    - >-
+      Expert Advice – Unsure if your tree really needs to go? Our certified
+      arborists will assess the tree and recommend the safest and most
+      cost-effective solution.
+  ctaLabel: Get free quote now
   ctaHref: '#free-inspection'
   chips:
-    - { icon: '/media/icons/cap-siren.png', label: 'Mitigates Public Safety Risks' }
-    - { icon: '/media/icons/cap-tree.svg', label: 'Prevents Structural Tree Failure' }
-    - { icon: '/media/icons/cap-ladybug.svg', label: 'Controls Invasive Tree Species' }
-    - { icon: '/media/icons/cap-thunderstorm.svg', label: 'Responds to Storm Damage' }
-    - { icon: '/media/icons/cap-check.svg', label: 'Protects Underground Infrastructure' }
-    - { icon: '/media/icons/cap-fire.svg', label: 'Improves Bushfire Zone Compliance' }
-    - { icon: '/media/icons/cap-line.svg', label: 'Assists with Council Approvals' }
-    - { icon: '/media/icons/cap-home.svg', label: 'Allows for Property Development' }
+    - icon: /media/icons/tree-removal/capabilities/chips/0/icon.png
+      label: Mitigates Public Safety Risks
+    - icon: /media/icons/tree-removal/capabilities/chips/1/icon.svg
+      label: Prevents Structural Tree Failure
+    - icon: /media/icons/tree-removal/capabilities/chips/2/icon.svg
+      label: Controls Invasive Tree Species
+    - icon: /media/icons/tree-removal/capabilities/chips/3/icon.svg
+      label: Responds to Storm Damage
+    - icon: /media/icons/tree-removal/capabilities/chips/4/icon.svg
+      label: Protects Underground Infrastructure
+    - icon: /media/icons/tree-removal/capabilities/chips/5/icon.svg
+      label: Improves Bushfire Zone Compliance
+    - icon: /media/icons/tree-removal/capabilities/chips/6/icon.svg
+      label: Assists with Council Approvals
+    - icon: /media/icons/tree-removal/capabilities/chips/7/icon.svg
+      label: Allows for Property Development
 checklist:
-  heading: 'When Does a Tree in Connecticut Need to Be Removed?'
-  intro: 'Not every tree problem requires removal. A certified arborist will always explore pruning, cabling, or bracing before recommending that a tree come down. However, removal becomes the safest option when a tree meets one or more of these criteria:'
+  heading: When Does a Tree in Connecticut Need to Be Removed?
+  intro: >-
+    Not every tree problem requires removal. A certified arborist will always
+    explore pruning, cabling, or bracing before recommending that a tree come
+    down. However, removal becomes the safest option when a tree meets one or
+    more of these criteria:
   items:
-    - 'Dead or dying trees'
-    - 'Hazardous lean or root failure'
-    - 'Root damage to foundations or utilities'
-    - 'Severe structural defects'
-    - 'Construction or development conflicts'
-    - 'End of natural lifespan'
-bodyImage: '/src/assets/photos/about-arborist-tree.jpg'
-bodyImageAlt: 'Certified arborist assessing a mature tree'
-bodyCtaLabel: 'Get free quote now'
+    - Dead or dying trees
+    - Hazardous lean or root failure
+    - Root damage to foundations or utilities
+    - Severe structural defects
+    - Construction or development conflicts
+    - End of natural lifespan
+bodyImage: /src/assets/photos/tree-removal/bodyImage.jpg
+bodyImageAlt: Certified arborist assessing a mature tree.
+bodyCtaLabel: Get free quote now
 bodyCtaHref: '#free-inspection'
 ---
-
 ## How Does the Tree Removal Permit Process Work in Connecticut?
 
 Under the City of Connecticut's Protection of Trees By-law (No. 9958), most trees with a trunk diameter of 20 cm or more at breast height require a removal permit. We handle the entire application process: measuring the tree, completing the paperwork, submitting to the city, and tracking approval.

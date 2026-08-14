@@ -8,6 +8,6 @@ categories:
 draft: false
 card:
   description: 'Professional trimming and pruning services designed to improve tree health, appearance, and overall property safety.'
-  image: '/src/assets/photos/services-pruning.jpg'
-  icon: '/media/icons/svc-tree.png'
+  image: '/src/assets/photos/tree-trimming/card/image.jpg'
+  icon: '/media/icons/tree-trimming/card/icon.png'
 ---

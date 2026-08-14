@@ -8,12 +8,12 @@ group: tree-care
 draft: false
 card:
   description: Protect weakened or vulnerable trees with professional support systems designed to improve stability, reduce risk, and help preserve long-term tree health.
-  image: /src/assets/photos/services-cabling.jpg
-  icon: /media/icons/svc-wire.png
+  image: /src/assets/photos/cabling-bracing/card/image.jpg
+  icon: /media/icons/cabling-bracing/card/icon.png
 hero:
   title: testing
   description: dqwdqwdwq
-  image: /src/assets/photos/about-approach.jpg
+  image: /src/assets/photos/cabling-bracing/hero/image.jpg
   imageAlt: qwdqwdqwdqw
   imageSplit: ''
 intro:
@@ -24,7 +24,7 @@ intro:
     - Whether a tree is dead, storm-damaged, or unsafe, you can rely on Erick's Tree Services for safe, compliant, and professional removal in line with Australian Standards AS4373, leaving your site clean, secure, and ready for what's next.
   ctaLabel: Get free quote now
   ctaHref: '#free-inspection'
-  image: /src/assets/photos/about-mission-bg.jpg
+  image: /src/assets/photos/cabling-bracing/intro/image.jpg
   imageAlt: Arborist felling a large tree with a chainsaw
 whyChooseHeading: Why Choose Aesthetic Tree for Tree Removal in Connecticut?
 capabilities:
@@ -39,7 +39,7 @@ capabilities:
   ctaLabel: Get free quote now
   ctaHref: '#'
   chips:
-    - icon: /media/icons/areas-pin.svg
+    - icon: /media/icons/cabling-bracing/capabilities/chips/0/icon.svg
       label: Mitigates Public Safety Risks
 checklist:
   heading: When Does a Tree in Connecticut Need to Be Removed?
@@ -47,7 +47,7 @@ checklist:
   items:
     - Dead or dying trees
     - item 1
-bodyImage: /src/assets/photos/about-hero.jpg
+bodyImage: /src/assets/photos/cabling-bracing/bodyImage.jpg
 bodyImageAlt: ''
 bodyCtaLabel: Get free quote now
 bodyCtaHref: '#free-inspection'

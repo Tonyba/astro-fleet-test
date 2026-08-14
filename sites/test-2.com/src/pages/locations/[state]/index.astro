@@ -1,0 +1,54 @@
+---
+import '../../../styles/global.css';
+import LocationsHubPage from '../../../components/LocationsHubPage.astro';
+
+import {
+  areaSettings,
+  fillTokens,
+  getAreaServices,
+  getLocationTree,
+  toHubCards,
+  type StateRef,
+} from '../../../lib/locations';
+import { resolveSeo } from '../../../lib/seo';
+
+// One page per state in the Service Areas content — /locations/connecticut/.
+export async function getStaticPaths() {
+  const states = await getLocationTree();
+  return states.map((state) => ({ params: { state: state.slug }, props: { state } }));
+}
+
+interface Props {
+  state: StateRef;
+}
+
+const { state } = Astro.props;
+const services = await getAreaServices();
+
+const tokens = {
+  state: state.abbr,
+  stateName: state.name,
+  stateAbbr: state.abbr,
+};
+
+const copy = areaSettings.statePage;
+const seo = resolveSeo({
+  pattern: 'locationState',
+  tokens,
+  title: fillTokens(copy.heroTitle, tokens),
+  description: fillTokens(copy.seoDescription, tokens),
+  path: Astro.url.pathname,
+});
+---
+
+<LocationsHubPage
+  title={seo.title}
+  description={seo.description}
+  heroTitle={fillTokens(copy.heroTitle, tokens)}
+  heroDescription={fillTokens(copy.heroDescription, tokens)}
+  eyebrow={areaSettings.hub.eyebrow}
+  heading={fillTokens(copy.heading, { ...tokens, state: state.name })}
+  lead={fillTokens(copy.description, tokens)}
+  footnote={fillTokens(areaSettings.hub.footnote, { ...tokens, state: state.name })}
+  areas={toHubCards(state.cities, services)}
+/>

@@ -21,7 +21,7 @@
       "label": "Call (203) 367-8219",
       "number": "(203) 367-8219"
     },
-    "image": "/src/assets/photos/about-hero.jpg",
+    "image": "/src/assets/photos/hero/image.jpg",
     "imageAlt": "Erick’s Tree Services crew on site",
     "imageSplit": "56.46%",
     "minHeight": "396px"
@@ -37,7 +37,7 @@
     ],
     "ctaLabel": "Get free quote now",
     "ctaHref": "#free-inspection",
-    "image": "/src/assets/photos/about-story.jpg",
+    "image": "/src/assets/photos/story/image.jpg",
     "imageAlt": "Arborist working on a mature tree"
   },
   "stats": {
@@ -68,50 +68,49 @@
     "description": "We are fully ISO accredited in Quality, Environmental and Work Health & Safety. Our systems, training and processes ensure we meet the highest industry standards and deliver consistent, complian outcomes for our clients.",
     "badges": [
       {
-        "src": "/src/assets/badges/iso-45001.png",
+        "src": "/src/assets/badges/approach/badges/0/src.png",
         "alt": "ISO 45001 accredited"
       },
       {
-        "src": "/src/assets/badges/iso-14001.png",
+        "src": "/src/assets/badges/approach/badges/1/src.png",
         "alt": "ISO 14001 accredited"
       },
       {
-        "src": "/src/assets/badges/iso-9001.png",
+        "src": "/src/assets/badges/approach/badges/2/src.png",
         "alt": "ISO 9001 accredited"
       }
     ],
     "ctaLabel": "Get free quote now",
     "ctaHref": "#free-inspection",
-    "image": "/src/assets/photos/about-approach.jpg",
+    "image": "/src/assets/photos/approach/image.jpg",
     "imageAlt": "Crew operating tree care equipment on site"
   },
   "mission": {
     "heading": "Our mission",
     "description": "Our mission is to bring beauty, innovation, and sustainability to your outdoor spaces. We are dedicated to providing top-notch tree removal, tree installation, tree trimming, landscape lighting maintenance, landscape lighting design, and holiday lighting services. With a focus on quality workmanship and customer satisfaction, we strive to exceed your expectations and create stunning landscapes that inspire and impress.",
-    "backgroundImage": "/src/assets/photos/about-mission-bg.jpg",
-    "backgroundImageAlt": ""
+    "backgroundImage": "/src/assets/photos/mission/backgroundImage.jpg"
   },
   "coreValues": {
     "eyebrow": "Core Values",
     "heading": "Connecticut's Premier Tree Care Specialists",
     "items": [
       {
-        "icon": "/media/icons/svc-earth.png",
+        "icon": "/media/icons/coreValues/items/0/icon.png",
         "title": "Safety First",
         "description": "Safety is our top priority. We follow strict safety protocols on every job to protect our team, your property, and everyone around us."
       },
       {
-        "icon": "/media/icons/svc-earth.png",
+        "icon": "/media/icons/coreValues/items/1/icon.png",
         "title": "Customer Focus",
         "description": "We listen to your needs and provide personalized solutions. Your satisfaction is our measure of success."
       },
       {
-        "icon": "/media/icons/svc-earth.png",
+        "icon": "/media/icons/coreValues/items/2/icon.png",
         "title": "Integrity & Honesty",
         "description": "We provide transparent pricing, honest advice, and clear communication throughout every project."
       },
       {
-        "icon": "/media/icons/svc-earth.png",
+        "icon": "/media/icons/coreValues/items/3/icon.png",
         "title": "Environmental Care",
         "description": "We listen to your needs and provide personalized solutions. Your satisfaction is our measure of success."
       }

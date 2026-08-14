@@ -7,6 +7,6 @@ categories:
 draft: false
 card:
   description: 'Durable and professionally crafted outdoor steps designed for safe access, functionality, and seamless integration with your property.'
-  image: '/src/assets/photos/outdoor-steps.jpg'
-  icon: '/media/icons/svc-ladder.png'
+  image: '/src/assets/photos/steps/card/image.jpg'
+  icon: '/media/icons/steps/card/icon.png'
 ---

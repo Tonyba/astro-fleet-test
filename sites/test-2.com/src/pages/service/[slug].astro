@@ -1,29 +1,16 @@
 ---
 import '../../styles/global.css';
 import TreeLayout from '@astro-fleet/shared-ui/src/layouts/TreeLayout.astro';
-import TreePageHero from '@astro-fleet/shared-ui/src/components/TreePageHero.astro';
-import TreeStatsRow from '@astro-fleet/shared-ui/src/components/TreeStatsRow.astro';
-import TreeServiceIntro from '@astro-fleet/shared-ui/src/components/TreeServiceIntro.astro';
-import TreeWhyChoose from '@astro-fleet/shared-ui/src/components/TreeWhyChoose.astro';
-import TreeCtaBanner from '@astro-fleet/shared-ui/src/components/TreeCtaBanner.astro';
-import TreeServiceCapabilities from '@astro-fleet/shared-ui/src/components/TreeServiceCapabilities.astro';
-import TreeServiceProse from '@astro-fleet/shared-ui/src/components/TreeServiceProse.astro';
-import TreeServiceChecklist from '@astro-fleet/shared-ui/src/components/TreeServiceChecklist.astro';
-import TreeEmergencyBanner from '@astro-fleet/shared-ui/src/components/TreeEmergencyBanner.astro';
-import TreeProjects from '@astro-fleet/shared-ui/src/components/TreeProjects.astro';
-import TreeTestimonials from '@astro-fleet/shared-ui/src/components/TreeTestimonials.astro';
-import TreeServiceAreas from '@astro-fleet/shared-ui/src/components/TreeServiceAreas.astro';
-import TreeFaq from '@astro-fleet/shared-ui/src/components/TreeFaq.astro';
-import TreeInspectionForm from '@astro-fleet/shared-ui/src/components/TreeInspectionForm.astro';
+import ServiceSections from '../../components/ServiceSections.astro';
 
 import { getCollection, render } from 'astro:content';
-import { getForm } from '../../lib/forms';
-
 import site from '../../content/settings/site.json';
-import home from '../../content/homepage/home.json';
+import { getHeader } from '../../lib/header';
+import { resolveSeo } from '../../lib/seo';
 
 // One page per entry in the `services` collection — the same collection that
-// feeds every services grid on the site.
+// feeds every services grid on the site. The section stack itself lives in
+// ServiceSections, shared with the service×city pages under /locations/.
 export async function getStaticPaths() {
   const services = await getCollection('services', ({ data }) => !data.draft);
   return services.map((service) => ({
@@ -36,117 +23,32 @@ const { service } = Astro.props;
 const d = service.data;
 const { Content } = await render(service);
 
-const quoteForm = await getForm('quote');
+const header = await getHeader();
 
-// Sections the design shares with the rest of the site fall back to the
-// site-wide copy when an entry does not override them.
-const heroTitle = d.hero?.title ?? `${d.title} Services Across Connecticut`;
+// The site-wide "service" pattern localises every service title the same way;
+// the entry's own SEO title is the fallback when that pattern is blank.
+const seo = resolveSeo({
+  pattern: 'service',
+  tokens: { service: d.title },
+  title: d.seo?.title || `${d.title} — ${site.siteName}`,
+  description: d.seo?.description || d.card.description,
+  path: Astro.url.pathname,
+});
 ---
 
 <TreeLayout
-  title={d.seo?.title ?? `${d.title} — ${site.siteName}`}
-  description={d.seo?.description ?? d.card.description}
-  keywords={d.seo?.keywords}
+  title={seo.title}
+  description={seo.description}
+  keywords={d.seo?.keywords?.length ? d.seo.keywords : undefined}
   siteName={site.siteName}
   logoSrc={site.logo}
-  header={site.header}
+  faviconSrc={site.favicon}
+  header={header}
   footer={site.footer}
   colors={site.theme.colors}
   fonts={site.theme.fonts}
 >
-  {d.hero && (
-    <TreePageHero
-      title={heroTitle}
-      description={d.hero.description}
-      primaryCta={{ label: 'Get free quote now', href: '#free-inspection' }}
-      phoneCta={{ label: `Call ${site.header.phone.number}`, number: site.header.phone.number }}
-      image={d.hero.image}
-      imageAlt={d.hero.imageAlt}
-      imageSplit={d.hero.imageSplit}
-    />
-  )}
-
-  <TreeStatsRow stats={home.stats.items} />
-
-  {d.intro && (
-    <TreeServiceIntro
-      heading={d.intro.heading}
-      paragraphs={d.intro.paragraphs}
-      ctaLabel={d.intro.ctaLabel}
-      ctaHref={d.intro.ctaHref}
-      image={d.intro.image}
-      imageAlt={d.intro.imageAlt}
-    />
-  )}
-
-  <TreeWhyChoose
-    eyebrow={home.whyChoose.eyebrow}
-    heading={d.whyChooseHeading ?? home.whyChoose.heading}
-    items={home.whyChoose.items}
-  />
-
-  <TreeCtaBanner {...home.ctaBanner} />
-
-  {d.capabilities && (
-    <TreeServiceCapabilities
-      heading={d.capabilities.heading}
-      intro={d.capabilities.intro}
-      bullets={d.capabilities.bullets}
-      ctaLabel={d.capabilities.ctaLabel}
-      ctaHref={d.capabilities.ctaHref}
-      chips={d.capabilities.chips}
-    />
-  )}
-
-  <TreeServiceProse
-    image={d.bodyImage}
-    imageAlt={d.bodyImageAlt}
-    ctaLabel={d.bodyCtaLabel}
-    ctaHref={d.bodyCtaHref}
-  >
+  <ServiceSections service={d}>
     <Content />
-  </TreeServiceProse>
-
-  {d.checklist && (
-    <TreeServiceChecklist
-      heading={d.checklist.heading}
-      intro={d.checklist.intro}
-      items={d.checklist.items}
-    />
-  )}
-
-  <TreeEmergencyBanner {...home.emergency} />
-  <TreeProjects
-    eyebrow={home.projects.eyebrow}
-    heading={home.projects.heading}
-    description={home.projects.description}
-    projects={home.projects.items}
-  />
-  <TreeTestimonials
-    eyebrow={home.testimonials.eyebrow}
-    heading={home.testimonials.heading}
-    description={home.testimonials.description}
-    rating={home.testimonials.serviceRating}
-    reviews={home.testimonials.reviews}
-  />
-  <TreeServiceAreas
-    eyebrow={home.serviceAreas.eyebrow}
-    heading={home.serviceAreas.heading}
-    description={home.serviceAreas.description}
-    areasLabel={home.serviceAreas.areasLabel}
-    areas={home.serviceAreas.areas}
-    ctaText={home.serviceAreas.ctaText}
-  />
-  <TreeFaq
-    eyebrow={home.faq.eyebrow}
-    titleLead={home.faq.titleLead}
-    titleRest={home.faq.titleRest}
-    faqs={home.faq.items}
-  />
-  <TreeInspectionForm
-    heading={home.inspection.heading}
-    lead={home.inspection.lead}
-    paragraphs={home.inspection.paragraphs}
-    quote={quoteForm}
-  />
+  </ServiceSections>
 </TreeLayout>

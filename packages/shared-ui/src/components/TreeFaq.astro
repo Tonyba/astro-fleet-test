@@ -82,7 +82,25 @@ const {
 } = Astro.props;
 
 const telHref = `tel:${phone.replace(/[^\d+]/g, '')}`;
+
+// FAQPage structured data — every accordion on the site carries its questions
+// in machine-readable form, so the rows can win a rich result. Emitted from the
+// same array the accordion renders, so the two can never drift apart.
+const faqSchema =
+  faqs.length > 0
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faqs.map((item) => ({
+          '@type': 'Question',
+          name: item.question,
+          acceptedAnswer: { '@type': 'Answer', text: item.answer },
+        })),
+      }
+    : null;
 ---
+
+{faqSchema && <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />}
 
 <section class="tree-faq" aria-labelledby="tree-faq-title">
   <div class="tree-faq__inner tree-container">

@@ -6,22 +6,35 @@ import TreeQuoteForm from '@astro-fleet/shared-ui/src/components/TreeQuoteForm.a
 import TreeContactDetails from '@astro-fleet/shared-ui/src/components/TreeContactDetails.astro';
 
 import { getForm } from '../lib/forms';
+import { resolveSeo } from '../lib/seo';
+import { getHeader } from '../lib/header';
 
-// CMS-editable content (Sveltia commits these JSON files; the build imports them).
+// CMS-editable content (Keystatic commits these JSON files; the build imports them).
 import site from '../content/settings/site.json';
 import page from '../content/pages/contact.json';
 
 // Same form model every other page uses — one definition, reused.
 const quoteForm = await getForm('quote');
+
+const seo = resolveSeo({
+  pattern: 'contact',
+  title: page.seo.title,
+  description: page.seo.description,
+  path: Astro.url.pathname,
+});
+
+// The Areas We Serve submenu is generated from the Service Areas content.
+const header = await getHeader();
 ---
 
 <TreeLayout
-  title={page.seo.title}
-  description={page.seo.description}
+  title={seo.title}
+  description={seo.description}
   keywords={page.seo.keywords}
   siteName={site.siteName}
   logoSrc={site.logo}
-  header={site.header}
+  faviconSrc={site.favicon}
+  header={header}
   footer={site.footer}
   colors={site.theme.colors}
   fonts={site.theme.fonts}

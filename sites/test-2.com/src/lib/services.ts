@@ -22,7 +22,7 @@ interface Filter {
  * The single source of truth for every services grid on the site.
  *
  * Reads the `services` collection (one markdown file per service, authored in
- * Sveltia under "Single Service") and shapes each entry into the card contract
+ * Keystatic under "Single Service") and shapes each entry into the card contract
  * TreeServices expects. `href` is derived from the filename, so a card and its
  * detail page can never drift apart.
  */

@@ -18,12 +18,32 @@ export interface Props {
   ctaHref?: string;
   image: string;
   imageAlt: string;
+  /**
+   * Photo on the LEFT, copy on the right — the city page's "Why … homeowners
+   * trust us" block (Figma 2053:7799). Service pages keep the default.
+   */
+  reverse?: boolean;
+  /** Heading casing. The city block sets its own heading uppercase in Figma. */
+  headingTransform?: 'uppercase' | 'none';
 }
 
-const { eyebrow, heading, paragraphs = [], ctaLabel, ctaHref = '#free-inspection', image, imageAlt } = Astro.props;
+const {
+  eyebrow,
+  heading,
+  paragraphs = [],
+  ctaLabel,
+  ctaHref = '#free-inspection',
+  image,
+  imageAlt,
+  reverse = false,
+  headingTransform,
+} = Astro.props;
 ---
 
-<section class="tree-service-intro">
+<section
+  class:list={['tree-service-intro', { 'tree-service-intro--reverse': reverse }]}
+  style={headingTransform ? `--tree-intro-heading-transform: ${headingTransform};` : undefined}
+>
   <div class="tree-container tree-service-intro__inner">
     <div class="tree-service-intro__copy">
       <div class="tree-service-intro__head">
@@ -64,6 +84,18 @@ const { eyebrow, heading, paragraphs = [], ctaLabel, ctaHref = '#free-inspection
     align-items: stretch;
   }
 
+  /* Photo first, copy second — same grid, columns swapped (Figma 2053:7799). */
+  .tree-service-intro--reverse .tree-service-intro__inner {
+    grid-template-columns: 631px minmax(0, 1fr);
+  }
+  .tree-service-intro--reverse .tree-service-intro__copy {
+    order: 2;
+    justify-content: center;
+  }
+  .tree-service-intro--reverse .tree-service-intro__media {
+    order: 1;
+  }
+
   .tree-service-intro__copy {
     display: flex;
     flex-direction: column;
@@ -89,7 +121,7 @@ const { eyebrow, heading, paragraphs = [], ctaLabel, ctaHref = '#free-inspection
     font-size: 42px;
     font-weight: 500;
     line-height: 1.248;
-    text-transform: uppercase;
+    text-transform: var(--tree-intro-heading-transform, uppercase);
     color: var(--color-text-primary, #013b2d);
   }
 
@@ -144,7 +176,8 @@ const { eyebrow, heading, paragraphs = [], ctaLabel, ctaHref = '#free-inspection
 
   @media (max-width: 1024px) {
     .tree-service-intro { padding-block: 56px; }
-    .tree-service-intro__inner { grid-template-columns: 1fr; gap: 36px; }
+    .tree-service-intro__inner,
+    .tree-service-intro--reverse .tree-service-intro__inner { grid-template-columns: 1fr; gap: 36px; }
     .tree-service-intro__copy { gap: 28px; }
     .tree-service-intro__heading { font-size: 34px; }
     .tree-service-intro__copy > .tree-service-intro__head + .tree-service-intro__prose { margin-top: -16px; }

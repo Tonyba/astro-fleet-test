@@ -21,8 +21,10 @@ import TreeInspectionForm from '@astro-fleet/shared-ui/src/components/TreeInspec
 import { getCollection } from 'astro:content';
 import { getForm } from '../lib/forms';
 import { getServiceCards } from '../lib/services';
+import { resolveSeo } from '../lib/seo';
+import { getHeader } from '../lib/header';
 
-// CMS-editable content (Sveltia commits these JSON files; the build imports them).
+// CMS-editable content (Keystatic commits these JSON files; the build imports them).
 import site from '../content/settings/site.json';
 import home from '../content/homepage/home.json';
 
@@ -48,27 +50,39 @@ const blogPosts = (await getCollection('posts', ({ data }) => !data.draft))
     image: post.data.image ?? '/src/assets/photos/blog-tree-power-lines.jpg',
     imageAlt: post.data.imageAlt ?? post.data.title,
   }));
+
+// Title comes from the CMS "home" pattern; the page's own title is the fallback.
+const seo = resolveSeo({
+  pattern: 'home',
+  title: home.seo.title,
+  description: home.seo.description,
+  path: Astro.url.pathname,
+});
+
+// The Areas We Serve submenu is generated from the Service Areas content.
+const header = await getHeader();
 ---
 
 <TreeLayout
-  title={home.seo.title}
-  description={home.seo.description}
+  title={seo.title}
+  description={seo.description}
   keywords={home.seo.keywords}
   siteName={site.siteName}
   logoSrc={site.logo}
-  header={site.header}
+  faviconSrc={site.favicon}
+  header={header}
   footer={site.footer}
   colors={site.theme.colors}
   fonts={site.theme.fonts}
 >
   <TreeHero {...home.hero} quote={quoteForm} />
-  <TreeTrustBar />
+  <TreeTrustBar {...home.trustBar} />
   <TreeServices eyebrow={home.services.eyebrow} heading={home.services.heading} services={homeServices} viewAllHref="/services/residential/" />
   <TreeWhyChoose eyebrow={home.whyChoose.eyebrow} heading={home.whyChoose.heading} items={home.whyChoose.items} />
   <TreeCtaBanner {...home.ctaBanner} />
-  <TreeAbout />
+  <TreeAbout {...home.about} />
   <TreeStatsBar eyebrow={home.stats.eyebrow} heading={home.stats.heading} stats={home.stats.items} />
-  <TreeCommercial />
+  <TreeCommercial {...home.commercial} />
   <TreeProjects eyebrow={home.projects.eyebrow} heading={home.projects.heading} description={home.projects.description} projects={home.projects.items} />
   <TreeEmergencyBanner {...home.emergency} />
   <TreeProcess eyebrow={home.process.eyebrow} heading={home.process.heading} description={home.process.description} steps={home.process.steps} />

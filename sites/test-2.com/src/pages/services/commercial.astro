@@ -11,8 +11,10 @@ import TreeInspectionForm from '@astro-fleet/shared-ui/src/components/TreeInspec
 
 import { getForm } from '../../lib/forms';
 import { getServiceCards } from '../../lib/services';
+import { resolveSeo } from '../../lib/seo';
+import { getHeader } from '../../lib/header';
 
-// CMS-editable content (Sveltia commits these JSON files; the build imports them).
+// CMS-editable content (Keystatic commits these JSON files; the build imports them).
 import site from '../../content/settings/site.json';
 import services from '../../content/pages/services-commercial.json';
 
@@ -21,15 +23,26 @@ const quoteForm = await getForm('quote');
 
 // Cards come from the Single Service collection, filtered to the commercial term.
 const commercialServices = await getServiceCards({ category: 'commercial' });
+
+const seo = resolveSeo({
+  pattern: 'commercial',
+  title: services.seo.title,
+  description: services.seo.description,
+  path: Astro.url.pathname,
+});
+
+// The Areas We Serve submenu is generated from the Service Areas content.
+const header = await getHeader();
 ---
 
 <TreeLayout
-  title={services.seo.title}
-  description={services.seo.description}
+  title={seo.title}
+  description={seo.description}
   keywords={services.seo.keywords}
   siteName={site.siteName}
   logoSrc={site.logo}
-  header={site.header}
+  faviconSrc={site.favicon}
+  header={header}
   footer={site.footer}
   colors={site.theme.colors}
   fonts={site.theme.fonts}

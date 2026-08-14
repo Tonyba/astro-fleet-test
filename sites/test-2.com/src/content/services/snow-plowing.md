@@ -7,6 +7,6 @@ categories:
 draft: false
 card:
   description: 'Reliable snow plowing services designed to keep residential and commercial properties safe, accessible, and operational during winter weather conditions.'
-  image: '/src/assets/photos/outdoor-snow-plowing.jpg'
-  icon: '/media/icons/svc-snowflake.png'
+  image: '/src/assets/photos/snow-plowing/card/image.jpg'
+  icon: '/media/icons/snow-plowing/card/icon.png'
 ---

@@ -10,27 +10,29 @@
       "type": "text",
       "label": "Full Name",
       "placeholder": "Full Name*",
-      "required": true
+      "required": true,
+      "options": []
     },
     {
       "name": "email",
       "type": "email",
       "label": "Email Address",
       "placeholder": "Email Adress*",
-      "required": true
+      "required": true,
+      "options": []
     },
     {
       "name": "phone",
       "type": "tel",
       "label": "Phone Number",
       "placeholder": "Phone Number*",
-      "required": true
+      "required": true,
+      "options": []
     },
     {
       "name": "project_type",
       "type": "radio",
       "label": "Proyect Type",
-      "placeholder": "",
       "required": false,
       "options": [
         "Residential",
@@ -41,7 +43,6 @@
       "name": "service",
       "type": "select",
       "label": "What service do you need?",
-      "placeholder": "",
       "required": false,
       "options": [
         "Tree Removal Services",
@@ -57,7 +58,8 @@
       "type": "textarea",
       "label": "Project details",
       "placeholder": "Tell us about your project...",
-      "required": false
+      "required": false,
+      "options": []
     }
   ]
 }

@@ -7,8 +7,10 @@ import TreeInspectionForm from '@astro-fleet/shared-ui/src/components/TreeInspec
 
 import { getCollection } from 'astro:content';
 import { getForm } from '../../lib/forms';
+import { resolveSeo } from '../../lib/seo';
+import { getHeader } from '../../lib/header';
 
-// CMS-editable content (Sveltia commits these JSON files; the build imports them).
+// CMS-editable content (Keystatic commits these JSON files; the build imports them).
 import site from '../../content/settings/site.json';
 import home from '../../content/homepage/home.json';
 import page from '../../content/pages/blog.json';
@@ -36,15 +38,27 @@ const toCard = (entry: (typeof posts)[number]) => ({
 // Figma splits the listing: a lead row of two, then everything else in a 3-up.
 const featured = posts.slice(0, 2).map(toCard);
 const rest = posts.slice(2).map(toCard);
+
+// No site-wide pattern for the listing — this still routes through the resolver
+// so a per-URL override in the CMS and the length limits apply here too.
+const seo = resolveSeo({
+  title: page.seo.title,
+  description: page.seo.description,
+  path: Astro.url.pathname,
+});
+
+// The Areas We Serve submenu is generated from the Service Areas content.
+const header = await getHeader();
 ---
 
 <TreeLayout
-  title={page.seo.title}
-  description={page.seo.description}
+  title={seo.title}
+  description={seo.description}
   keywords={page.seo.keywords}
   siteName={site.siteName}
   logoSrc={site.logo}
-  header={site.header}
+  faviconSrc={site.favicon}
+  header={header}
   footer={site.footer}
   colors={site.theme.colors}
   fonts={site.theme.fonts}

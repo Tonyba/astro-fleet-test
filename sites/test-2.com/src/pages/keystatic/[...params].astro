@@ -1,0 +1,9 @@
+---
+// Keystatic admin UI — /keystatic. Rendered on demand (the app reads and writes
+// the repo at request time), everything else on the site stays prerendered.
+import KeystaticApp from '../../components/KeystaticApp';
+
+export const prerender = false;
+---
+
+<KeystaticApp client:only="react" />

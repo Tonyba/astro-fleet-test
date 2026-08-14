@@ -8,9 +8,19 @@
  * <=1024px: hamburger button toggles a sliding nav panel (vanilla JS, a11y).
  * All content is driven by props so it can be fed from the CMS Site Settings.
  */
+export interface TreeSubSubNavItem {
+  label: string;
+  href: string;
+}
 export interface TreeSubNavItem {
   label: string;
   href: string;
+  /**
+   * Optional third level — the "Areas We Serve → Bridgeport, CT → Tree Removal
+   * in Bridgeport" flyout column. Generated from the locations content, not
+   * hand-typed in the CMS.
+   */
+  submenu?: TreeSubSubNavItem[];
 }
 export interface TreeNavItem {
   label: string;
@@ -57,6 +67,7 @@ const currentPath = Astro.url.pathname;
 const isActive = (href: string) =>
   href === '/' ? currentPath === '/' : currentPath === href || currentPath.startsWith(href);
 const hasSubmenu = (item: TreeNavItem) => Boolean(item.submenu?.length);
+const hasFlyout = (item: TreeSubNavItem) => Boolean(item.submenu?.length);
 ---
 
 <header class="tree-header" role="banner">
@@ -84,11 +95,32 @@ const hasSubmenu = (item: TreeNavItem) => Boolean(item.submenu?.length);
             {hasSubmenu(item) && (
               <ul class="tree-header__submenu">
                 {item.submenu!.map((sub) => (
-                  <li>
+                  <li class:list={['tree-header__submenu-item', { 'has-flyout': hasFlyout(sub) }]}>
                     <a
                       href={sub.href}
                       class:list={['tree-header__submenu-link', { 'is-active': currentPath === sub.href }]}
-                    >{sub.label}</a>
+                      aria-haspopup={hasFlyout(sub) ? 'true' : undefined}
+                    >
+                      <span>{sub.label}</span>
+                      {hasFlyout(sub) && (
+                        <svg class="tree-header__chevron" width="8" height="13" viewBox="0 0 8 13" fill="none" aria-hidden="true">
+                          <path d="M1.5 1 6.5 6.5 1.5 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                      )}
+                    </a>
+                    {/* Third level — opens as a column beside its parent row. */}
+                    {hasFlyout(sub) && (
+                      <ul class="tree-header__flyout">
+                        {sub.submenu!.map((leaf) => (
+                          <li>
+                            <a
+                              href={leaf.href}
+                              class:list={['tree-header__flyout-link', { 'is-active': currentPath === leaf.href }]}
+                            >{leaf.label}</a>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -150,12 +182,39 @@ const hasSubmenu = (item: TreeNavItem) => Boolean(item.submenu?.length);
           </div>
           {hasSubmenu(item) && (
             <ul id={`tree-submenu-${i}`} class="tree-header__panel-sublist" hidden>
-              {item.submenu!.map((sub) => (
+              {item.submenu!.map((sub, j) => (
                 <li>
-                  <a
-                    href={sub.href}
-                    class:list={['tree-header__panel-sublink', { 'is-active': currentPath === sub.href }]}
-                  >{sub.label}</a>
+                  <div class="tree-header__panel-row tree-header__panel-row--sub">
+                    <a
+                      href={sub.href}
+                      class:list={['tree-header__panel-sublink', { 'is-active': currentPath === sub.href }]}
+                    >{sub.label}</a>
+                    {hasFlyout(sub) && (
+                      <button
+                        type="button"
+                        class="tree-header__panel-toggle"
+                        aria-expanded="false"
+                        aria-controls={`tree-submenu-${i}-${j}`}
+                        aria-label={`Show ${sub.label} services`}
+                      >
+                        <svg class="tree-header__caret" width="13" height="8" viewBox="0 0 13 8" fill="none" aria-hidden="true">
+                          <path d="M1 1.5 6.5 6.5 12 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                  {hasFlyout(sub) && (
+                    <ul id={`tree-submenu-${i}-${j}`} class="tree-header__panel-sublist tree-header__panel-sublist--deep" hidden>
+                      {sub.submenu!.map((leaf) => (
+                        <li>
+                          <a
+                            href={leaf.href}
+                            class:list={['tree-header__panel-sublink', { 'is-active': currentPath === leaf.href }]}
+                          >{leaf.label}</a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </li>
               ))}
             </ul>
@@ -249,7 +308,10 @@ const hasSubmenu = (item: TreeNavItem) => Boolean(item.submenu?.length);
     transform: rotate(180deg);
   }
   .tree-header__submenu-link {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
     padding: 11px 24px;
     font-size: 16px;
     font-weight: 500;
@@ -263,6 +325,70 @@ const hasSubmenu = (item: TreeNavItem) => Boolean(item.submenu?.length);
   .tree-header__submenu-link.is-active {
     color: var(--color-bg-action, #2f8328);
     background: var(--color-bg-subtle, #f2f2f2);
+  }
+  .tree-header__chevron { flex-shrink: 0; }
+
+  /* ===== Desktop third level — flyout column beside its parent row ===== */
+  .tree-header__submenu-item { position: relative; }
+  .tree-header__flyout {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    padding: 10px 0;
+    margin: 0;
+    min-width: 268px;
+    list-style: none;
+    background: var(--color-bg-surface, #fff);
+    border-radius: var(--tree-radius-btn, 6px);
+    box-shadow: 0 14px 34px rgba(1, 59, 45, 0.14);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateX(-6px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+    z-index: 21;
+  }
+  .tree-header__submenu-item.has-flyout:hover .tree-header__flyout,
+  .tree-header__submenu-item.has-flyout:focus-within .tree-header__flyout {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateX(0);
+  }
+  .tree-header__submenu-item.has-flyout:hover > .tree-header__submenu-link,
+  .tree-header__submenu-item.has-flyout:focus-within > .tree-header__submenu-link {
+    color: var(--color-text-inverse, #fff);
+    background: var(--color-bg-brand, #013b2d);
+  }
+  .tree-header__flyout-link {
+    display: block;
+    padding: 11px 24px;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.35;
+    color: var(--color-text-primary, #013b2d);
+    max-width: 280px;
+    transition: color 0.15s ease, background-color 0.15s ease;
+  }
+  .tree-header__flyout-link:hover,
+  .tree-header__flyout-link:focus-visible,
+  .tree-header__flyout-link.is-active {
+    color: var(--color-bg-action, #2f8328);
+    background: var(--color-bg-subtle, #f2f2f2);
+  }
+
+  /* A flyout on the last menu item would run off-screen — flip it left. */
+  .tree-header__menu-item:last-child .tree-header__flyout,
+  .tree-header__menu-item:nth-last-child(2) .tree-header__flyout {
+    left: auto;
+    right: 100%;
+    transform: translateX(6px);
+  }
+  .tree-header__menu-item:last-child .has-flyout:hover .tree-header__flyout,
+  .tree-header__menu-item:last-child .has-flyout:focus-within .tree-header__flyout,
+  .tree-header__menu-item:nth-last-child(2) .has-flyout:hover .tree-header__flyout,
+  .tree-header__menu-item:nth-last-child(2) .has-flyout:focus-within .tree-header__flyout {
+    transform: translateX(0);
   }
 
   /* ===== Phone + CTA cluster ===== */
@@ -338,7 +464,8 @@ const hasSubmenu = (item: TreeNavItem) => Boolean(item.submenu?.length);
     border-top: 1px solid var(--color-border-subtle, #d9d9d9);
     background: var(--color-bg-surface, #fff);
   }
-  .tree-header__panel:not([hidden]).is-open { max-height: 80vh; }
+  /* Three levels of navigation can outgrow the panel — let it scroll. */
+  .tree-header__panel:not([hidden]).is-open { max-height: 80vh; overflow-y: auto; }
   .tree-header__panel-list {
     list-style: none;
     margin: 0;
@@ -389,7 +516,15 @@ const hasSubmenu = (item: TreeNavItem) => Boolean(item.submenu?.length);
     max-height: 0;
     transition: max-height 0.3s ease;
   }
-  .tree-header__panel-sublist:not([hidden]).is-open { max-height: 600px; }
+  /* Generous cap: the second level can itself hold expanded third levels. */
+  .tree-header__panel-sublist:not([hidden]).is-open { max-height: 2400px; }
+  .tree-header__panel-sublist--deep:not([hidden]).is-open { max-height: 800px; }
+  .tree-header__panel-sublist--deep { padding-left: 16px; }
+  .tree-header__panel-row--sub { border-bottom: none; }
+  .tree-header__panel-row--sub .tree-header__panel-sublink {
+    flex: 1 1 auto;
+    border-bottom: none;
+  }
   .tree-header__panel-sublink {
     display: block;
     padding: 10px 4px;

@@ -8,6 +8,6 @@ categories:
 draft: false
 card:
   description: 'Reliable land and lot clearing solutions for construction projects, comamercial developments, and property improvements.'
-  image: '/src/assets/photos/services-land-clearing.jpg'
-  icon: '/media/icons/svc-earth.png'
+  image: '/src/assets/photos/land-clearing/card/image.jpg'
+  icon: '/media/icons/land-clearing/card/icon.png'
 ---

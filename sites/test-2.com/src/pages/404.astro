@@ -1,96 +1,267 @@
 ---
-import BaseLayout from '@astro-fleet/shared-ui/src/layouts/BaseLayout.astro';
-import { CORPORATE } from '@astro-fleet/config/tokens';
-import {
-  SITE_NAME,
-  TAGLINE,
-  LOGO_SRC,
-  navigation,
-  footerColumns,
-  contactInfo,
-  socialLinks,
-} from '../lib/site-config';
+import '../styles/global.css';
+import TreeLayout from '@astro-fleet/shared-ui/src/layouts/TreeLayout.astro';
+import TreePageHero from '@astro-fleet/shared-ui/src/components/TreePageHero.astro';
+import TreeCtaBanner from '@astro-fleet/shared-ui/src/components/TreeCtaBanner.astro';
+
+// CMS-editable content (Keystatic commits these JSON files; the build imports them).
+import site from '../content/settings/site.json';
+import home from '../content/homepage/home.json';
+import page from '../content/pages/404.json';
+import { resolveSeo } from '../lib/seo';
+import { getHeader } from '../lib/header';
+
+const { body } = page;
+
+const seo = resolveSeo({
+  title: page.seo.title,
+  description: page.seo.description,
+  path: '/404/',
+});
+
+// The Areas We Serve submenu is generated from the Service Areas content.
+const header = await getHeader();
 ---
 
-<BaseLayout
-  title={`Page Not Found — ${SITE_NAME}`}
-  description="The page you were looking for could not be found."
-  {navigation}
-  footerColumns={footerColumns}
-  {contactInfo}
-  {socialLinks}
-  siteName={SITE_NAME}
-  tagline={TAGLINE}
-  logoSrc={LOGO_SRC}
-  ctaText="Get Started"
-  ctaHref="/contact/"
-  designTokens={CORPORATE}
+<TreeLayout
+  title={seo.title}
+  description={seo.description}
+  keywords={page.seo.keywords}
+  siteName={site.siteName}
+  logoSrc={site.logo}
+  faviconSrc={site.favicon}
+  header={header}
+  footer={site.footer}
+  colors={site.theme.colors}
+  fonts={site.theme.fonts}
 >
-  <section class="not-found">
-    <div class="not-found__container">
-      <p class="not-found__code">404</p>
-      <h1 class="not-found__title">Page Not Found</h1>
-      <p class="not-found__message">
-        The page you were looking for doesn't exist or has been moved.
-      </p>
-      <a href="/" class="not-found__link">Go back home</a>
+  <TreePageHero {...page.hero} compact />
+
+  <section class="tree-404">
+    <div class="tree-container tree-404__inner">
+      <p class="tree-404__code">{body.code}</p>
+      <h2 class="tree-404__heading">{body.heading}</h2>
+      <p class="tree-404__desc">{body.description}</p>
+
+      <div class="tree-404__actions">
+        {
+          body.primaryCta.label && (
+            <a href={body.primaryCta.href} class="tree-404__btn tree-404__btn--solid">
+              {body.primaryCta.label}
+            </a>
+          )
+        }
+        {
+          body.secondaryCta.label && (
+            <a href={body.secondaryCta.href} class="tree-404__btn tree-404__btn--outline">
+              {body.secondaryCta.label}
+            </a>
+          )
+        }
+      </div>
+
+      {
+        body.links.length > 0 && (
+          <div class="tree-404__links">
+            {body.linksHeading && <p class="tree-404__links-heading">{body.linksHeading}</p>}
+            <ul class="tree-404__links-list">
+              {body.links.map((link) => (
+                <li>
+                  <a href={link.href} class="tree-404__link">
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
     </div>
   </section>
-</BaseLayout>
+
+  <TreeCtaBanner {...home.ctaBanner} />
+</TreeLayout>
 
 <style>
-  .not-found {
-    flex: 1;
+  .tree-404 {
+    background: var(--color-bg-surface, #fff);
+    padding-block: 96px;
+  }
+
+  .tree-404__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 760px;
+  }
+
+  .tree-404__code {
+    font-family: var(--font-heading);
+    font-size: 120px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--color-bg-brand-soft, #e5f1ed);
+  }
+
+  .tree-404__heading {
+    margin-top: 8px;
+    font-size: 42px;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--color-text-primary, #013b2d);
+  }
+
+  .tree-404__desc {
+    margin-top: 16px;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.8;
+    color: var(--color-text-secondary, #373434);
+  }
+
+  .tree-404__actions {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 5rem 1.5rem;
-    text-align: center;
+    gap: 16px;
+    margin-top: 32px;
   }
 
-  .not-found__container {
-    max-width: 480px;
-  }
-
-  .not-found__code {
-    font-size: 6rem;
-    font-weight: 900;
-    line-height: 1;
-    color: #e2e8f0;
-    letter-spacing: -0.05em;
-    margin-bottom: 0.5rem;
-  }
-
-  .not-found__title {
-    font-size: 2rem;
-    font-weight: 800;
-    color: var(--color-primary, #1e3a5f);
-    margin-bottom: 1rem;
-  }
-
-  .not-found__message {
-    font-size: 1.0625rem;
-    color: #64748b;
-    line-height: 1.6;
-    margin-bottom: 2rem;
-  }
-
-  .not-found__link {
+  .tree-404__btn {
     display: inline-flex;
     align-items: center;
-    padding: 0.75rem 2rem;
-    background: var(--color-accent, #2563eb);
-    color: #ffffff;
-    font-weight: 600;
-    font-size: 1rem;
-    border-radius: 0.5rem;
-    text-decoration: none;
-    transition: background-color 0.2s ease, transform 0.2s ease;
+    justify-content: center;
+    height: 60px;
+    padding-inline: 32px;
+    border-radius: var(--tree-radius-btn, 6px);
+    font-size: 18px;
+    line-height: 1.8;
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease;
   }
 
-  .not-found__link:hover {
-    background: #1d4ed8;
-    transform: translateY(-1px);
-    opacity: 1;
+  .tree-404__btn--solid {
+    font-weight: 700;
+    text-transform: capitalize;
+    background: var(--color-bg-action, #2f8328);
+    color: var(--color-text-inverse, #fff);
+  }
+  .tree-404__btn--solid:hover {
+    background: var(--color-bg-action-hover, #368a2a);
+  }
+
+  .tree-404__btn--outline {
+    font-weight: 600;
+    text-transform: uppercase;
+    border: 1px solid var(--color-border-strong, #013b2d);
+    color: var(--color-text-primary, #013b2d);
+  }
+  .tree-404__btn--outline:hover {
+    background: var(--color-text-primary, #013b2d);
+    color: var(--color-text-inverse, #fff);
+  }
+
+  .tree-404__links {
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid var(--color-border-subtle, #d9d9d9);
+    width: 100%;
+  }
+
+  .tree-404__links-heading {
+    font-family: var(--font-heading);
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-primary, #013b2d);
+  }
+
+  .tree-404__links-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 12px 32px;
+    margin-top: 16px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tree-404__link {
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.6;
+    color: var(--color-text-secondary, #373434);
+    border-bottom: 1px solid transparent;
+    transition:
+      color 0.15s ease,
+      border-color 0.15s ease;
+  }
+  .tree-404__link:hover {
+    color: var(--color-bg-action, #2f8328);
+    border-bottom-color: var(--color-bg-action, #2f8328);
+  }
+
+  /* ===== Tablet (<=1024px) ===== */
+  @media (max-width: 1024px) {
+    .tree-404 {
+      padding-block: 72px;
+    }
+    .tree-404__code {
+      font-size: 96px;
+    }
+    .tree-404__heading {
+      font-size: 34px;
+    }
+    .tree-404__desc {
+      font-size: 16px;
+      line-height: 1.7;
+    }
+    .tree-404__btn {
+      height: 54px;
+      font-size: 16px;
+      padding-inline: 28px;
+    }
+  }
+
+  /* ===== Mobile (<=767px) ===== */
+  @media (max-width: 767px) {
+    .tree-404 {
+      padding-block: 56px;
+    }
+    .tree-404__code {
+      font-size: 72px;
+    }
+    .tree-404__heading {
+      font-size: 30px;
+    }
+    .tree-404__desc {
+      font-size: 15px;
+    }
+    .tree-404__actions {
+      flex-direction: column;
+      align-items: stretch;
+      align-self: stretch;
+      gap: 12px;
+    }
+    .tree-404__btn {
+      width: 100%;
+      height: 52px;
+    }
+    .tree-404__links {
+      margin-top: 36px;
+      padding-top: 24px;
+    }
+    .tree-404__links-list {
+      flex-direction: column;
+      gap: 12px;
+    }
+    .tree-404__link {
+      font-size: 16px;
+    }
   }
 </style>

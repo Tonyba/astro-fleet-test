@@ -10,11 +10,17 @@
     "lint": "astro check"
   },
   "dependencies": {
-    "astro": "^6.1.7",
-    "@astro-fleet/shared-ui": "workspace:*",
     "@astro-fleet/config": "workspace:*",
+    "@astro-fleet/shared-ui": "workspace:*",
+    "@astrojs/cloudflare": "13.2.0",
+    "@astrojs/react": "^6.0.2",
+    "@keystatic/astro": "^5.2.0",
+    "@keystatic/core": "^0.6.5",
+    "astro": "^6.1.7",
     "embla-carousel": "^8.5.2",
-    "intl-tel-input": "^25.3.1"
+    "intl-tel-input": "^25.3.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9",

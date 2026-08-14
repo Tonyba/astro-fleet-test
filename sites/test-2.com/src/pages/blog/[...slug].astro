@@ -6,6 +6,8 @@ import TreeInspectionForm from '@astro-fleet/shared-ui/src/components/TreeInspec
 
 import { getCollection, render } from 'astro:content';
 import { getForm } from '../../lib/forms';
+import { resolveSeo } from '../../lib/seo';
+import { getHeader } from '../../lib/header';
 
 import site from '../../content/settings/site.json';
 import home from '../../content/homepage/home.json';
@@ -29,14 +31,26 @@ const dateLabel = new Intl.DateTimeFormat('en-GB', {
   month: '2-digit',
   year: 'numeric',
 }).format(post.data.date);
+
+const seo = resolveSeo({
+  pattern: 'post',
+  tokens: { title: post.data.title },
+  title: `${post.data.title} — ${site.siteName}`,
+  description: post.data.description ?? post.data.title,
+  path: Astro.url.pathname,
+});
+
+// The Areas We Serve submenu is generated from the Service Areas content.
+const header = await getHeader();
 ---
 
 <TreeLayout
-  title={`${post.data.title} — ${site.siteName}`}
-  description={post.data.description ?? post.data.title}
+  title={seo.title}
+  description={seo.description}
   siteName={site.siteName}
   logoSrc={site.logo}
-  header={site.header}
+  faviconSrc={site.favicon}
+  header={header}
   footer={site.footer}
   colors={site.theme.colors}
   fonts={site.theme.fonts}
