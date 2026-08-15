@@ -2,8 +2,8 @@
  * Edge cache for on-demand pages.
  * ---------------------------------------------------------------------------
  * Every page here renders per request (that is how a CMS edit shows up without
- * a rebuild), which would otherwise mean a worker invocation and ~15 KV reads
- * for every visitor. This puts Cloudflare's cache in front, so a repeat view is
+ * a rebuild), which would otherwise mean a worker invocation and a database
+ * read for every visitor. Cloudflare's cache sits in front, so a repeat view is
  * served from the edge at roughly static speed and never reaches the renderer.
  *
  * INVALIDATION IS BY KEY GENERATION, NOT BY PURGE. The cache key carries the
@@ -12,28 +12,13 @@
  * touched" to compute, and no purge call that can half-fail. Superseded entries
  * are never served again and fall out on their own TTL.
  *
- * The generation itself is memoised for a few seconds. Reading `ver` from KV on
- * every request would put a KV read in front of every cache HIT, which is
- * exactly the cost this is here to avoid. The price is that an edit can take
- * that long to become visible on top of the sync itself.
+ * The generation is read through runtime-content, which memoises it for a
+ * second so a burst of requests shares one query. That second is the only
+ * staleness left: unlike KV, whose reads are pinned at the edge for 30-60s,
+ * D1 reads are strongly consistent and this bound is ours to choose.
  */
 import type { MiddlewareHandler } from 'astro';
 import { contentVersion, preloadSettings, store } from './lib/runtime-content';
-
-/**
- * How long a worker isolate may reuse the sync generation it last read.
- *
- * This is the floor on how long an edit can stay invisible: until it expires,
- * an isolate keeps building cache keys from the previous generation and keeps
- * serving the page cached under it. At five seconds it was the largest single
- * component of the ~8s an editor waited, ahead of both the webhook and KV's own
- * consistency window.
- *
- * One second costs at most one extra KV read per request per isolate — a few
- * thousand a day at this site's traffic, against a free tier of 100,000 — and
- * an isolate serving a burst still amortises it across the burst.
- */
-const VERSION_TTL_MS = 1_000;
 
 /**
  * How long the EDGE may keep a rendered page.
@@ -49,27 +34,15 @@ const VERSION_TTL_MS = 1_000;
  * thing that invalidates an entry, and it happens once per sync. If a page is
  * ever cached with content that was stale at render time, no later event
  * clears it — it simply expires. An hour of that is a broken site; a minute is
- * a blink. The sync now waits for KV to settle before rotating precisely so
- * this should not happen, and this is what it costs when something still slips
- * through. Hit rate barely moves: repeat views inside a minute still skip the
+ * a blink. The sync writes the generation in the same transaction as the rows
+ * it stands for, so this should not happen; this is what it costs if it ever
+ * does. Hit rate barely moves: repeat views inside a minute still skip the
  * render entirely.
  */
 const EDGE_TTL_SECONDS = 60;
 
-/** Fresh at the edge for an hour, never reused by a browser without asking. */
+/** Fresh at the edge for a minute, never reused by a browser without asking. */
 const CACHE_CONTROL = `public, max-age=0, s-maxage=${EDGE_TTL_SECONDS}`;
-
-let cachedVersion = { value: '', readAt: 0 };
-
-async function currentVersion(): Promise<string> {
-  const now = Date.now();
-  if (cachedVersion.value && now - cachedVersion.readAt < VERSION_TTL_MS) {
-    return cachedVersion.value;
-  }
-  const value = await contentVersion();
-  cachedVersion = { value, readAt: now };
-  return value;
-}
 
 /**
  * Routes that must never be cached: the CMS and its API (per-editor, authed),
@@ -97,7 +70,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     return next();
   }
 
-  const version = await currentVersion();
+  const version = await contentVersion();
 
   // The generation lives in the key's path rather than a header so that two
   // generations of the same URL are genuinely different cache entries.
@@ -124,7 +97,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   const response = await next();
 
   // Only cache a clean HTML response. Caching a 404 or a 500 would pin a
-  // transient failure to a URL for an hour.
+  // transient failure to a URL for the whole TTL.
   const contentType = response.headers.get('content-type') ?? '';
   if (response.status === 200 && contentType.includes('text/html')) {
     const headers = new Headers(response.headers);

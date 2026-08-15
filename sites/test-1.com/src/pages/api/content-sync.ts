@@ -6,16 +6,16 @@
  * Keystatic is git-based: a save is a commit, and on test-2.com that commit has
  * to go through CI and a full Astro build (~3 minutes) before anyone sees it.
  * Here GitHub calls this route on push instead. It pulls the content files the
- * commit touched, writes them into KV, and bumps the sync generation — which
+ * commit touched, writes them into D1, and bumps the sync generation — which
  * also invalidates every edge-cached page (see middleware.ts). Seconds, no
  * build, no Actions run.
  *
- * Git stays the source of truth. KV is a derived read cache that can be thrown
+ * Git stays the source of truth. D1 holds a derived copy that can be thrown
  * away and rebuilt from the repo at any time with `?full=1`.
  *
  * Modes
  *   POST /api/content-sync            GitHub push webhook, HMAC-verified
- *   POST /api/content-sync?full=1     rebuild every key from the repo, for
+ *   POST /api/content-sync?full=1     rebuild every row from the repo, for
  *                                     first seed or recovery; needs the same
  *                                     secret in `x-sync-secret`
  *
@@ -33,7 +33,7 @@ import { marked } from 'marked';
 export const prerender = false;
 
 type Env = {
-  CONTENT?: KVNamespace;
+  CONTENT_DB?: D1Database;
   CONTENT_SYNC_SECRET?: string;
   GITHUB_TOKEN?: string;
   GITHUB_REPO?: string;
@@ -44,17 +44,6 @@ const env = workerEnv as unknown as Env;
 
 /** Only files under here are content; everything else in a commit is ignored. */
 const CONTENT_ROOT = 'sites/test-1.com/src/content/';
-
-/** Collections that own an `idx:` list. Singletons are addressed directly. */
-const COLLECTIONS = ['posts', 'services', 'locations', 'forms'];
-
-/**
- * How long to let KV settle between writing content and rotating the
- * generation that invalidates the edge cache. See the comment at the `ver`
- * write for why the order matters. GitHub allows a webhook 10 seconds, and the
- * rest of a sync is well under two, so this is comfortably inside the budget.
- */
-const SETTLE_MS = 3_000;
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -173,47 +162,50 @@ function parseEntry(path: string, source: string) {
 // Writing
 // ---------------------------------------------------------------------------
 /**
- * Rebuild the index for each collection touched. Derived from KV rather than
- * tracked incrementally, so a dropped webhook cannot leave an index that
- * disagrees with the entries beside it.
+ * Apply a set of changed paths to the database.
+ *
+ * Every statement runs in one `batch`, which D1 executes as a single
+ * transaction and a single round trip: either the generation and every row it
+ * describes land together, or nothing does. A half-applied sync would be a site
+ * rendering a mix of two commits.
+ *
+ * There is no index to rebuild — a collection listing is a query against an
+ * indexed column, so the rows ARE the index and cannot disagree with it. On KV
+ * that index was a separate key that had to be recomputed on every sync.
  */
-async function reindex(kv: KVNamespace, collections: Set<string>) {
-  for (const collection of collections) {
-    const slugs: string[] = [];
-    let cursor: string | undefined;
-
-    do {
-      const page = await kv.list({ prefix: `doc:${collection}/`, cursor });
-      for (const key of page.keys) slugs.push(key.name.slice(`doc:${collection}/`.length));
-      cursor = page.list_complete ? undefined : page.cursor;
-    } while (cursor);
-
-    slugs.sort();
-    await kv.put(`idx:${collection}`, JSON.stringify(slugs));
-  }
-}
-
-async function applyPaths(kv: KVNamespace, paths: string[], ref: string) {
-  const touched = new Set<string>();
+async function applyPaths(db: D1Database, paths: string[], ref: string, version: string) {
+  const statements: D1PreparedStatement[] = [];
   let written = 0;
   let deleted = 0;
 
+  const upsert = db.prepare(
+    `INSERT INTO docs (id, collection, slug, data, html)
+     VALUES (?1, ?2, ?3, ?4, ?5)
+     ON CONFLICT(id) DO UPDATE SET
+       collection = excluded.collection,
+       slug       = excluded.slug,
+       data       = excluded.data,
+       html       = excluded.html`
+  );
+  const remove = db.prepare('DELETE FROM docs WHERE id = ?1');
+
   for (const path of paths) {
     const id = toId(path);
-    const collection = id.includes('/') ? id.split('/')[0] : '';
-    if (COLLECTIONS.includes(collection)) touched.add(collection);
-
     const source = await fetchFile(path, ref);
 
     if (source === null) {
-      await kv.delete(`doc:${id}`);
+      statements.push(remove.bind(id));
       deleted++;
       continue;
     }
 
     try {
       const entry = parseEntry(path, source);
-      await kv.put(`doc:${id}`, JSON.stringify(entry));
+      const collection = id.includes('/') ? id.split('/')[0] : '';
+      const slug = id.split('/').pop() ?? id;
+      statements.push(
+        upsert.bind(id, collection, slug, JSON.stringify(entry.data), entry.html)
+      );
       written++;
     } catch (error) {
       // One malformed entry must not abandon the rest of the sync — the site
@@ -222,7 +214,21 @@ async function applyPaths(kv: KVNamespace, paths: string[], ref: string) {
     }
   }
 
-  if (touched.size) await reindex(kv, touched);
+  // The generation goes in the SAME batch, last. Readers use it to decide
+  // whether their snapshot is stale, so it must never become visible before the
+  // rows it stands for. On KV these were two separate writes, and the gap
+  // between them let a request read the new generation and render the old
+  // content — then cache that.
+  statements.push(
+    db
+      .prepare(
+        `INSERT INTO meta (key, value) VALUES ('ver', ?1)
+         ON CONFLICT(key) DO UPDATE SET value = excluded.value`
+      )
+      .bind(version)
+  );
+
+  await db.batch(statements);
   return { written, deleted };
 }
 
@@ -230,10 +236,10 @@ async function applyPaths(kv: KVNamespace, paths: string[], ref: string) {
 // Route
 // ---------------------------------------------------------------------------
 export const POST: APIRoute = async ({ request, url }) => {
-  const kv = env.CONTENT;
+  const db = env.CONTENT_DB;
   const secret = env.CONTENT_SYNC_SECRET;
 
-  if (!kv) return json({ error: 'CONTENT binding missing' }, 500);
+  if (!db) return json({ error: 'CONTENT_DB binding missing' }, 500);
   if (!secret) return json({ error: 'CONTENT_SYNC_SECRET not set' }, 500);
 
   const body = await request.text();
@@ -253,8 +259,7 @@ export const POST: APIRoute = async ({ request, url }) => {
     if (full) {
       const ref = branch();
       const paths = await listContentFiles(ref);
-      const result = await applyPaths(kv, paths, ref);
-      await kv.put('ver', `full-${Date.now()}`);
+      const result = await applyPaths(db, paths, ref, `full-${Date.now()}`);
       return json({ mode: 'full', files: paths.length, ...result });
     }
 
@@ -279,22 +284,13 @@ export const POST: APIRoute = async ({ request, url }) => {
     if (paths.size === 0) return json({ skipped: 'no content files in push' });
 
     const ref = payload.after || branch();
-    const result = await applyPaths(kv, [...paths], ref);
+    const result = await applyPaths(db, [...paths], ref, ref);
 
     // Last, and deliberately late.
     //
-    // Rotating the generation is what invalidates every edge-cached page, so it
-    // must not happen until the entries it invalidates can be re-rendered from
-    // the NEW content. KV is eventually consistent: for a second or two after a
-    // write, an edge can still read the previous value. Rotating immediately
-    // opened a window where a request read the new generation, rendered with
-    // the old content, and cached that under the new key — where it then sat
-    // for the full edge TTL, because nothing invalidates a generation twice.
-    //
-    // That window is exactly what someone hits when they save in the CMS and
-    // immediately refresh, which is the one moment this site is judged on.
-    await new Promise((resolve) => setTimeout(resolve, SETTLE_MS));
-    await kv.put('ver', ref);
+    // The generation was written inside the batch above, in the same
+    // transaction as the rows it stands for — so there is no window in which a
+    // reader can see the new generation and the old content.
 
     return json({ mode: 'push', ref, files: paths.size, ...result });
   } catch (error) {
@@ -307,8 +303,10 @@ export const POST: APIRoute = async ({ request, url }) => {
 export const GET: APIRoute = async () =>
   json({
     ok: true,
-    binding: Boolean(env.CONTENT),
+    binding: Boolean(env.CONTENT_DB),
     secret: Boolean(env.CONTENT_SYNC_SECRET),
     token: Boolean(env.GITHUB_TOKEN),
-    version: (await env.CONTENT?.get('ver')) ?? null,
+    version:
+      (await env.CONTENT_DB?.prepare("SELECT value FROM meta WHERE key = 'ver'")
+        .first<{ value: string }>())?.value ?? null,
   });

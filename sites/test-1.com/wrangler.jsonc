@@ -20,10 +20,17 @@
 
   "observability": { "enabled": true },
 
-  "kv_namespaces": [
+  // Content is read from D1, not KV. KV reads are cached at the edge for 30-60
+  // seconds and cannot be read fresher — Cloudflare's docs advise against KV
+  // when a write has to be visible shortly after it is made — so a CMS edit
+  // took up to a minute to appear. D1 is single-primary SQLite with strongly
+  // consistent reads: the row the webhook writes is visible to the next
+  // request. See db/schema.sql.
+  "d1_databases": [
     {
-      "binding": "CONTENT",
-      "id": "311ffcbabf6342a483274d3638150352"
+      "binding": "CONTENT_DB",
+      "database_name": "test-1-content",
+      "database_id": "5a0f7bd3-28f7-44ef-afd1-c65bfdef7384"
     }
   ]
 }

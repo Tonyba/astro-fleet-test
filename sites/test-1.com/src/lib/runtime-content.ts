@@ -4,32 +4,39 @@
  * test-2.com reads `src/content/**` at BUILD time: a CMS edit is a commit, and
  * the change only appears once CI has rebuilt and redeployed the site.
  *
- * Here the same files are read at REQUEST time out of a KV namespace. Keystatic
- * still commits to git exactly as before — that is where content history lives —
- * but a GitHub webhook (see src/pages/api/content-sync.ts) pushes the changed
- * entries into KV within seconds of the commit, and the next request renders
- * them. No Actions run, no Astro build.
+ * Here the same entries are read at REQUEST time from D1. Keystatic still
+ * commits to git exactly as before — that is where content history lives — but
+ * a GitHub webhook (see src/pages/api/content-sync.ts) writes the changed rows
+ * within seconds of the commit, and the next request renders them. No Actions
+ * run, no Astro build.
  *
- * KV layout
- *   doc:<path>   the entry, as { data, html? } — e.g. doc:settings/site,
- *                doc:services/tree-removal. `html` is only present for markdown,
- *                rendered once at sync time so no request pays for it.
- *   idx:<coll>   slugs in a collection, so a listing is one read plus one read
- *                per entry rather than a KV list scan.
- *   ver          commit SHA of the last sync; also the edge-cache generation.
+ * WHY D1 AND NOT KV. This started on KV and behaved badly: an edit could take
+ * up to a minute to appear. KV caches reads at the edge for `cacheTtl`, which
+ * defaults to 60 seconds and cannot be set below 30, so a worker keeps serving
+ * the previous value until that expires — Cloudflare's own documentation says
+ * KV is "not recommended if your data is updated often and you need to see
+ * updates shortly after they are written", which is exactly this workload.
+ * Measured: a version key stayed stale for 58 seconds against the 60s default.
+ * D1 is single-primary SQLite with strongly consistent reads, so a row the
+ * webhook writes is visible to the very next request anywhere.
+ *
+ * SHAPE. The whole content set is ~32 small rows, so rather than querying per
+ * entry — a page reads a dozen — an isolate holds a snapshot of all of them and
+ * checks one tiny `ver` row to decide whether it is still current. Steady state
+ * is one trivial query per request; a content change costs one more to reload.
  *
  * FALLBACK. Every read falls back to the copy bundled at build time. That is
  * what makes `astro dev` work unchanged (no bindings exist there), and it means
  * a site deployed before its first sync serves the committed content instead of
- * an empty page. KV is an overlay on the build, never a prerequisite for it.
+ * an empty page. D1 is an overlay on the build, never a prerequisite for it.
  */
 import { env as workerEnv } from 'cloudflare:workers';
 
-type Env = { CONTENT?: KVNamespace };
+type Env = { CONTENT_DB?: D1Database };
 const env = workerEnv as unknown as Env;
 
-/** The KV binding, or null in dev / anywhere the binding is absent. */
-export const store = (): KVNamespace | null => env.CONTENT ?? null;
+/** The D1 binding, or null in dev / anywhere the binding is absent. */
+export const store = (): D1Database | null => env.CONTENT_DB ?? null;
 
 export type Doc<T = Record<string, unknown>> = {
   /** Path without extension, e.g. `services/tree-removal`. */
@@ -80,20 +87,83 @@ for (const [path, mod] of Object.entries(mdModules)) {
 }
 
 // ---------------------------------------------------------------------------
+// Snapshot
+// ---------------------------------------------------------------------------
+/**
+ * How long an isolate may reuse the generation it last read before checking
+ * again. This is the only staleness left in the system, and unlike KV's 30-60s
+ * floor it is ours to choose: one second, so a burst of requests shares a
+ * single `ver` query while an editor still sees their change effectively
+ * immediately.
+ */
+const VERSION_TTL_MS = 1_000;
+
+type Snapshot = { version: string; docs: Map<string, Doc> };
+
+let snapshot: Snapshot | null = null;
+let versionSeen = { value: '', readAt: 0 };
+
+async function readVersion(db: D1Database): Promise<string> {
+  const now = Date.now();
+  if (versionSeen.value && now - versionSeen.readAt < VERSION_TTL_MS) {
+    return versionSeen.value;
+  }
+  const row = await db
+    .prepare("SELECT value FROM meta WHERE key = 'ver'")
+    .first<{ value: string }>();
+  versionSeen = { value: row?.value ?? 'empty', readAt: now };
+  return versionSeen.value;
+}
+
+/**
+ * The current content set, or null when there is no binding (dev). Reloads only
+ * when the generation moved, so an unchanged site costs one small query.
+ */
+async function ensureSnapshot(): Promise<Snapshot | null> {
+  const db = store();
+  if (!db) return null;
+
+  const version = await readVersion(db);
+  if (snapshot?.version === version) return snapshot;
+
+  const { results } = await db
+    .prepare('SELECT id, slug, data, html FROM docs')
+    .all<{ id: string; slug: string; data: string; html: string }>();
+
+  // An empty table means the first sync has not run. Fall back to the bundle
+  // rather than serving a site with no content.
+  if (!results?.length) return null;
+
+  const docs = new Map<string, Doc>();
+  for (const row of results) {
+    try {
+      docs.set(row.id, {
+        id: row.id,
+        slug: row.slug,
+        data: JSON.parse(row.data),
+        html: row.html ?? '',
+      });
+    } catch {
+      // One unparseable row must not take down every page; the bundled copy
+      // covers it.
+    }
+  }
+
+  snapshot = { version, docs };
+  return snapshot;
+}
+
+// ---------------------------------------------------------------------------
 // Reads
 // ---------------------------------------------------------------------------
 /**
  * One entry by path (no extension), e.g. `settings/site`, `pages/about`.
- * Throws when neither KV nor the bundle has it — a missing singleton is a bug,
- * not an empty page.
+ * Throws when neither the store nor the bundle has it — a missing singleton is
+ * a bug, not an empty page.
  */
 export async function getDoc<T = Record<string, any>>(id: string): Promise<T> {
-  const kv = store();
-
-  if (kv) {
-    const raw = await kv.get(`doc:${id}`, 'json');
-    if (raw) return (raw as Doc<T>).data;
-  }
+  const live = (await ensureSnapshot())?.docs.get(id);
+  if (live) return live.data as T;
 
   const fallback = bundled.get(id);
   if (!fallback) throw new Error(`Content entry not found: ${id}`);
@@ -104,49 +174,20 @@ export async function getDoc<T = Record<string, any>>(id: string): Promise<T> {
 export async function getDocFull<T = Record<string, any>>(
   id: string
 ): Promise<Doc<T> | null> {
-  const kv = store();
-
-  if (kv) {
-    const raw = (await kv.get(`doc:${id}`, 'json')) as Doc<T> | null;
-    if (raw) return { ...raw, id, slug: id.split('/').pop()! };
-  }
-
+  const live = (await ensureSnapshot())?.docs.get(id);
+  if (live) return live as Doc<T>;
   return (bundled.get(id) as Doc<T> | undefined) ?? null;
 }
 
-/**
- * Every entry in a collection. Reads the index, then each entry — KV bills per
- * key, so a listing of 13 services is 14 reads. That is the cost of not
- * rebuilding, and the edge cache in middleware.ts is what stops most requests
- * from paying it.
- */
+/** Every entry in a collection. */
 export async function listDocs<T = Record<string, any>>(
   collection: string
 ): Promise<Doc<T>[]> {
-  const kv = store();
+  const current = await ensureSnapshot();
+  const source = current ? current.docs : bundled;
+  const prefix = `${collection}/`;
 
-  if (kv) {
-    const slugs = (await kv.get(`idx:${collection}`, 'json')) as string[] | null;
-    if (slugs?.length) {
-      const docs = await Promise.all(
-        slugs.map((slug) => kv.get(`doc:${collection}/${slug}`, 'json'))
-      );
-      const found = docs.filter(Boolean) as Doc<T>[];
-      // A partial index means a sync landed the index before every entry.
-      // Prefer the bundle over rendering half a listing.
-      if (found.length === slugs.length) {
-        return found.map((doc, i) => ({
-          ...doc,
-          id: `${collection}/${slugs[i]}`,
-          slug: slugs[i],
-        }));
-      }
-    }
-  }
-
-  return [...bundled.values()].filter((doc) =>
-    doc.id.startsWith(`${collection}/`)
-  ) as Doc<T>[];
+  return [...source.values()].filter((doc) => doc.id.startsWith(prefix)) as Doc<T>[];
 }
 
 /** Non-draft entries, the filter every caller here applies. */
@@ -163,9 +204,9 @@ export async function listPublished<T extends { draft?: boolean }>(
  * cached page at once, without enumerating which pages an entry touched.
  */
 export async function contentVersion(): Promise<string> {
-  const kv = store();
-  if (!kv) return 'dev';
-  return (await kv.get('ver')) ?? 'build';
+  const db = store();
+  if (!db) return 'dev';
+  return readVersion(db);
 }
 
 // ---------------------------------------------------------------------------
@@ -173,15 +214,14 @@ export async function contentVersion(): Promise<string> {
 // ---------------------------------------------------------------------------
 // The two settings singletons are read by almost everything, including
 // `resolveSeo` and `fillTokens`, which are called 42 times across the site from
-// ordinary synchronous expressions. Making those async to reach KV would have
-// meant editing every call site and turning a pile of template expressions into
-// awaits, for two values that are identical on every request.
+// ordinary synchronous expressions. Making those async to reach the database
+// would have meant editing every call site and turning a pile of template
+// expressions into awaits, for two values that are identical on every request.
 //
 // Instead middleware.ts calls `preloadSettings()` once per request and these
 // accessors stay synchronous. The holder is module state shared by every
 // request in the isolate, which is safe here precisely because the value does
-// not vary by request: concurrent requests either write the same thing, or
-// differ by one sync generation, which self-corrects on the next load.
+// not vary by request.
 //
 // Both start as the copy bundled at build time, so a page rendered before any
 // preload — or in dev, where there is no binding — still has real settings
@@ -192,25 +232,20 @@ import areaBundle from '../content/settings/locations.json';
 export type SiteSettings = typeof siteBundle;
 export type AreaSettings = typeof areaBundle;
 
-const SETTINGS_TTL_MS = 5_000;
-
 let settings = {
   site: siteBundle as SiteSettings,
   areas: areaBundle as AreaSettings,
-  readAt: 0,
 };
 
 /** Refresh the settings holder. Call once per request, before rendering. */
 export async function preloadSettings(): Promise<void> {
-  if (!store()) return;
-  if (settings.readAt && Date.now() - settings.readAt < SETTINGS_TTL_MS) return;
+  const current = await ensureSnapshot();
+  if (!current) return;
 
-  const [site, areas] = await Promise.all([
-    getDoc<SiteSettings>('settings/site').catch(() => settings.site),
-    getDoc<AreaSettings>('settings/locations').catch(() => settings.areas),
-  ]);
-
-  settings = { site, areas, readAt: Date.now() };
+  settings = {
+    site: (current.docs.get('settings/site')?.data as SiteSettings) ?? settings.site,
+    areas: (current.docs.get('settings/locations')?.data as AreaSettings) ?? settings.areas,
+  };
 }
 
 /** Site settings — live after `preloadSettings`, bundled before it. */
