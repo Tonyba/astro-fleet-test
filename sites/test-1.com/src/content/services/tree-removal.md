@@ -10,7 +10,7 @@ card:
   description: >-
     Safe and efficient removal of hazardous, damaged, fallen, or unwanted trees
     for residential and commercial properties.
-  image: /src/assets/photos/tree-removal/card/image.jpg
+  image: r2:photos/image-f53c2322.png
   icon: /media/icons/tree-removal/card/icon.png
 seo:
   title: Tree Removal in Connecticut — Erick's Tree Service
