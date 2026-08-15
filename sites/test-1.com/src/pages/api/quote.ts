@@ -293,9 +293,14 @@ async function commitSubmission(env: Env, lead: Lead): Promise<void> {
       Accept: 'application/vnd.github+json',
       'User-Agent': 'erick-tree-service-forms',
     },
-    body: JSON.stringify({ message: `chore(lead): ${id}`, content, branch }),
+    // `lead.id`, not `id` — a bare `id` here was a ReferenceError that failed
+    // every commit while the D1 write still succeeded, so leads landed in the
+    // database and never in the CMS.
+    body: JSON.stringify({ message: `chore(lead): ${lead.id}`, content, branch }),
   });
-  if (!res.ok) throw new Error(`GitHub commit failed: ${res.status} ${await res.text()}`);
+  if (!res.ok) {
+    throw new Error(`GitHub ${res.status} for ${path}: ${(await res.text()).slice(0, 300)}`);
+  }
 }
 
 export const POST: APIRoute = async ({ request }) => {
