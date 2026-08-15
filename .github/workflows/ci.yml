@@ -152,6 +152,15 @@ jobs:
           # sites/ — packages/, scripts/, root config — can change what a site
           # renders, so it disables skipping for everyone. Another site's files
           # cannot, since sites share code only through packages/.
+          #
+          # ONE KIND OF CONTENT CHANGE IS NOT CONTENT-ONLY: a photo uploaded
+          # through the CMS now lands in R2 and shows up here as nothing but a
+          # new `r2:<key>` string inside a JSON file. Skipping that build would
+          # be skipping the only moment the image can be encoded — the ladder is
+          # produced by a prerendered endpoint (src/pages/image-manifest.json.ts)
+          # — and the site would serve the untouched original from the bucket
+          # indefinitely. A diff that INTRODUCES a key is therefore a build; a
+          # diff that merely moves an existing one around is still content.
           SKIPPED=""
           if [ -n "$TURBO_SCM_BASE" ] && [ -n "$DEPLOYABLE" ]; then
             CHANGED=$(git diff --name-only "$TURBO_SCM_BASE" "$TURBO_SCM_HEAD" || true)
@@ -164,12 +173,21 @@ jobs:
               for site in $DEPLOYABLE; do
                 runtime=$(node -p "(require('./sites/$site/package.json').deploy || {}).runtimeContent === true")
                 noncontent=""
+                newmedia=""
                 if [ "$runtime" = "true" ]; then
                   noncontent=$(printf '%s\n' "$CHANGED" \
                     | grep "^sites/$site/" \
                     | grep -v "^sites/$site/src/content/" | head -1 || true)
+                  # Added lines only (`^+`), so re-saving an entry that already
+                  # referenced the image does not force a pointless rebuild.
+                  newmedia=$(git diff "$TURBO_SCM_BASE" "$TURBO_SCM_HEAD" \
+                    -- "sites/$site/src/content/" \
+                    | grep -E '^\+.*"r2:[^"]+"' | head -1 || true)
+                  if [ -n "$newmedia" ]; then
+                    echo "::notice::$site: content adds a new R2 image — building so its ladder is encoded."
+                  fi
                 fi
-                if [ "$runtime" = "true" ] && [ -z "$noncontent" ]; then
+                if [ "$runtime" = "true" ] && [ -z "$noncontent" ] && [ -z "$newmedia" ]; then
                   echo "::notice::$site: content-only change — already live via the content webhook, skipping build and deploy."
                   SKIPPED="$SKIPPED $site"
                 else

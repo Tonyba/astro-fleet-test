@@ -1,4 +1,6 @@
 ---
+import { mediaUrl } from '../media/media-url';
+
 export interface Props {
   /** Page title (site name appended automatically if provided via siteName). */
   title: string;
@@ -74,11 +76,14 @@ const normalizedTwitter = twitterHandle
 
 const resolvedOgImageAlt = ogImageAlt || title;
 // og:image must be absolute for every crawler — resolve root-relative paths
-// against the configured site URL rather than emitting a relative value.
-const resolvedOgImage = ogImage
-  ? ogImage.startsWith('http')
-    ? ogImage
-    : new URL(ogImage, Astro.site || Astro.url.origin).href
+// against the configured site URL rather than emitting a relative value. A CMS
+// upload arrives as `r2:<key>`, which is absolute once the bucket is applied
+// and would otherwise be pasted onto the site origin as a literal path.
+const ogImageSrc = ogImage ? (mediaUrl(ogImage) ?? ogImage) : undefined;
+const resolvedOgImage = ogImageSrc
+  ? ogImageSrc.startsWith('http')
+    ? ogImageSrc
+    : new URL(ogImageSrc, Astro.site || Astro.url.origin).href
   : undefined;
 const resolvedRssTitle = rssTitle || (siteName ? `${siteName} — RSS` : 'RSS Feed');
 

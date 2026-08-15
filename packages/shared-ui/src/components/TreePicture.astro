@@ -9,10 +9,15 @@
  * transparency), quality 90, intrinsic `width`/`height` always emitted so the
  * box is reserved before the bytes land.
  *
- * `src` accepts either an imported asset or the string path Sveltia writes into
- * the content JSON (`/src/assets/photos/hero-bg.jpg`) — see utils/images.ts.
- * Anything that is not a `src/assets` raster (an SVG served from public/, a
- * remote URL) degrades to a plain `<img>` rather than failing the build.
+ * `src` accepts an imported asset, an `r2:<key>` value written by the CMS
+ * uploader, or the repo path a hand-placed photo uses
+ * (`/src/assets/photos/hero-bg.jpg`) — see utils/images.ts. All three come out
+ * of the same ladder: an R2 image is fetched from the bucket during the build
+ * and encoded by sharp exactly like a local one, so nothing is resized at
+ * request time and no image-transformation service is involved.
+ *
+ * Anything that cannot be re-encoded (an SVG or GIF, in the bucket or in
+ * public/) degrades to a plain `<img>` rather than failing the build.
  *
  * Pass `mobileSrc` when the design art-directs a different crop below the
  * breakpoint (the hero does). `<Picture />` cannot express art direction, so
@@ -21,7 +26,8 @@
  */
 import type { ImageMetadata } from 'astro';
 import { getImage, Picture } from 'astro:assets';
-import { resolveImage, peek, ladderFor } from '../utils/images';
+import { resolveImage, remoteSource, peek, ladderFor, usesLadder } from '../utils/images';
+import { extensionOf } from '../media/media-url';
 
 /** Where the image sits in the layout — decides the srcset ladder. */
 export type PictureVariant = 'hero' | 'card' | 'inline' | 'fixed';
@@ -104,26 +110,127 @@ const sizesFor = (v: PictureVariant, w: number) =>
 const fallbackFor = (image: ImageMetadata) => (peek(image).format === 'png' ? 'png' : 'jpeg');
 
 const image = resolveImage(src);
+const mobileImage = mobileSrc ? resolveImage(mobileSrc) : undefined;
 const widths = widthsFor(variant, width);
 const resolvedSizes = sizes ?? sizesFor(variant, width);
-
-// ---- pre-built ladder -----------------------------------------------------
-// Present only on a site that renders pages on demand and therefore cannot let
-// `<Picture>` optimise anything (see setImageLadder). When it is present these
-// URLs were produced by Astro at build time and no image service is involved at
-// request time; when it is absent — every prerendered site — both are undefined
-// and the branches below are unreachable.
-const built = ladderFor(src);
-const mobileBuilt = mobileSrc ? ladderFor(mobileSrc) : undefined;
-
-// ---- art-directed branch --------------------------------------------------
-const mobileImage = mobileSrc ? resolveImage(mobileSrc) : undefined;
-const artDirected = Boolean((image && mobileImage) || (built && mobileBuilt));
 
 const mWidth = mobileWidth ?? width;
 const mHeight = mobileHeight ?? height;
 const mVariant = mobileVariant ?? variant;
 const mSizes = sizesFor(mVariant, mWidth);
+
+// ---- R2 sources -----------------------------------------------------------
+// A CMS upload lives in the bucket, not the repo, so there is no ImageMetadata
+// to import — there is a URL. Astro treats that the same way once the bucket is
+// listed in `image.remotePatterns`: it downloads the original during the build,
+// measures it (`inferSize`), and encodes the same ladder sharp would produce
+// for a local file. The output is indistinguishable — local AVIF/WebP files in
+// dist/_astro, nothing resized at request time.
+const remoteUrl = image ? undefined : remoteSource(src);
+const mobileRemoteUrl = mobileSrc && !mobileImage ? remoteSource(mobileSrc) : undefined;
+
+/** Vector and animated formats: sharp has nothing to add, so they pass through. */
+const RAW_FORMATS = new Set(['svg', 'gif', 'ico']);
+
+/**
+ * `usesLadder()` is the guard that keeps this off the request path. On a
+ * prerendered site, rendering happens during the build and encoding here is
+ * free; on an on-demand site the ladder was pre-computed by a prerendered
+ * endpoint, and anything missing from it must be served as-is rather than
+ * handed to a workerd runtime with no sharp in it.
+ */
+const canBuildRemote = (url: string) => !usesLadder() && !RAW_FORMATS.has(extensionOf(url));
+
+/**
+ * Source dimensions for a remote image, measured once per build.
+ *
+ * Astro will not upscale, but without knowing the source width it still ENCODES
+ * every width asked for — a 1200px original asked for 1440w and 1920w produces
+ * two more files identical to the 1200w one. Measuring first lets the ladder be
+ * clamped the way it is for a local import, so each distinct size is encoded
+ * exactly once.
+ *
+ * Imported dynamically so the probe never lands in a worker bundle: the branch
+ * that calls it cannot run at request time (see `canBuildRemote`).
+ */
+const remoteSizes = new Map<string, { width: number; height: number } | null>();
+const probeRemote = async (url: string) => {
+  if (!remoteSizes.has(url)) {
+    remoteSizes.set(
+      url,
+      await import('astro/assets/utils')
+        .then((utils) => utils.inferRemoteSize(url))
+        .catch(() => null)
+    );
+  }
+  return remoteSizes.get(url) ?? null;
+};
+
+const remoteLadder = async (url: string, w: number, h: number, v: PictureVariant) => {
+  const fallbackFormat = extensionOf(url) === 'png' ? 'png' : 'jpeg';
+  const size = await probeRemote(url);
+
+  // Widths above the source all collapse onto it — so drop them, but keep the
+  // source width itself in their place. Dropping them outright would cap the
+  // ladder at the next size down and hand a large screen a smaller image than
+  // the bucket actually holds.
+  const requested = widthsFor(v, w);
+  const ladderWidths = size
+    ? [
+        ...requested.filter((rung) => rung < size.width),
+        ...(requested.some((rung) => rung >= size.width) ? [size.width] : []),
+      ]
+    : requested;
+
+  const [avif, webp, fallback] = await Promise.all(
+    (['avif', 'webp', fallbackFormat] as const).map((format) =>
+      getImage({
+        src: url,
+        // Known dimensions beat a second probe inside Astro; `inferSize` is the
+        // fallback for a bucket that would not answer a range request.
+        ...(size ? { width: size.width, height: size.height } : { inferSize: true as const }),
+        widths: ladderWidths,
+        format,
+        quality: QUALITY,
+      })
+    )
+  );
+  return {
+    width: w,
+    height: h,
+    avif: avif.srcSet.attribute,
+    webp: webp.srcSet.attribute,
+    fallback: {
+      src: fallback.src,
+      srcset: fallback.srcSet.attribute,
+      type: `image/${fallbackFormat}`,
+    },
+  };
+};
+
+// ---- pre-built ladder -----------------------------------------------------
+// Either produced by the site's prerendered manifest endpoint (an on-demand
+// site, see setImageLadder) or, for an R2 image on a prerendered site, encoded
+// right here. Both arrive in the same shape, so everything below this line is
+// blind to which one it got.
+const built =
+  ladderFor(src) ??
+  (remoteUrl && canBuildRemote(remoteUrl)
+    ? await remoteLadder(remoteUrl, width, height, variant)
+    : undefined);
+
+const mobileBuilt = mobileSrc
+  ? (ladderFor(mobileSrc) ??
+    (mobileRemoteUrl && canBuildRemote(mobileRemoteUrl)
+      ? await remoteLadder(mobileRemoteUrl, mWidth, mHeight, mVariant)
+      : undefined))
+  : undefined;
+
+// ---- art-directed branch --------------------------------------------------
+// Either side may be a repo asset or a bucket object, and a site mid-migration
+// will have one of each — so the test is "both sides resolved", not "both sides
+// resolved the same way".
+const artDirected = Boolean((image || built) && (mobileImage || mobileBuilt));
 
 const buildSources = async (
   img: ImageMetadata,
@@ -249,7 +356,7 @@ const fallback = !artDirected
     />
   ) : (
     <img
-      src={typeof src === 'string' ? src : undefined}
+      src={remoteUrl ?? (typeof src === 'string' ? src : undefined)}
       alt={alt}
       width={width}
       height={height}

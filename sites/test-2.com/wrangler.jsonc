@@ -1,0 +1,31 @@
+{
+  // Worker configuration for this site.
+  //
+  // The Astro Cloudflare adapter READS this file and writes the merged result
+  // to dist/server/wrangler.json — the one `wrangler deploy` is pointed at. It
+  // fills in `main`, the ASSETS binding and the SESSION KV namespace itself, so
+  // only what the adapter cannot know belongs here.
+  //
+  // The bucket must exist before the first deploy:
+  //   wrangler r2 bucket create test-2-com-media
+  //   wrangler r2 bucket domain add test-2-com-media --domain media.example.com
+  // (or enable the bucket's r2.dev address for a quick start), then put that
+  // public origin in Site Settings -> Technical -> Media Bucket URL. The site
+  // reads images from that URL; this binding is only how the worker WRITES.
+  // Anything the adapter would otherwise supply by default has to be stated
+  // once a user config exists — `observability` in particular is silently
+  // dropped. The SESSION namespace is deliberately absent: it is
+  // auto-provisioned on deploy and must not be pinned.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "test-2-com",
+  "compatibility_date": "2026-08-13",
+
+  "observability": { "enabled": true },
+
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "test-2-com-media"
+    }
+  ]
+}

@@ -15,8 +15,17 @@
  *
  * So the split the site wants falls out naturally:
  *   text changed  -> content webhook, live in ~2s, no build (CI skips it)
- *   image changed -> `src/assets/` is not content, so CI rebuilds, and THIS
- *                    endpoint regenerates the ladder as part of that build
+ *   image changed -> CI rebuilds and THIS endpoint regenerates the ladder as
+ *                    part of that build
+ *
+ * That second line used to hold for a plain reason: an image lived in
+ * `src/assets/`, which is not content, so any image change was a code change.
+ * Uploads go to R2 now and change nothing but a `r2:<key>` string inside a
+ * content file — which would have looked exactly like a text edit and skipped
+ * the build, leaving the new photo served unoptimised forever. Two things stop
+ * that: this endpoint also encodes every R2 key the content references (below),
+ * and CI refuses to treat a diff that introduces an unseen `r2:` key as
+ * content-only. If you change one, change the other.
  *
  * The manifest is read at runtime through the ASSETS binding — see
  * `src/lib/image-manifest.ts`. It cannot simply be imported: Astro builds the
@@ -26,6 +35,8 @@
 import type { APIRoute } from 'astro';
 import type { ImageMetadata } from 'astro';
 import { getImage } from 'astro:assets';
+import { inferRemoteSize } from 'astro/assets/utils';
+import { isR2Value, mediaUrl, extensionOf } from '@astro-fleet/shared-ui/src/media/media-url';
 
 export const prerender = true;
 
@@ -45,6 +56,32 @@ const images = import.meta.glob<{ default: ImageMetadata }>(
   '/src/assets/**/*.{jpeg,jpg,png,webp,avif,tiff}',
   { eager: true }
 );
+
+/**
+ * The committed content, read as data so every `r2:<key>` in it can be
+ * encoded too. This is the same JSON the build compiles against and the same
+ * JSON the webhook syncs into D1, so a key that is live is a key that is here —
+ * unless it arrived after this build, which is what the CI rule covers.
+ */
+const contentFiles = import.meta.glob<Record<string, unknown>>('/src/content/**/*.json', {
+  eager: true,
+});
+
+/** Every distinct `r2:` value anywhere in the content tree. */
+function r2KeysInContent(): string[] {
+  const found = new Set<string>();
+  const walk = (node: unknown) => {
+    if (typeof node === 'string') {
+      if (isR2Value(node)) found.add(node);
+    } else if (Array.isArray(node)) {
+      node.forEach(walk);
+    } else if (node && typeof node === 'object') {
+      Object.values(node).forEach(walk);
+    }
+  };
+  walk(contentFiles);
+  return [...found];
+}
 
 export type ImageManifestEntry = {
   width: number;
@@ -85,6 +122,67 @@ export const GET: APIRoute = async () => {
         type: `image/${fallbackFormat}`,
       },
     };
+  }
+
+  // ---- R2 uploads ---------------------------------------------------------
+  // Keyed by the exact value the content file holds (`r2:<key>`), which is what
+  // `ladderFor` looks up. `inferSize` makes Astro download the original once to
+  // measure it, so the width ladder is clamped to the source exactly as it is
+  // for a local import and nothing is upscaled.
+  //
+  // A bucket that is unreachable must not take the build down with it: one
+  // broken key would otherwise cost the whole deploy, and the page renders
+  // perfectly well from the original in the meantime.
+  for (const value of r2KeysInContent()) {
+    const url = mediaUrl(value);
+    // Vectors and animations have no ladder to build; TreePicture serves them
+    // straight from the bucket.
+    if (!url || ['svg', 'gif', 'ico'].includes(extensionOf(value))) continue;
+
+    const fallbackFormat = extensionOf(value) === 'png' ? 'png' : 'jpeg';
+    try {
+      // Measured first for the same reason the local branch above filters on
+      // `source.width`: every width over the source encodes to a file identical
+      // to the one at the source width.
+      // Everything over the source collapses onto it, so those are replaced by
+      // the source width itself rather than dropped — otherwise the ladder ends
+      // one size short of what the bucket holds.
+      const size = await inferRemoteSize(url).catch(() => null);
+      const widths = size
+        ? [
+            ...WIDTHS.filter((w) => w < size.width),
+            ...(WIDTHS.some((w) => w >= size.width) ? [size.width] : []),
+          ]
+        : WIDTHS;
+
+      const [avif, webp, fallback] = await Promise.all(
+        (['avif', 'webp', fallbackFormat] as const).map((format) =>
+          getImage({
+            src: url,
+            ...(size ? { width: size.width, height: size.height } : { inferSize: true as const }),
+            widths,
+            format,
+            quality: QUALITY,
+          })
+        )
+      );
+
+      manifest[value] = {
+        // Only ever informational: TreePicture takes its intrinsic attributes
+        // from the layout props, so an unknown source size costs nothing.
+        width: avif.options.width ?? 0,
+        height: avif.options.height ?? 0,
+        avif: avif.srcSet.attribute,
+        webp: webp.srcSet.attribute,
+        fallback: {
+          src: fallback.src,
+          srcset: fallback.srcSet.attribute,
+          type: `image/${fallbackFormat}`,
+        },
+      };
+    } catch (error) {
+      console.warn(`[image-manifest] could not encode ${value}: ${(error as Error).message}`);
+    }
   }
 
   return new Response(JSON.stringify(manifest), {

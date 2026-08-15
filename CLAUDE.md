@@ -92,8 +92,10 @@ Verifying is not optional and does not need permission. Never ask the user to ru
 These are failure modes that have already cost hours. They are silent: the CMS looks fine and the Save button simply does nothing.
 
 - **Schema and content file must match exactly, both ways.** Adding a field to a singleton means adding the key to its JSON in the same change; removing a field means removing the key. A leftover key opens the entry as `Field validation failed: Key on object value "x" is not allowed` and nothing renders.
+- **The next two apply to `fields.image` only** — the repo-backed icon fields. Photographs use `r2Image`, whose keys come from the filename and a content hash, so no path is derived from the field's position and nothing is ever relocated on save. Sharing one photo between two entries is just sharing a string.
 - **An image inside `fields.array` is stored at `<directory>/<field-path>/<index>/<key>.<ext>`** — e.g. `hero.badges[0].src` with `directory: src/assets/badges` lands at `src/assets/badges/hero/badges/0/src.png`. Keystatic rewrites the value to that shape on save **and deletes the file it replaced**.
 - **Never point two entries at the same image file.** Saving one entry relocates the file and breaks the other: its required image resolves to empty and that entry can no longer be saved at all (`footer.badges.0.src: Image is required`). Give every entry its own copy of the photo/icon.
+- **A custom field is a plain object, not a plugin.** `r2Image` (`packages/shared-ui/src/media/r2-image-field.tsx`) is a `BasicFormField` — `kind: 'form'` plus parse/serialize/validate and a React `Input`. `validate` signals invalid by THROWING; the Input paints its own error message once `forceValidation` flips. Style custom inputs with Keystatic's `--kui-*` custom properties, which are already on the page, rather than importing @keystar/ui.
 - **Before deleting or moving any asset**, grep `src/content/` for its path. A dangling reference bricks the entry that holds it.
 - **"Save does nothing" is almost always client-side validation.** Scroll the form for red `… is required` text, or read the browser console: `Error: Field validation failed: …`.
 - **If the CMS shows stale data, or complains about files that clearly exist, its browser cache is stale.** Keystatic keeps a snapshot in IndexedDB (`keystatic`, `keystatic-blobs`). Fix: DevTools → Application → Clear site data for the dev origin, reload `/keystatic`. Editing content files directly on disk while the CMS is open is what causes this — prefer editing through the CMS, and clear the cache after any direct edit.
@@ -111,14 +113,27 @@ These are failure modes that have already cost hours. They are silent: the CMS l
 - try to keep Seo description at 155 if posible
 
 ## Images
+
+**Where a file lives depends on what it is.** Three stores, and picking the wrong one is the mistake to avoid:
+
+| What | Where | Written by |
+| --- | --- | --- |
+| Photographs uploaded through the CMS | **R2 bucket**, content stores `r2:<key>` | `r2Image` field → `POST /api/media` |
+| Photographs placed by hand | `sites/<domain>/src/assets/` | `bun run import-photo` |
+| SVG icons, logo, favicon | `public/media/` (copied verbatim) | Keystatic `fields.image` |
+
 - **Photos never travel Figma → repo. Figma exports vectors only; photographs enter through the image pipeline.**
-- Photographs live in `sites/<domain>/src/assets/` (never `public/`) and render through `TreePicture.astro`, which wraps Astro's `<Picture />`: AVIF + WebP `<source>`s over a JPEG fallback at quality 90.
-- Import every photograph with `bun run import-photo <file> --out sites/<domain>/src/assets/photos [--max-width N]`. It re-encodes to JPEG q90 (PNG, or lossy WebP when large, if the alpha channel is load-bearing) and downscales it under budget.
-- `public/media/` is for SVG icons and the logo only — it is copied verbatim and nothing in it is optimized.
+- **CMS photo uploads go to R2, not to git.** The `r2Image` field (`packages/shared-ui/src/media/`) posts the file to `/api/media` as soon as it is dropped and stores `r2:<key>` in the entry, so saving a page is a one-line JSON diff instead of a multi-megabyte binary commit. The browser downscales anything over 1920px to JPEG q90 first — the same budget `import-photo` applies.
+- **R2 images are still optimised at BUILD time, not at request time.** `TreePicture.astro` turns `r2:<key>` into the bucket URL, and Astro downloads the original, measures it and encodes the same AVIF/WebP/JPEG ladder it produces for a local import. `dist/` ships local files; no Cloudflare Images, no `/cdn-cgi/image`, nothing billed per transform. This requires the bucket host in `image.remotePatterns` — each site's `astro.config.mjs` does that from its settings.
+- **The bucket's public origin has exactly one home:** `business.technical.mediaBaseUrl` in the site's CMS settings, read by `astro.config.mjs` and inlined as `PUBLIC_MEDIA_BASE_URL`. Empty is a valid state (nothing uploaded yet); an env var of the same name overrides it for previews. Changing it takes effect on the next build, like `siteUrl`.
+- Both stores render through `TreePicture.astro`, which wraps Astro's `<Picture />`: AVIF + WebP `<source>`s over a JPEG fallback at quality 90. Legacy `/src/assets/...` values keep working indefinitely — the two can be mixed on one page, including across an art-directed desktop/mobile pair.
+- Import a hand-placed photograph with `bun run import-photo <file> --out sites/<domain>/src/assets/photos [--max-width N]`. It re-encodes to JPEG q90 (PNG, or lossy WebP when large, if the alpha channel is load-bearing) and downscales it under budget.
+- Move a site's existing photographs into its bucket with `bun run migrate-media --site <domain>` (dry run; add `--apply`, then `--delete-local`). It derives the same content-addressed keys the uploader would and rewrites every content reference; files still named by component defaults are reported and kept.
+- `public/media/` is for SVG icons and the logo only — it is copied verbatim and nothing in it is optimized. **These deliberately stay in git**: a 2 KB SVG gains nothing from a second origin, and one is used as a CSS `mask-image`.
 - Widths per slot, set with the `variant` prop: `hero` full-bleed 640/1024/1440/1920w, `card` (service + project) 400/800w, `inline` photos 600/1200w, `fixed` (badges, step icons) 1x/2x. Always pass `width`/`height` so no layout shift is possible.
 - The hero image is `loading="eager"` + `fetchpriority="high"`. Everything below the fold is `loading="lazy"` + `decoding="async"`.
 - No image file in the repo or in `dist/` may exceed 1 MB — `bun run check:sizes` enforces this on every build and in CI. **Only images fail the build** (raster plus `.svg`/`.ico`). Non-image files over 1 MB are still reported, but as a warning that does not fail — a fat JS bundle is a real problem with a different fix, and blocking a build on it was never this guard's job. Expect two standing warnings: the Keystatic admin bundle (~2.7 MB, loaded only by CMS editors) and the Worker bundle (~1.1 MB, never sent to a browser). In CI both lists also surface as GitHub annotations on the run summary — `::warning` for the non-images, `::error` for the images that failed — capped at GitHub's 10-per-step limit with a notice when more were found.
-- **Oversized images repair themselves — `bun run optimize:images`.** CMS uploads bypass `import-photo`, so this re-encodes any over-budget raster in place using the same rules (quality/width ladder down from 1920/q90). When the right format differs from what was uploaded (a photographic PNG becomes a JPEG) it renames the file *and* rewrites every reference to it inside the owning site, so no content entry is left dangling. It runs automatically in three places: `bun run build`, the `.githooks/pre-commit` hook (wired up by `bun install`), and CI before the build — CI commits the result back to `main` so a Keystatic upload from the deployed admin gets fixed without anyone touching a terminal.
+- **Oversized images repair themselves — `bun run optimize:images`.** This now only guards what is still IN the repo; an R2 upload is downscaled in the browser before it is sent and never reaches a commit. It re-encodes any over-budget raster in place using the same rules (quality/width ladder down from 1920/q90). When the right format differs from what was uploaded (a photographic PNG becomes a JPEG) it renames the file *and* rewrites every reference to it inside the owning site, so no content entry is left dangling. It runs automatically in three places: `bun run build`, the `.githooks/pre-commit` hook (wired up by `bun install`), and CI before the build — CI commits the result back to `main` so a Keystatic upload from the deployed admin gets fixed without anyone touching a terminal.
 - If image is inside a content loop item then it must be wrapped inside a link to that content item
 
 ## Carousels
@@ -154,6 +169,16 @@ bun run import-photo <file...> --out sites/<domain>/src/assets/photos --max-widt
 bun run check:sizes                            # fail on repo/dist IMAGES > 1 MB; warn on other files
 bun run optimize:images                        # re-encode over-budget images in place + fix references
 bun run optimize:images -- --check             # report only, change nothing
+
+# Media (R2)
+bun run migrate-media --site <domain>                    # dry run: what would move to the bucket
+bun run migrate-media --site <domain> --apply            # upload + rewrite content references
+bun run migrate-media --site <domain> --apply --delete-local   # ...and drop the originals
+
+# One-time bucket setup per site
+wrangler r2 bucket create <domain>-media
+wrangler r2 bucket domain add <domain>-media --domain media.<domain>   # or enable the r2.dev URL
+# then set Site Settings -> Technical -> Media Bucket URL to that origin
 
 # Scaffold a new site
 ./scripts/new-site.sh <domain> [corporate|saas|warm]
@@ -239,6 +264,7 @@ For in-depth guidance beyond what's in this file, refer to:
 - [docs/getting-started.md](docs/getting-started.md) — Clone to first deploy in 15 minutes
 - [docs/adding-a-site.md](docs/adding-a-site.md) — Scaffold, configure, and deploy a new site
 - [docs/adding-a-cms.md](docs/adding-a-cms.md) — Keystatic pattern used in Meridian, access-control caveats, and alternatives
+- [docs/media-storage.md](docs/media-storage.md) — R2 media storage: why uploads leave git, how they are still optimised at build time, bucket setup, the /api/media endpoint, and migrating existing photos
 - [docs/seo-recipes.md](docs/seo-recipes.md) — Optional SEO add-ons not baked into the starter (per-page OG images, git-based lastmod, llms.txt, markdown alternates, IndexNow, FuzzyRedirect, view transitions)
 - [docs/design-tokens.md](docs/design-tokens.md) — How presets work, creating custom palettes
 - [docs/framework-integrations.md](docs/framework-integrations.md) — Adding React/Vue/Svelte, Islands Architecture, View Transitions, Content Collections, and other Astro 6 capabilities

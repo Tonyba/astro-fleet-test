@@ -1,16 +1,20 @@
 import type { ImageMetadata } from 'astro';
+import { isR2Value, mediaUrl } from '../media/media-url';
 
 /**
  * images.ts
  * ---------
- * Bridges CMS-authored *string* image paths to the `ImageMetadata` objects that
- * `astro:assets` needs.
+ * Bridges CMS-authored *string* image paths to something `astro:assets` can
+ * optimise. Two kinds of string arrive here, and both end up optimised:
  *
- * Every photograph lives in a site's `src/assets/` so Astro can optimise it at
- * build time (public/ is copied verbatim and is therefore reserved for SVG
- * icons and the logo). Sveltia writes plain strings such as
- * `/src/assets/photos/hero-bg.jpg` into the content JSON, so we eagerly glob the
- * asset folder once and look the string up.
+ *   `r2:photos/hero-3f2a9c1b.jpg`  a CMS upload living in the R2 bucket. The
+ *                                  build fetches it from the bucket's public
+ *                                  URL and encodes the ladder with sharp, so
+ *                                  the site still ships local AVIF/WebP files
+ *                                  and pays nothing at request time.
+ *   `/src/assets/photos/hero.jpg`  the repo-based path this fleet used before
+ *                                  R2, and still the right home for anything
+ *                                  committed by hand. Globbed eagerly below.
  *
  * The glob pattern is root-relative, so Vite resolves it against the *site*
  * being built — this file is shared, the assets it finds are not.
@@ -54,9 +58,24 @@ export function isImageMetadata(src: unknown): src is ImageMetadata {
 export function resolveImage(src: string | ImageMetadata): ImageMetadata | undefined {
   if (isImageMetadata(src)) return src;
   if (typeof src !== 'string' || !src) return undefined;
+  // An R2 key is not in the repo and has no ImageMetadata — callers reach for
+  // `remoteSource` instead. Bailing out here keeps it from matching a
+  // same-named asset by the filename fallback below.
+  if (isR2Value(src)) return undefined;
 
   const key = normalise(src);
   return bySrc.get(key) ?? bySrc.get(key.split('/').pop() ?? '');
+}
+
+/**
+ * Absolute URL for a value the build should fetch and optimise rather than
+ * import: today that means anything stored in R2. Returns undefined for repo
+ * paths (use `resolveImage`) and for R2 values on a site with no bucket
+ * configured, where there is no URL to build.
+ */
+export function remoteSource(src: string | ImageMetadata): string | undefined {
+  if (isImageMetadata(src) || typeof src !== 'string') return undefined;
+  return mediaUrl(src);
 }
 
 /**
@@ -94,15 +113,40 @@ export type ImageLadder = {
 };
 
 let ladder: Record<string, ImageLadder> | null = null;
+let ladderDriven = false;
 
 /** Called once per request by the site's middleware, before anything renders. */
 export function setImageLadder(manifest: Record<string, ImageLadder> | null): void {
   ladder = manifest;
+  // The CALL is the signal, not the manifest. A site that loads its ladder at
+  // request time is an on-demand site whether or not the load succeeded, and
+  // `usesLadder` has to keep saying so — a failed load (dev, or a missing
+  // asset) hands back null, and treating that as "no ladder here" would send
+  // TreePicture down the encode-it-now path in a runtime that cannot encode.
+  ladderDriven = true;
+}
+
+/**
+ * Whether this site renders against a pre-built ladder.
+ *
+ * It answers a question TreePicture has to get right for R2 images: may it call
+ * `getImage()` on a remote URL? On a prerendered site, render time IS build
+ * time, sharp is present, and the answer is yes. On an on-demand site the same
+ * call would run inside workerd on every request — no sharp to encode with, and
+ * a subrequest per image just to measure it. There, an image the build never
+ * saw is served straight from the bucket instead.
+ */
+export function usesLadder(): boolean {
+  return ladderDriven;
 }
 
 /** The pre-built variants for a source path, if this site has any. */
 export function ladderFor(src: string | ImageMetadata): ImageLadder | undefined {
   if (!ladder || typeof src !== 'string' || !src) return undefined;
+
+  // R2 entries are stored under the exact value the content file holds, so
+  // there is nothing to normalise and no filename fallback to fall back to.
+  if (isR2Value(src)) return ladder[src];
 
   const key = normalise(src);
   return (

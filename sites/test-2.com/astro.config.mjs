@@ -13,6 +13,37 @@ import cloudflare from '@astrojs/cloudflare';
 // NOTE: this is read at config load, so changing it needs a dev-server restart.
 import site from './src/content/settings/site.json';
 
+// ---------------------------------------------------------------------------
+// Media bucket
+// ---------------------------------------------------------------------------
+// Photographs live in R2, and content files store only `r2:<key>` — so the
+// bucket's public origin has to be known at BUILD time, twice over: to turn
+// those keys into URLs, and to authorise Astro to download and re-encode them.
+//
+// One home, same rule as `site`: the CMS settings entry. An env var still wins,
+// which is what lets a preview deploy point at a different bucket without
+// touching content. Empty is a valid state — a site with no bucket configured
+// keeps rendering the images that are still in its repo.
+const mediaBaseUrl = (
+  process.env.PUBLIC_MEDIA_BASE_URL ||
+  site.business?.technical?.mediaBaseUrl ||
+  ''
+).replace(/\/+$/, '');
+
+// Read back by @astro-fleet/shared-ui through import.meta.env, which Vite fills
+// from process.env for PUBLIC_-prefixed names.
+process.env.PUBLIC_MEDIA_BASE_URL = mediaBaseUrl;
+
+/** Astro only optimises remote images from domains it has been told to trust. */
+const mediaRemotePattern = mediaBaseUrl
+  ? [
+      {
+        protocol: new URL(mediaBaseUrl).protocol.replace(':', ''),
+        hostname: new URL(mediaBaseUrl).hostname,
+      },
+    ]
+  : [];
+
 // The Cloudflare adapter runs the dev server inside workerd, and Keystatic's
 // local storage mode refuses to run outside Node — so `astro dev` with the
 // adapter loaded can never write to disk. The adapter is therefore applied to
@@ -35,6 +66,12 @@ export default defineConfig({
         imageService: 'compile',
       })
     : undefined,
+
+  // Photographs come from the bucket, so the build has to be allowed to fetch
+  // them. With this in place `<Picture>` treats an R2 original exactly like an
+  // imported asset: downloaded once, measured, and encoded to AVIF/WebP/JPEG at
+  // the widths each slot asks for — output files, not runtime transforms.
+  image: { remotePatterns: mediaRemotePattern },
 
   // The Keystatic admin is a React island, so react() is required. The
   // @keystatic/astro *integration* is deliberately NOT used: it injects its two

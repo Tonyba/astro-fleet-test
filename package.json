@@ -15,6 +15,7 @@
     "check:sizes": "node scripts/check-file-sizes.mjs",
     "optimize:images": "node scripts/optimize-images.mjs",
     "import-photo": "node scripts/import-photo.mjs",
+    "migrate-media": "node scripts/migrate-media-to-r2.mjs",
     "lint": "turbo lint",
     "prepare": "git config core.hooksPath .githooks || true",
     "new-site": "./scripts/new-site.sh",

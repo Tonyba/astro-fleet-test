@@ -1,4 +1,5 @@
 import { config, collection, singleton, fields } from '@keystatic/core';
+import { r2Image } from '@astro-fleet/shared-ui/src/media/r2-image-field';
 
 // ---------------------------------------------------------------------------
 // Storage
@@ -25,90 +26,78 @@ const storage = isDev
     } as const);
 
 // ---------------------------------------------------------------------------
-// Media
+// Media — two stores, split by what the file IS
 // ---------------------------------------------------------------------------
-// Photographs are BUILD INPUTS, not static files: they land in src/assets so
-// Astro's <Picture /> (see TreePicture.astro) can emit AVIF + WebP + a JPEG
-// fallback at the widths each slot needs. public/ is copied verbatim and is
-// therefore reserved for SVG icons and the logo.
+// PHOTOGRAPHS go to R2 (`photo`, `scopedPhoto`, `badge`, `graphic`). They are
+// the bytes: 26 MB of them on this site alone, uploaded from an editor's phone
+// at whatever size the camera produced. Committing those to git cost a
+// repository that grew with every edit and a repair pipeline to go with it.
+// Now the file goes to the bucket and the entry stores `r2:<key>`; the build
+// downloads the original once and emits the same AVIF/WebP/JPEG ladder it
+// always did (see TreePicture.astro). Nothing is resized at request time.
 //
-// `directory` is where the file is stored; `publicPath` is the string written
-// into the content file. TreePicture resolves `/src/assets/...` back to the
-// imported asset, so a CMS upload renders through exactly the same pipeline as
-// a hand-placed photo.
+// THIS SITE RENDERS ON DEMAND, which puts one condition on that: the only
+// moment Astro can encode anything is while `/image-manifest.json` prerenders,
+// so a key that reaches content AFTER a build has no ladder and is served
+// straight from the bucket. CI closes that gap — a content sync that
+// introduces an unseen `r2:` key is not treated as content-only and does
+// rebuild. See .github/workflows/ci.yml.
 //
-// NOTE ON COLLECTIONS: for an entry in a collection, Keystatic appends the
-// entry's slug to both halves — a photo on `tree-removal` is stored at
-// `src/assets/photos/tree-removal/<file>` and written as
-// `/src/assets/photos/tree-removal/<file>`. That is why every service and post
-// owns a folder under src/assets/photos/ and public/media/icons/, and why a
-// photo shared with a page (which has no slug, so stays flat) exists twice.
-// Renaming a service moves its folder — re-pick its images afterwards.
+// VECTORS AND SITE MARKS stay in the repo (`icon`, `scopedIcon`, `rootFile`,
+// `mediaFile`). An SVG icon is 2 KB, is served from this origin, and in one
+// case is a CSS mask-image — none of which is improved by a second domain and
+// an extra connection. public/ is copied verbatim, which is exactly right for
+// them.
 //
-// Uploads here bypass `bun run import-photo` — an editor picks a file straight
-// off their phone and Keystatic commits it at full size. `scripts/optimize-
-// images.mjs` catches that afterwards: it runs in the pre-commit hook, on every
-// `bun run build`, and in CI before the build, re-encoding anything over the
-// 1 MB budget that `bun run check:sizes` enforces. A photographic PNG comes out
-// the other side as a JPEG, with the value below rewritten to match — so do not
-// be surprised to see an extension change in the diff after an upload.
+// For the repo-backed fields below, `directory` is where the file is stored and
+// `publicPath` is the string written into the content file. NOTE ON
+// COLLECTIONS: for an entry in a collection Keystatic appends the entry's slug
+// to both halves, which is why every service owns a folder under
+// public/media/icons/. Renaming a service moves its folder — re-pick its icons
+// afterwards. R2-backed fields have no such behaviour: their keys come from the
+// filename and a content hash, so nothing moves when an entry is renamed.
 type ImageOpts = { label: string; description?: string; required?: boolean };
 
-/** Photograph — goes through <Picture />. */
+/**
+ * Photograph — goes through <Picture />, stored in R2.
+ *
+ * The prefix is organisational only. Nothing resolves through it, so unlike
+ * Keystatic's `directory` it can be renamed without orphaning an image.
+ */
 const photo = ({ label, description, required = false }: ImageOpts) =>
-  fields.image({
-    label,
-    description,
-    directory: 'src/assets/photos',
-    publicPath: '/src/assets/photos/',
-    validation: { isRequired: required },
-  });
+  r2Image({ label, description, prefix: 'photos', validation: { isRequired: required } });
 
 /**
- * Photograph stored in a folder of its own, e.g. src/assets/photos/about/.
+ * Photograph filed under a page of its own, e.g. `photos/about/`.
  *
- * Keystatic derives an image's path from the FIELD path alone — the singleton
- * it belongs to is not part of it. Two singletons that share a field shape
- * therefore resolve to the SAME file: every page built from `pageHero` wanted
- * `photos/hero/image.jpg`, and the three pages that each carried their own copy
- * of the projects carousel all wanted `photos/projects/items/0/image.jpg`.
- * Saving one page then relocated that file and left the others pointing at a
- * path that no longer existed, which GitHub rejects outright ("A path was
- * requested for deletion which does not exist").
+ * This scoping used to be load-bearing rather than cosmetic. Keystatic derives
+ * an image's path from the FIELD path alone — the singleton it belongs to is
+ * not part of it — so two singletons sharing a field shape resolved to the SAME
+ * file: every page built from `pageHero` wanted `photos/hero/image.jpg`, and
+ * saving one page relocated that file out from under the others, which GitHub
+ * rejected outright ("A path was requested for deletion which does not exist").
  *
- * Passing the page's own scope into the shared helpers keeps each page's photos
- * apart, so saving one can never disturb another.
+ * R2 keys are derived from the file's own name and content hash instead, so
+ * collisions of that kind are no longer possible. The scope is kept because a
+ * bucket is easier to read when it is organised by page.
  */
 const scopedPhoto =
   (scope: string) =>
   ({ label, description, required = false }: ImageOpts) =>
-    fields.image({
+    r2Image({
       label,
       description,
-      directory: `src/assets/photos/${scope}`,
-      publicPath: `/src/assets/photos/${scope}/`,
+      prefix: `photos/${scope}`,
       validation: { isRequired: required },
     });
 
 /** Trust / accreditation badge. */
 const badge = ({ label, description, required = false }: ImageOpts) =>
-  fields.image({
-    label,
-    description,
-    directory: 'src/assets/badges',
-    publicPath: '/src/assets/badges/',
-    validation: { isRequired: required },
-  });
+  r2Image({ label, description, prefix: 'badges', validation: { isRequired: required } });
 
 /** Flat illustration (process steps). */
 const graphic = ({ label, description, required = false }: ImageOpts) =>
-  fields.image({
-    label,
-    description,
-    directory: 'src/assets/graphics',
-    publicPath: '/src/assets/graphics/',
-    validation: { isRequired: required },
-  });
+  r2Image({ label, description, prefix: 'graphics', validation: { isRequired: required } });
 
 /** SVG/PNG icon served verbatim from public/media/icons. */
 const icon = ({ label, description, required = false }: ImageOpts) =>
@@ -508,6 +497,14 @@ const businessSection = fields.object(
           'Public key from Cloudflare → Turnstile. Renders the anti-spam widget on every form. ' +
             'Leave empty only if TURNSTILE_SECRET is also unset on the worker — a secret with no ' +
             'site key rejects every submission.'
+        ),
+        mediaBaseUrl: urlOpt(
+          'Media Bucket URL',
+          'Public origin of the R2 bucket that stores uploaded photos, e.g. ' +
+            'https://media.example.com or the bucket\'s r2.dev address. Every uploaded ' +
+            'image is served from here and re-encoded from here at build time, so ' +
+            'changing it takes effect on the next deploy — and leaving it empty means ' +
+            'uploads cannot be displayed.'
         ),
         defaultOgImage: photo({
           label: 'Default OG Image',

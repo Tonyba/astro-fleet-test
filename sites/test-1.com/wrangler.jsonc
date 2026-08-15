@@ -32,5 +32,16 @@
       "database_name": "test-1-content",
       "database_id": "5a0f7bd3-28f7-44ef-afd1-c65bfdef7384"
     }
+  ],
+
+  // CMS-uploaded photographs. The worker only WRITES here (POST /api/media);
+  // the site reads them from the bucket's public origin, set in Site Settings
+  // -> Technical -> Media Bucket URL. Create it before the first deploy:
+  //   wrangler r2 bucket create test-1-com-media
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "test-1-com-media"
+    }
   ]
 }
