@@ -45,11 +45,8 @@ CREATE TABLE IF NOT EXISTS meta (
 -- exists, and when any of that was missing the lead was simply lost. A row in
 -- the site's own database needs none of it.
 --
--- Unlike `docs`, nothing here is derived: this table is the ONLY copy of a
--- lead, so it is never truncated by a resync and a failed insert is a 500.
--- Leads were briefly mirrored into the repo as markdown so Keystatic could list
--- them; that repo is public, which made every customer's contact details
--- world-readable. /admin/leads reads this table instead.
+-- Unlike `docs`, nothing here is derived — this table is the only copy of a
+-- lead until the commit succeeds, so it is never truncated by a resync.
 -- THE ANSWERS ARE JSON, NOT COLUMNS. Form fields are a CMS model
 -- (src/content/forms/*.json): an editor can add "Preferred date", rename
 -- `message`, or delete `service` without touching code. A column per field
@@ -78,10 +75,15 @@ CREATE TABLE IF NOT EXISTS submissions (
   -- ISO 8601, and a string rather than a timestamp so it sorts lexically and
   -- matches what the markdown frontmatter carries.
   received     TEXT NOT NULL,
-  -- Kept for spam triage; neither is shown on the public site.
+  -- Kept for spam triage; neither is shown anywhere on the site.
   ip           TEXT NOT NULL DEFAULT '',
-  user_agent   TEXT NOT NULL DEFAULT ''
+  user_agent   TEXT NOT NULL DEFAULT '',
+  -- 1 once the entry reached the repo. A row stuck at 0 is a lead the CMS has
+  -- never seen — that is the query worth alerting on.
+  synced       INTEGER NOT NULL DEFAULT 0
 );
 
 -- Newest first is the only listing anyone wants.
 CREATE INDEX IF NOT EXISTS submissions_received ON submissions (received DESC);
+-- Partial: the unsynced rows are the rare, interesting ones.
+CREATE INDEX IF NOT EXISTS submissions_unsynced ON submissions (received) WHERE synced = 0;

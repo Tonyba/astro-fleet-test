@@ -539,8 +539,7 @@ export default config({
       Services: ['services'],
       'Service Areas': ['serviceAreas', 'locations'],
       Blog: ['blogPage', 'posts'],
-      // Submissions are not here — they are in D1, at /admin/leads.
-      Forms: ['forms'],
+      Forms: ['forms', 'submissions'],
       Settings: ['settings'],
     },
   },
@@ -1584,7 +1583,7 @@ export default config({
         action: fields.text({
           label: 'Action / Endpoint',
           defaultValue: '/api/quote',
-          description: 'Where submissions are posted. Leads arrive at /admin/leads.',
+          description: 'Where submissions are posted. Leads land in Form Submissions.',
           validation: { length: { min: 1 } },
         }),
         fields: fields.array(
@@ -1622,17 +1621,41 @@ export default config({
     }),
 
     // -----------------------------------------------------------------------
-    // NO "Form Submissions" COLLECTION — leads live at /admin/leads.
-    //
-    // A Keystatic collection is a directory of files in a git tree; its storage
-    // kinds (local, github, cloud) offer no database. Listing leads here meant
-    // committing every customer's name, email, phone and message to this repo,
-    // which is public — world-readable and indexed by GitHub code search.
-    //
-    // They are stored in D1 instead (see db/schema.sql) and read by the
-    // password-gated /admin/leads page, which does the same job: search, detail
-    // view, CSV export and delete. Nothing about a lead touches git now.
+    // Form submissions (leads) — written by the /api/quote endpoint.
+    // Treat as read-only: Keystatic has no "create: false" switch, so the New
+    // button is present, but nothing on the site reads entries you add by hand.
     // -----------------------------------------------------------------------
+    submissions: collection({
+      label: 'Form Submissions',
+      path: 'src/content/submissions/*',
+      format: { data: 'yaml', contentField: 'content' },
+      slugField: 'name',
+      columns: ['name', 'form', 'received'],
+      schema: {
+        name: fields.slug({ name: { label: 'Name' } }),
+        form: strOpt('Form', 'Where on the site it was submitted.'),
+        form_id: strOpt('Form Definition', 'Which entry in Forms produced these fields.'),
+        email: strOpt('Email'),
+        phone: strOpt('Phone'),
+        received: strOpt('Received', 'ISO timestamp written by the form endpoint.'),
+        // The answers are a LIST, not one frontmatter key per field, because
+        // the fields themselves are editable in Forms. A key per field would
+        // mean every field added there produced entries whose keys this schema
+        // does not declare — and Keystatic refuses to open those at all
+        // ("Key on object value is not allowed"). A list of label/value pairs
+        // is one schema that fits any form, today's and tomorrow's.
+        answers: fields.array(
+          fields.object({
+            name: strOpt('Field Name'),
+            label: strOpt('Label'),
+            type: strOpt('Type'),
+            value: textAreaOpt('Value'),
+          }),
+          { label: 'Answers', itemLabel: (props) => props.fields.label.value || props.fields.name.value }
+        ),
+        content: fields.markdoc({ label: 'Message', extension: 'md' }),
+      },
+    }),
 
     // -----------------------------------------------------------------------
     // Blog Posts — /blog/<slug>/.

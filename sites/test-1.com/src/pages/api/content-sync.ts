@@ -46,11 +46,12 @@ const env = workerEnv as unknown as Env;
 const CONTENT_ROOT = 'sites/test-1.com/src/content/';
 
 /**
- * Nothing writes leads to the repo any more — they live only in D1's
- * `submissions` table — but the exclusion stays as a guard. If an old lead file
- * is ever restored from history, or someone re-adds a submissions collection,
- * this stops customer records from being pulled into `docs`, which every
- * request loads whole.
+ * Form submissions live under CONTENT_ROOT so Keystatic can edit them, but they
+ * are not page content and must never enter `docs`: every request loads that
+ * table whole, so syncing leads would grow the per-request snapshot without
+ * bound and put customer names and phone numbers in the content cache of a
+ * site that renders none of them. The lead's real home is the `submissions`
+ * table, written directly by /api/quote.
  */
 const isContentPath = (path: string) =>
   path.startsWith(CONTENT_ROOT) &&

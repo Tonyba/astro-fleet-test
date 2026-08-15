@@ -48,14 +48,9 @@ const CACHE_CONTROL = `public, max-age=0, s-maxage=${EDGE_TTL_SECONDS}`;
 
 /**
  * Routes that must never be cached: the CMS and its API (per-editor, authed),
- * the leads admin (authed, and shows customer data), the form endpoint (a POST
- * target), and anything else under /api.
- *
- * Missing /admin here would be the worst kind of cache bug: the edge would
- * serve one signed-in operator's lead table to the next visitor who asked for
- * the URL, session cookie or not.
+ * the form endpoint (a POST target), and anything else under /api.
  */
-const NEVER_CACHE = [/^\/keystatic(\/|$)/, /^\/admin(\/|$)/, /^\/api(\/|$)/];
+const NEVER_CACHE = [/^\/keystatic(\/|$)/, /^\/api(\/|$)/];
 
 export const onRequest: MiddlewareHandler = async (context, next) => {
   const { request } = context;
