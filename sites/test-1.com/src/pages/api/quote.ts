@@ -2,20 +2,19 @@
  * POST /api/quote  — on-demand Astro endpoint (runs on the Cloudflare worker)
  * ---------------------------------------------------------------------------
  * Receives quote/inspection form submissions, verifies the Cloudflare
- * Turnstile token, and persists the submission TWICE:
+ * Turnstile token, and stores the submission as a row in D1 (`submissions`).
+ * /admin/leads reads it back.
  *
- *   1. a row in D1 (`submissions`)  — the durable store, written first
- *   2. a markdown entry in the repo — what Keystatic's "Form Submissions"
- *                                     collection reads
+ * D1 IS THE ONLY STORE, AND DELIBERATELY SO. Submissions used to also be
+ * committed to the repo as markdown, because that was the only way Keystatic
+ * could list them — Keystatic's storage kinds are all git trees. That repo is
+ * public, which meant every customer's name, email, phone number and message
+ * was world-readable and indexed by GitHub code search. No view is worth that,
+ * so the commit is gone and the lead inbox moved to /admin/leads.
  *
- * Two stores because they fail for different reasons and a lost lead is the
- * one unacceptable outcome here. The commit needs GITHUB_TOKEN, network egress
- * to api.github.com and a branch that still exists; when the token was missing
- * this endpoint returned `{ ok: true }` and dropped the lead on the floor.
- * The database needs a binding this worker already has. So D1 goes first and
- * decides the response: if the row is written the visitor gets their
- * confirmation, and a failed commit is an operator problem (a `synced = 0` row)
- * rather than a lost customer.
+ * A failed write is now a 500 rather than a silent success: there is no second
+ * store to fall back to, and the visitor needs to know their enquiry did not
+ * arrive. (`astro dev` has no binding, so there it logs and accepts.)
  *
  * This used to be a Pages Function at functions/api/quote.ts. Once the
  * Cloudflare adapter emits a _worker.js, Cloudflare Pages ignores the
@@ -23,9 +22,6 @@
  *
  * Required environment (set as worker secrets):
  *   TURNSTILE_SECRET  — Turnstile secret key (spam protection)
- *   GITHUB_TOKEN      — repo-scoped token used to commit submissions
- *   GITHUB_REPO       — "owner/repo" (defaults to tonyba/astro-fleet-test)
- *   GITHUB_BRANCH     — target branch (defaults to main)
  *
  * Bindings:
  *   CONTENT_DB        — D1, see db/schema.sql
@@ -34,7 +30,6 @@ import type { APIRoute } from 'astro';
 // Astro 6's Cloudflare adapter removed `Astro.locals.runtime.env`; secrets and
 // bindings come from this import now.
 import { env as workerEnv } from 'cloudflare:workers';
-import { dump as dumpYaml } from 'js-yaml';
 import { getDoc } from '../../lib/runtime-content';
 
 export const prerender = false;
@@ -235,68 +230,6 @@ async function saveToDatabase(
     .run();
 }
 
-/** Flip a row to synced once its markdown entry is in the repo. */
-async function markSynced(db: D1Database, id: string): Promise<void> {
-  await db.prepare('UPDATE submissions SET synced = 1 WHERE id = ?1').bind(id).run();
-}
-
-async function commitSubmission(env: Env, lead: Lead): Promise<void> {
-  const repo = env.GITHUB_REPO || 'tonyba/astro-fleet-test';
-  const branch = env.GITHUB_BRANCH || 'main';
-  const path = `sites/test-1.com/src/content/submissions/${lead.id}.md`;
-
-  // The answers go into an `answers` ARRAY, not into frontmatter keys named
-  // after the fields. Keystatic validates an entry against its collection
-  // schema and refuses to open one carrying a key the schema does not declare
-  // ("Key on object value is not allowed") — so a field added in the CMS would
-  // produce entries the CMS itself could not display. An array of
-  // {name,label,type,value} is one fixed schema that holds any field list.
-  //
-  // The longest free-text answer becomes the markdown body, where a paragraph
-  // of prose is actually readable; it is dropped from the array so it is not
-  // stored twice.
-  const body = lead.answers
-    .filter((a) => a.type === 'textarea' && a.value)
-    .sort((a, b) => b.value.length - a.value.length)[0];
-
-  const frontmatter = [
-    '---',
-    dumpYaml(
-      {
-        name: lead.name || 'Lead',
-        form: lead.formName,
-        form_id: lead.formId,
-        email: lead.email,
-        phone: lead.phone,
-        received: lead.received,
-        answers: lead.answers.filter((a) => a !== body),
-      },
-      // Quote every string so YAML never coerces one — `received` in
-      // particular must stay a string for Keystatic's text field to read it.
-      { forceQuotes: true, lineWidth: -1 }
-    ).trimEnd(),
-    '---',
-    '',
-    (body?.value ?? '').replace(/\r?\n/g, '\n'),
-    '',
-  ].join('\n');
-
-  // UTF-8 safe base64 for the GitHub Contents API.
-  const bytes = new TextEncoder().encode(frontmatter);
-  let binary = '';
-  bytes.forEach((b) => { binary += String.fromCharCode(b); });
-  const content = btoa(binary);
-  const res = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
-    method: 'PUT',
-    headers: {
-      Authorization: `Bearer ${env.GITHUB_TOKEN}`,
-      Accept: 'application/vnd.github+json',
-      'User-Agent': 'erick-tree-service-forms',
-    },
-    body: JSON.stringify({ message: `chore(lead): ${id}`, content, branch }),
-  });
-  if (!res.ok) throw new Error(`GitHub commit failed: ${res.status} ${await res.text()}`);
-}
 
 export const POST: APIRoute = async ({ request }) => {
   // Worker secrets win; import.meta.env covers anything set only in a local
@@ -350,37 +283,23 @@ export const POST: APIRoute = async ({ request }) => {
     received,
   };
 
-  // 1. Database first — this is the write that must not be lost.
+  // The one write. There is no second store to cover for it, so its failure is
+  // the visitor's failure and must be reported as one — the alternative is the
+  // silent `{ ok: true }` that lost leads for weeks.
   let saved = false;
   if (env.CONTENT_DB) {
     try {
       await saveToDatabase(env.CONTENT_DB, lead, request);
       saved = true;
     } catch (err) {
-      console.error(`Submission ${lead.id}: D1 insert failed —`, err);
+      console.error(`Submission ${lead.id}: D1 insert failed —`, (err as Error).message);
     }
   }
 
-  // 2. Repo second, so the lead shows up in Keystatic. A failure here is
-  // recoverable — the row is already safe and carries `synced = 0` to say so —
-  // so it must not cost the visitor their confirmation.
-  let committed = false;
-  if (env.GITHUB_TOKEN) {
-    try {
-      await commitSubmission(env, lead);
-      committed = true;
-      if (saved && env.CONTENT_DB) await markSynced(env.CONTENT_DB, lead.id);
-    } catch (err) {
-      console.error(`Submission ${lead.id}: GitHub commit failed —`, err);
-    }
-  } else {
-    console.error(`Submission ${lead.id}: GITHUB_TOKEN is not configured, not committed to the repo`);
-  }
-
-  // Nothing kept it. `astro dev` has neither store, so log-and-accept stays the
-  // dev behaviour; deployed, this is the 500 that used to be a silent success.
-  if (!saved && !committed) {
-    console.error(`Submission ${lead.id} DROPPED — no store accepted it:`, JSON.stringify(lead));
+  if (!saved) {
+    // `astro dev` has no binding at all, so there this logs and accepts;
+    // deployed, a missing row is a 500.
+    console.error(`Submission ${lead.id} NOT STORED:`, JSON.stringify(lead));
     if (!import.meta.env.DEV) {
       return jsonResponse({ ok: false, error: 'Could not save submission' }, 500);
     }

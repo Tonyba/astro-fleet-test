@@ -1,0 +1,285 @@
+---
+/**
+ * /admin/leads — the lead inbox.
+ * ---------------------------------------------------------------------------
+ * Replaces the Keystatic "Form Submissions" collection, which could only exist
+ * by committing every customer's name, email and phone number to a public git
+ * repository. This reads D1 directly: nothing about a lead leaves the database.
+ *
+ * One page, three views, chosen by query string — a list, one lead, and a
+ * delete confirmation. Splitting them across routes would have meant repeating
+ * the auth gate and the chrome three times for no gain.
+ *
+ * Mutations are not here. They live in /api/leads/* so this stays GET-only and
+ * cannot act on a request it merely rendered.
+ */
+import { isSignedIn, password } from '../../lib/leads-auth';
+import { listLeads, getLead } from '../../lib/leads';
+
+export const prerender = false;
+
+const url = Astro.url;
+const signedIn = await isSignedIn(Astro.request);
+const configured = password() !== null;
+
+const search = url.searchParams.get('q') ?? '';
+const page = Number(url.searchParams.get('page') ?? '0') || 0;
+const viewing = url.searchParams.get('id') ?? '';
+const confirmingDelete = url.searchParams.get('delete') ?? '';
+const failed = url.searchParams.has('failed');
+
+const list = signedIn && !viewing && !confirmingDelete ? await listLeads(search, page) : null;
+const lead = signedIn && (viewing || confirmingDelete)
+  ? await getLead(viewing || confirmingDelete)
+  : null;
+
+const when = (iso: string) => {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime())
+    ? iso
+    : d.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+};
+
+const listHref = (params: Record<string, string>) => {
+  const next = new URLSearchParams();
+  if (search) next.set('q', search);
+  for (const [k, v] of Object.entries(params)) if (v) next.set(k, v);
+  const qs = next.toString();
+  return qs ? `/admin/leads?${qs}` : '/admin/leads';
+};
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Leads — Erick's Tree Service</title>
+  </head>
+  <body>
+    <header class="bar">
+      <a class="brand" href="/admin/leads">Leads</a>
+      {signedIn && (
+        <nav class="bar__actions">
+          <a href="/keystatic">CMS</a>
+          <form method="post" action="/api/leads/logout"><button type="submit">Sign out</button></form>
+        </nav>
+      )}
+    </header>
+
+    <main class="wrap">
+      {!configured && (
+        <p class="notice notice--error">
+          <strong>LEADS_PASSWORD is not set.</strong> Until it is, this page cannot let anyone in.
+          Set it with <code>wrangler secret put LEADS_PASSWORD --name test-1-com</code>.
+        </p>
+      )}
+
+      {!signedIn && configured && (
+        <form class="login" method="post" action="/api/leads/login">
+          <h1>Sign in</h1>
+          {failed && <p class="notice notice--error">Wrong password.</p>}
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required autofocus />
+          <button type="submit">Sign in</button>
+        </form>
+      )}
+
+      {signedIn && list && (
+        <>
+          <div class="toolbar">
+            <form class="search" method="get" action="/admin/leads">
+              <input type="search" name="q" value={search} placeholder="Search name, email, phone, answers…" aria-label="Search leads" />
+              <button type="submit">Search</button>
+              {search && <a class="clear" href="/admin/leads">Clear</a>}
+            </form>
+            <a class="export" href={`/api/leads/export.csv${search ? `?q=${encodeURIComponent(search)}` : ''}`}>
+              Export CSV
+            </a>
+          </div>
+
+          <p class="count">
+            {list.total} {list.total === 1 ? 'lead' : 'leads'}{search && <> matching “{search}”</>}
+          </p>
+
+          {list.leads.length === 0 ? (
+            <p class="empty">Nothing here yet.</p>
+          ) : (
+            <div class="scroll">
+              <table>
+                <thead>
+                  <tr><th>Received</th><th>Name</th><th>Email</th><th>Phone</th><th>Form</th><th></th></tr>
+                </thead>
+                <tbody>
+                  {list.leads.map((row) => (
+                    <tr>
+                      <td class="nowrap">{when(row.received)}</td>
+                      <td>{row.name || '—'}</td>
+                      <td>{row.email ? <a href={`mailto:${row.email}`}>{row.email}</a> : '—'}</td>
+                      <td class="nowrap">{row.phone ? <a href={`tel:${row.phone}`}>{row.phone}</a> : '—'}</td>
+                      <td>{row.form || '—'}</td>
+                      <td class="nowrap"><a href={listHref({ id: row.id })}>View</a></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {list.pages > 1 && (
+            <nav class="pager">
+              {list.page > 0 && <a href={listHref({ page: String(list.page - 1) })}>← Newer</a>}
+              <span>Page {list.page + 1} of {list.pages}</span>
+              {list.page < list.pages - 1 && <a href={listHref({ page: String(list.page + 1) })}>Older →</a>}
+            </nav>
+          )}
+        </>
+      )}
+
+      {signedIn && viewing && (
+        lead ? (
+          <article class="lead">
+            <a class="back" href={listHref({})}>← All leads</a>
+            <h1>{lead.name || 'Lead'}</h1>
+            <p class="meta">
+              {when(lead.received)} · submitted from <strong>{lead.form || 'unknown'}</strong>
+              {lead.form_id && <> · form <strong>{lead.form_id}</strong></>}
+            </p>
+
+            <dl>
+              {lead.answers.map((answer) => (
+                <>
+                  <dt>{answer.label}</dt>
+                  <dd>
+                    {answer.type === 'email' && answer.value ? <a href={`mailto:${answer.value}`}>{answer.value}</a>
+                      : answer.type === 'tel' && answer.value ? <a href={`tel:${answer.value}`}>{answer.value}</a>
+                      : answer.value || '—'}
+                  </dd>
+                </>
+              ))}
+            </dl>
+
+            <details class="technical">
+              <summary>Technical details</summary>
+              <dl>
+                <dt>Reference</dt><dd><code>{lead.id}</code></dd>
+                <dt>IP address</dt><dd><code>{lead.ip || '—'}</code></dd>
+                <dt>User agent</dt><dd><code>{lead.user_agent || '—'}</code></dd>
+              </dl>
+            </details>
+
+            <a class="danger" href={listHref({ delete: lead.id })}>Delete this lead</a>
+          </article>
+        ) : (
+          <p class="empty">That lead no longer exists. <a href={listHref({})}>Back to the list</a>.</p>
+        )
+      )}
+
+      {signedIn && confirmingDelete && lead && (
+        <div class="confirm">
+          <h1>Delete this lead?</h1>
+          <p>
+            <strong>{lead.name || 'Lead'}</strong>{lead.email && <> · {lead.email}</>}, received {when(lead.received)}.
+          </p>
+          {/*
+            Deleting is final: D1 is the only store, so there is no repo copy to
+            restore from. Hence a real confirmation page rather than a one-click
+            button in the table.
+          */}
+          <p class="notice notice--error">This cannot be undone. There is no other copy.</p>
+          <form method="post" action="/api/leads/delete">
+            <input type="hidden" name="id" value={lead.id} />
+            <button class="danger-button" type="submit">Delete permanently</button>
+            <a href={listHref({ id: lead.id })}>Cancel</a>
+          </form>
+        </div>
+      )}
+    </main>
+
+    <style is:global>
+      :root { color-scheme: light dark; --line: #d9d9d9; --muted: #6b7280; --danger: #ae1d20; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font: 15px/1.55 system-ui, -apple-system, 'Segoe UI', sans-serif;
+        color: #0b171e;
+        background: #f7f8f7;
+      }
+      a { color: #2f8328; }
+      .bar {
+        display: flex; align-items: center; justify-content: space-between; gap: 16px;
+        padding: 14px 24px; background: #013b2d; color: #fff;
+      }
+      .bar a { color: #c8f08f; text-decoration: none; }
+      .brand { font-weight: 700; font-size: 17px; }
+      .bar__actions { display: flex; align-items: center; gap: 16px; }
+      .bar__actions form { margin: 0; }
+      .bar__actions button {
+        background: none; border: 0; color: #c8f08f; font: inherit; cursor: pointer; padding: 0;
+      }
+      .wrap { max-width: 1040px; margin: 0 auto; padding: 24px; }
+
+      .notice { padding: 12px 14px; border-radius: 6px; background: #fff4f4; border: 1px solid var(--danger); }
+      .notice--error { color: var(--danger); }
+
+      .login {
+        max-width: 340px; margin: 8vh auto; display: flex; flex-direction: column; gap: 10px;
+        background: #fff; padding: 28px; border: 1px solid var(--line); border-radius: 10px;
+      }
+      .login h1 { margin: 0 0 4px; font-size: 21px; }
+      .login label { font-weight: 600; font-size: 13px; }
+      input, button, .export {
+        font: inherit; padding: 9px 12px; border-radius: 6px; border: 1px solid var(--line);
+      }
+      button, .export {
+        background: #2f8328; color: #fff; border-color: #2f8328; cursor: pointer;
+        text-decoration: none; display: inline-block;
+      }
+
+      .toolbar { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; }
+      .search { display: flex; gap: 8px; flex: 1 1 320px; }
+      .search input { flex: 1; }
+      .clear { align-self: center; font-size: 13px; }
+      .count { color: var(--muted); font-size: 13px; }
+      .empty { color: var(--muted); }
+
+      .scroll { overflow-x: auto; background: #fff; border: 1px solid var(--line); border-radius: 10px; }
+      table { border-collapse: collapse; width: 100%; }
+      th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--line); }
+      th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+      tbody tr:last-child td { border-bottom: 0; }
+      .nowrap { white-space: nowrap; }
+
+      .pager { display: flex; gap: 16px; align-items: center; justify-content: center; margin-top: 18px; font-size: 14px; }
+
+      .lead, .confirm { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 24px; }
+      .lead h1, .confirm h1 { margin: 8px 0 4px; font-size: 22px; }
+      .back { font-size: 13px; }
+      .meta { color: var(--muted); font-size: 13px; margin-top: 0; }
+      dl { display: grid; grid-template-columns: minmax(140px, 220px) 1fr; gap: 8px 20px; margin: 20px 0; }
+      dt { font-weight: 600; }
+      dd { margin: 0; white-space: pre-wrap; }
+      .technical { margin: 20px 0; font-size: 13px; color: var(--muted); }
+      .technical dl { margin: 10px 0 0; }
+      code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; }
+
+      .danger { color: var(--danger); font-size: 14px; }
+      .danger-button { background: var(--danger); border-color: var(--danger); margin-right: 14px; }
+      .confirm form { display: flex; align-items: center; gap: 8px; margin-top: 16px; }
+
+      @media (max-width: 640px) {
+        .wrap { padding: 16px; }
+        dl { grid-template-columns: 1fr; gap: 2px 0; }
+        dd { margin-bottom: 12px; }
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root { --line: #2c3a34; --muted: #9aa5a0; }
+        body { background: #0e1512; color: #e8efe9; }
+        .scroll, .lead, .confirm, .login { background: #16201c; }
+        .notice { background: #2a1516; }
+        input { background: #0e1512; color: inherit; }
+      }
+    </style>
+  </body>
+</html>
