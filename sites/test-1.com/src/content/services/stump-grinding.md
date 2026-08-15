@@ -19,11 +19,7 @@ hero:
   description: description aca
   image: /src/assets/photos/stump-grinding/hero/image.png
 intro:
-  heading: mas cosas
-  paragraphs:
-    - ewfwefew
-  ctaLabel: boton aca
-  ctaHref: '#'
+  paragraphs: []
   image: /src/assets/photos/stump-grinding/intro/image.png
 whyChooseHeading: why choose
 capabilities:
