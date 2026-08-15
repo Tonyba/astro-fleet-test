@@ -1,13 +1,25 @@
 ---
-title: 'Tree Pruning & Trimming'
+title: Tree Pruning & Trimming
 order: 2
-group: tree-care
 categories:
   - residential
   - commercial
+group: tree-care
 draft: false
 card:
-  description: 'Professional trimming and pruning services designed to improve tree health, appearance, and overall property safety.'
-  image: '/src/assets/photos/tree-trimming/card/image.jpg'
-  icon: '/media/icons/tree-trimming/card/icon.png'
+  description: >-
+    Professional trimming and pruning services designed to improve tree health,
+    appearance, and overall property safety.
+  image: r2:photos/image-4fada2dd.png
+  icon: /media/icons/tree-trimming/card/icon.png
+seo:
+  keywords: []
+hero: {}
+intro:
+  paragraphs: []
+capabilities:
+  bullets: []
+  chips: []
+checklist:
+  items: []
 ---
