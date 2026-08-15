@@ -1,12 +1,17 @@
 ---
-title: "Tree Removal Connecticut: Your Legal Obligations When Removing Trees Near Power Lines"
+title: >-
+  Tree Removal Connecticut: Your Legal Obligations When Removing Trees Near
+  Power Lines
 date: 2026-04-21
-description: "When you hire someone to care for your trees, you're trusting them with living things that can take decades to grow, and that can cause serious damage if managed incorrectly. When a tree care company cuts corners near power lines, the consequences can be severe."
-image: /src/assets/photos/tree-removal-power-lines/image.jpg
-imageAlt: "Arborist pruning a tree near power lines"
+description: >-
+  When you hire someone to care for your trees, you're trusting them with living
+  things that can take decades to grow, and that can cause serious damage if
+  managed incorrectly. When a tree care company cuts corners near power lines,
+  the consequences can be severe.
+image: r2:photos/imagen2-adced53b.png
+imageAlt: Arborist pruning a tree near power lines
 draft: false
 ---
-
 Removing a tree near power lines is never a simple job. In Connecticut, homeowners have specific legal obligations, and the utility company often has to be involved before any work begins.
 
 ## Know the rules before you cut
