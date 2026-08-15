@@ -48,6 +48,14 @@ const CONTENT_ROOT = 'sites/test-1.com/src/content/';
 /** Collections that own an `idx:` list. Singletons are addressed directly. */
 const COLLECTIONS = ['posts', 'services', 'locations', 'forms'];
 
+/**
+ * How long to let KV settle between writing content and rotating the
+ * generation that invalidates the edge cache. See the comment at the `ver`
+ * write for why the order matters. GitHub allows a webhook 10 seconds, and the
+ * rest of a sync is well under two, so this is comfortably inside the budget.
+ */
+const SETTLE_MS = 3_000;
+
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
@@ -273,8 +281,19 @@ export const POST: APIRoute = async ({ request, url }) => {
     const ref = payload.after || branch();
     const result = await applyPaths(kv, [...paths], ref);
 
-    // Last, so a failure part-way leaves the old generation serving the old
-    // pages rather than exposing a half-written one.
+    // Last, and deliberately late.
+    //
+    // Rotating the generation is what invalidates every edge-cached page, so it
+    // must not happen until the entries it invalidates can be re-rendered from
+    // the NEW content. KV is eventually consistent: for a second or two after a
+    // write, an edge can still read the previous value. Rotating immediately
+    // opened a window where a request read the new generation, rendered with
+    // the old content, and cached that under the new key — where it then sat
+    // for the full edge TTL, because nothing invalidates a generation twice.
+    //
+    // That window is exactly what someone hits when they save in the CMS and
+    // immediately refresh, which is the one moment this site is judged on.
+    await new Promise((resolve) => setTimeout(resolve, SETTLE_MS));
     await kv.put('ver', ref);
 
     return json({ mode: 'push', ref, files: paths.size, ...result });

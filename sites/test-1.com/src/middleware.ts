@@ -36,7 +36,7 @@ import { contentVersion, preloadSettings, store } from './lib/runtime-content';
 const VERSION_TTL_MS = 1_000;
 
 /**
- * How long the EDGE may keep a rendered page. Generation changes supersede it.
+ * How long the EDGE may keep a rendered page.
  *
  * Sent as `s-maxage`, which only shared caches obey, alongside `max-age=0` for
  * the browser. Sending plain `max-age` here was a bug worth remembering: it
@@ -44,8 +44,17 @@ const VERSION_TTL_MS = 1_000;
  * saved in Keystatic and refreshed saw their own cached copy and concluded the
  * sync was broken — while the worker had already been serving the new text for
  * seconds. The edge cache is ours to invalidate; a browser cache is not.
+ *
+ * A minute rather than an hour because rotating the generation is the ONLY
+ * thing that invalidates an entry, and it happens once per sync. If a page is
+ * ever cached with content that was stale at render time, no later event
+ * clears it — it simply expires. An hour of that is a broken site; a minute is
+ * a blink. The sync now waits for KV to settle before rotating precisely so
+ * this should not happen, and this is what it costs when something still slips
+ * through. Hit rate barely moves: repeat views inside a minute still skip the
+ * render entirely.
  */
-const EDGE_TTL_SECONDS = 3600;
+const EDGE_TTL_SECONDS = 60;
 
 /** Fresh at the edge for an hour, never reused by a browser without asking. */
 const CACHE_CONTROL = `public, max-age=0, s-maxage=${EDGE_TTL_SECONDS}`;
