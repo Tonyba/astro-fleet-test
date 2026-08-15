@@ -1,131 +1,39 @@
 @import "tailwindcss";
 
 /* ============================================================
-   THEME: CORPORATE PRESET (from @astro-fleet/config)
-   Colors map to the CORPORATE DesignTokens preset values.
-   Override any variable here to reskin the entire site.
+   THEME: TREE / ERIK TREE SERVICES (Figma design system)
+   Semantic colour tokens taken verbatim from the Figma file.
+   Override any variable here (or via the CMS Site Settings) to
+   reskin the entire site.
    ============================================================ */
 
 @theme {
-  /* --- Brand colours --- */
-  --color-primary:   #1e3a5f;
-  --color-secondary: #2d4a6f;
-  --color-accent:    #2563eb;
-  --color-bg:        #ffffff;
-  --color-text:      #1a1a1a;
-  --color-cta:       #2563eb;
+  /* --- Text --- */
+  --color-text-inverse:   #ffffff;
+  --color-text-accent:    #c8f08f;
+  --color-text-primary:   #013b2d;
+  --color-text-secondary: #373434;
+  --color-text-muted:     #9f9f9f;
+
+  /* --- Backgrounds --- */
+  --color-bg-surface:       #ffffff;
+  --color-bg-accent:        #c8f08f;
+  --color-bg-brand:         #013b2d;
+  --color-bg-brand-strong:  #1e372e;
+  --color-bg-brand-soft:    #e5f1ed;
+  --color-bg-subtle:        #f9f9f9;
+  --color-bg-action:        #2f8328;
+  --color-bg-action-hover:  #368a2a;
+  --color-bg-emergency:     #ae1d20;
+  --color-bg-image-placeholder: #d9d9d9;
+
+  /* --- Borders --- */
+  --color-border-inverse: #ffffff;
+  --color-border-strong:  #013b2d;
+  --color-border-subtle:  #d9d9d9;
+  --color-border-accent:  #c8f08f;
 
   /* --- Typography --- */
-  --font-heading: 'Inter', sans-serif;
-  --font-body:    system-ui, -apple-system, sans-serif;
-}
-
-/* ============================================================
-   BASE STYLES
-   ============================================================ */
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-* {
-  margin: 0;
-}
-
-html {
-  scroll-behavior: smooth;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-body {
-  font-family: var(--font-body);
-  color: var(--color-text);
-  background-color: var(--color-bg);
-  line-height: 1.6;
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-}
-
-main {
-  flex: 1;
-}
-
-img,
-svg,
-video {
-  display: block;
-  max-width: 100%;
-}
-
-/* ============================================================
-   TYPOGRAPHY
-   ============================================================ */
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading);
-  line-height: 1.2;
-  color: var(--color-primary);
-  overflow-wrap: break-word;
-}
-
-p {
-  overflow-wrap: break-word;
-}
-
-a {
-  color: var(--color-accent);
-  text-decoration: none;
-  transition: opacity 0.15s ease;
-}
-
-a:hover {
-  opacity: 0.8;
-}
-
-:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 3px;
-}
-
-/* ============================================================
-   SECTION HELPERS
-   ============================================================ */
-
-.section {
-  padding: 4rem 1.5rem;
-}
-
-@media (min-width: 768px) {
-  .section {
-    padding: 5rem 2rem;
-  }
-}
-
-.container {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-}
-
-.section-header {
-  text-align: center;
-  max-width: 680px;
-  margin: 0 auto 3rem;
-}
-
-.section-header__title {
-  font-size: clamp(1.75rem, 4vw, 2.5rem);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  margin-bottom: 0.75rem;
-}
-
-.section-header__description {
-  font-size: 1.0625rem;
-  color: #64748b;
-  line-height: 1.7;
+  --font-heading: 'Libre Franklin', system-ui, sans-serif;
+  --font-body:    'Libre Franklin', system-ui, sans-serif;
 }

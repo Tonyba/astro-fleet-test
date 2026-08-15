@@ -1,0 +1,29 @@
+{
+  // ---------------------------------------------------------------------------
+  // test-1.com — the runtime-content variant of test-2.com
+  // ---------------------------------------------------------------------------
+  // Same site, same CMS, one difference: pages render per request and read their
+  // content from CONTENT instead of from files baked in at build time. A
+  // Keystatic save reaches this namespace through the GitHub webhook in
+  // src/pages/api/content-sync.ts, so an edit is live in seconds with no build.
+  //
+  // The Astro adapter generates dist/server/wrangler.json for the deploy and
+  // uses this file as its base, so anything it would otherwise supply by default
+  // has to be stated here — `observability` in particular is silently dropped
+  // once a user config exists.
+  //
+  // The SESSION namespace the adapter adds for Astro sessions is deliberately
+  // absent: it is auto-provisioned on deploy and must not be pinned.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "test-1-com",
+  "compatibility_date": "2026-08-13",
+
+  "observability": { "enabled": true },
+
+  "kv_namespaces": [
+    {
+      "binding": "CONTENT",
+      "id": "311ffcbabf6342a483274d3638150352"
+    }
+  ]
+}

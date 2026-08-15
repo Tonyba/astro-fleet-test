@@ -1,0 +1,218 @@
+---
+// Rendered per request: that is what lets a CMS edit appear without a build.
+export const prerender = false;
+
+/**
+ * City page — Figma "🖥️ Template · 10 City Page" (2053:7745) / mobile
+ * (2053:8478). Section order is taken from that frame: Page Hero · Trust Bar ·
+ * Page Title · Services Grid · Core Values · Emergency Banner · Permit Process ·
+ * Process Steps · Projects Strip · Testimonials · Locations Hub · FAQ ·
+ * Quote Form. Every section is a component the rest of the site already uses.
+ */
+import '../../../../../styles/global.css';
+import TreeLayout from '@astro-fleet/shared-ui/src/layouts/TreeLayout.astro';
+import TreePageHero from '@astro-fleet/shared-ui/src/components/TreePageHero.astro';
+import TreeTrustBar from '@astro-fleet/shared-ui/src/components/TreeTrustBar.astro';
+import TreeServiceIntro from '@astro-fleet/shared-ui/src/components/TreeServiceIntro.astro';
+import TreeServices from '@astro-fleet/shared-ui/src/components/TreeServices.astro';
+import TreeCoreValues from '@astro-fleet/shared-ui/src/components/TreeCoreValues.astro';
+import TreeEmergencyBanner from '@astro-fleet/shared-ui/src/components/TreeEmergencyBanner.astro';
+import TreeServiceProse from '@astro-fleet/shared-ui/src/components/TreeServiceProse.astro';
+import TreeProcess from '@astro-fleet/shared-ui/src/components/TreeProcess.astro';
+import TreeProjects from '@astro-fleet/shared-ui/src/components/TreeProjects.astro';
+import TreeTestimonials from '@astro-fleet/shared-ui/src/components/TreeTestimonials.astro';
+import TreeLocationsHub from '@astro-fleet/shared-ui/src/components/TreeLocationsHub.astro';
+import TreeFaq from '@astro-fleet/shared-ui/src/components/TreeFaq.astro';
+import TreeInspectionForm from '@astro-fleet/shared-ui/src/components/TreeInspectionForm.astro';
+
+import { getDoc, getDocFull, siteSettings } from '../../../../../lib/runtime-content';
+
+// Settings for this request; middleware refreshed them before we got here.
+const site = siteSettings();
+const home = await getDoc("homepage/home");
+import { getForm } from '../../../../../lib/forms';
+import { getHeader } from '../../../../../lib/header';
+import {
+  areaSettings,
+  cityHref,
+  fillTokens,
+  getAreaServices,
+  getCities,
+  toCityServiceCards,
+  toHubCards,
+  type CityRef,
+} from '../../../../../lib/locations';
+import { resolveSeo } from '../../../../../lib/seo';
+
+// Looked up from the URL per request. The state and county segments are then
+// checked against the entry's own fields, so a stale or hand-typed URL like
+// /locations/texas/…/stamford/ 404s instead of rendering a Connecticut town
+// under a Texas path.
+const slug = String(Astro.params.city ?? '');
+const entry = slug ? await getDocFull<any>(`locations/${slug}`) : null;
+
+if (
+  !entry ||
+  entry.data?.draft ||
+  entry.data.stateSlug !== Astro.params.state ||
+  entry.data.countySlug !== Astro.params.county
+) {
+  return new Response(null, { status: 404, statusText: 'Not found' });
+}
+
+const d = entry.data;
+
+const [quoteForm, header, services, cities] = await Promise.all([
+  getForm('quote'),
+  getHeader(),
+  getAreaServices(),
+  getCities(),
+]);
+
+const city: CityRef = {
+  slug,
+  name: d.title,
+  label: `${d.title}, ${d.stateAbbr}`,
+  state: d.state,
+  stateSlug: d.stateSlug,
+  stateAbbr: d.stateAbbr,
+  county: d.county,
+  countySlug: d.countySlug,
+  href: cityHref(d.stateSlug, d.countySlug, slug),
+};
+
+const tokens = {
+  city: d.title,
+  county: d.county,
+  state: d.stateAbbr,
+  stateName: d.state,
+  stateAbbr: d.stateAbbr,
+};
+
+// Photos and copy fall back to the Service Areas defaults, so a new town is
+// publishable the moment it is created — before it has photos of its own.
+const defaults = areaSettings().cityDefaults;
+const heroImage = d.hero?.image || defaults.heroImage;
+const introImage = d.intro?.image || defaults.introImage;
+const permitImage = d.permit?.image || defaults.permitImage;
+
+const seo = resolveSeo({
+  pattern: 'locationCity',
+  tokens,
+  title: d.seo?.title || `Tree Service in ${city.label} — ${site.siteName}`,
+  description: d.seo?.description || fillTokens(defaults.heroDescription, tokens),
+  path: Astro.url.pathname,
+});
+
+const faqItems = d.faq?.items?.length ? d.faq.items : home.faq.items;
+
+---
+
+<TreeLayout
+  title={seo.title}
+  description={seo.description}
+  keywords={d.seo?.keywords?.length ? d.seo.keywords : undefined}
+  siteName={site.siteName}
+  logoSrc={site.logo}
+  faviconSrc={site.favicon}
+  header={header}
+  footer={site.footer}
+  colors={site.theme.colors}
+  fonts={site.theme.fonts}
+>
+  <TreePageHero
+    title={d.hero?.title || `Tree Service in ${city.label}`}
+    description={d.hero?.description || fillTokens(defaults.heroDescription, tokens)}
+    primaryCta={{ label: defaults.ctaLabel, href: defaults.ctaHref }}
+    phoneCta={{ label: `Call ${site.header.phone.number}`, number: site.header.phone.number }}
+    image={heroImage}
+    imageAlt={d.hero?.imageAlt || defaults.heroImageAlt}
+    imageSplit={d.hero?.imageSplit}
+  />
+  <TreeTrustBar {...home.trustBar} />
+
+  {
+    d.intro?.heading && (
+      <TreeServiceIntro
+        reverse
+        heading={d.intro.heading}
+        paragraphs={d.intro.paragraphs}
+        ctaLabel={d.intro.ctaLabel || defaults.ctaLabel}
+        ctaHref={d.intro.ctaHref || defaults.ctaHref}
+        image={introImage}
+        imageAlt={d.intro.imageAlt || defaults.introImageAlt}
+      />
+    )
+  }
+
+  <TreeServices
+    eyebrow=""
+    heading={d.servicesHeading || `Our Tree Services in ${city.label}`}
+    services={toCityServiceCards(city, services)}
+    align="left"
+    showViewAll={false}
+  />
+
+  {
+    d.problems?.items?.length && (
+      <TreeCoreValues
+        eyebrow={d.problems.eyebrow}
+        heading={d.problems.heading}
+        values={d.problems.items}
+      />
+    )
+  }
+
+  <TreeEmergencyBanner {...home.emergency} />
+
+  <TreeServiceProse
+    image={permitImage}
+    imageAlt={d.permit?.imageAlt || defaults.permitImageAlt}
+    ctaLabel={d.permit?.ctaLabel || defaults.ctaLabel}
+    ctaHref={d.permit?.ctaHref || defaults.ctaHref}
+  >
+    <Fragment set:html={entry.html} />
+  </TreeServiceProse>
+
+  <TreeProcess
+    eyebrow={home.process.eyebrow}
+    heading={home.process.heading}
+    description={home.process.description}
+    steps={home.process.steps}
+  />
+  <TreeProjects
+    eyebrow={home.projects.eyebrow}
+    heading={home.projects.heading}
+    description={home.projects.description}
+    projects={home.projects.items}
+  />
+  <TreeTestimonials
+    eyebrow={home.testimonials.eyebrow}
+    heading={`What ${city.name} Customers Say`}
+    description={home.testimonials.description}
+    rating={home.testimonials.serviceRating}
+    reviews={home.testimonials.reviews}
+  />
+
+  <TreeLocationsHub
+    eyebrow={areaSettings().hub.eyebrow}
+    heading={fillTokens(areaSettings().hub.heading, { ...tokens, state: d.state })}
+    description={fillTokens(areaSettings().hub.description, tokens)}
+    areas={toHubCards(cities, services)}
+    footnote={fillTokens(areaSettings().hub.footnote, { ...tokens, state: d.state })}
+  />
+
+  <TreeFaq
+    eyebrow={d.faq?.eyebrow || home.faq.eyebrow}
+    titleLead={d.faq?.titleLead || home.faq.titleLead}
+    titleRest={d.faq?.titleRest || home.faq.titleRest}
+    subtitle={d.faq?.subtitle}
+    faqs={faqItems}
+  />
+  <TreeInspectionForm
+    heading={home.inspection.heading}
+    lead={home.inspection.lead}
+    paragraphs={home.inspection.paragraphs}
+    quote={quoteForm}
+  />
+</TreeLayout>

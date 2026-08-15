@@ -1,175 +1,128 @@
 ---
-import BaseLayout from '@astro-fleet/shared-ui/src/layouts/BaseLayout.astro';
-import Breadcrumb from '@astro-fleet/shared-ui/src/components/Breadcrumb.astro';
-import { CORPORATE } from '@astro-fleet/config/tokens';
-import { getCollection } from 'astro:content';
-import {
-  SITE_NAME,
-  TAGLINE,
-  LOGO_SRC,
-  navigation,
-  footerColumns,
-  contactInfo,
-  socialLinks,
-} from '../../lib/site-config';
+// Rendered per request: that is what lets a CMS edit appear without a build.
+export const prerender = false;
 
-// Published posts only, newest first. Sveltia writes these to src/content/posts/.
-const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
-  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+import '../../styles/global.css';
+import TreeLayout from '@astro-fleet/shared-ui/src/layouts/TreeLayout.astro';
+import TreePageHero from '@astro-fleet/shared-ui/src/components/TreePageHero.astro';
+import TreeBlogPreview from '@astro-fleet/shared-ui/src/components/TreeBlogPreview.astro';
+import TreeInspectionForm from '@astro-fleet/shared-ui/src/components/TreeInspectionForm.astro';
+
+import { getForm } from '../../lib/forms';
+import { resolveSeo } from '../../lib/seo';
+import { getHeader } from '../../lib/header';
+
+// CMS-editable content (Keystatic commits these JSON files; the build imports them).
+import { getDoc, listPublished, siteSettings } from '../../lib/runtime-content';
+
+// Settings for this request; middleware refreshed them before we got here.
+const site = siteSettings();
+const home = await getDoc("homepage/home");
+const page = await getDoc("pages/blog");
+
+const quoteForm = await getForm('quote');
+
+// Every post authored under Blog Posts in the CMS, newest first.
+const posts = (await listPublished('posts')).sort(
+  (a, b) => new Date(b.data.date).valueOf() - new Date(a.data.date).valueOf()
 );
 
-const dateFmt = new Intl.DateTimeFormat('en-US', {
-  year: 'numeric',
-  month: 'short',
-  day: 'numeric',
+// The design dates read DD/MM/YYYY.
+const formatDate = (date: Date) =>
+  new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
+
+const toCard = (entry: (typeof posts)[number]) => ({
+  title: entry.data.title,
+  excerpt: entry.data.description ?? '',
+  date: formatDate(new Date(entry.data.date)),
+  href: `/blog/${entry.slug}/`,
+  image: entry.data.image ?? page.fallbackImage,
+  imageAlt: entry.data.imageAlt ?? entry.data.title,
 });
+
+// Figma splits the listing: a lead row of two, then everything else in a 3-up.
+const featured = posts.slice(0, 2).map(toCard);
+const rest = posts.slice(2).map(toCard);
+
+// No site-wide pattern for the listing — this still routes through the resolver
+// so a per-URL override in the CMS and the length limits apply here too.
+const seo = resolveSeo({
+  title: page.seo.title,
+  description: page.seo.description,
+  path: Astro.url.pathname,
+});
+
+// The Areas We Serve submenu is generated from the Service Areas content.
+const header = await getHeader();
+
 ---
 
-<BaseLayout
-  title={`Blog — ${SITE_NAME}`}
-  description={`News, updates, and articles from ${SITE_NAME}.`}
-  keywords={['blog', 'news', 'articles']}
-  {navigation}
-  footerColumns={footerColumns}
-  {contactInfo}
-  {socialLinks}
-  siteName={SITE_NAME}
-  tagline={TAGLINE}
-  logoSrc={LOGO_SRC}
-  ctaText="Get Started"
-  ctaHref="/contact/"
-  designTokens={CORPORATE}
+<TreeLayout
+  title={seo.title}
+  description={seo.description}
+  keywords={page.seo.keywords}
+  siteName={site.siteName}
+  logoSrc={site.logo}
+  faviconSrc={site.favicon}
+  header={header}
+  footer={site.footer}
+  colors={site.theme.colors}
+  fonts={site.theme.fonts}
 >
-  <div class="container">
-    <Breadcrumb
-      items={[
-        { label: 'Home', href: '/' },
-        { label: 'Blog' },
-      ]}
+  <TreePageHero {...page.hero} compact copyGap="12px" />
+
+  {featured.length > 0 && (
+    <TreeBlogPreview
+      id="recent-posts"
+      title={page.recentHeading}
+      eyebrow=""
+      align="left"
+      layout="featured"
+      showViewAll={false}
+      posts={featured}
     />
-  </div>
+  )}
 
-  <section class="blog-hero section">
-    <div class="container">
-      <h1 class="blog-hero__title">Blog</h1>
-      <p class="blog-hero__sub">News, updates, and articles from {SITE_NAME}.</p>
-    </div>
-  </section>
+  {rest.length > 0 && (
+    <>
+      <div class="tree-container"><hr class="blog-divider" /></div>
+      <TreeBlogPreview
+        id="all-posts"
+        title={page.allHeading}
+        eyebrow=""
+        align="left"
+        showViewAll={false}
+        posts={rest}
+      />
+    </>
+  )}
 
-  <section class="section">
-    <div class="container">
-      {posts.length === 0 ? (
-        <p class="blog-empty">
-          No posts yet. Add one in the <a href="/admin/">CMS</a> and it will appear here.
-        </p>
-      ) : (
-        <ul class="blog-list">
-          {posts.map((post) => (
-            <li class="blog-card">
-              <a class="blog-card__link" href={`/blog/${post.id}/`}>
-                <time class="blog-card__date" datetime={post.data.date.toISOString()}>
-                  {dateFmt.format(post.data.date)}
-                </time>
-                <h2 class="blog-card__title">{post.data.title}</h2>
-                {post.data.description && (
-                  <p class="blog-card__desc">{post.data.description}</p>
-                )}
-                <span class="blog-card__more">Read more →</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  </section>
-</BaseLayout>
+  {posts.length === 0 && (
+    <section class="blog-empty">
+      <div class="tree-container"><p>{page.emptyMessage}</p></div>
+    </section>
+  )}
+
+  <TreeInspectionForm
+    heading={home.inspection.heading}
+    lead={home.inspection.lead}
+    paragraphs={home.inspection.paragraphs}
+    quote={quoteForm}
+  />
+</TreeLayout>
 
 <style>
-  .blog-hero {
-    background: linear-gradient(160deg, #f0f4ff 0%, #ffffff 60%);
-    padding-bottom: 2rem;
-  }
-
-  .blog-hero__title {
-    font-size: clamp(2rem, 5vw, 3.25rem);
-    font-weight: 900;
-    letter-spacing: -0.03em;
-    color: var(--color-primary, #1e3a5f);
-    margin-bottom: 1rem;
-  }
-
-  .blog-hero__sub {
-    font-size: 1.125rem;
-    color: #475569;
-    line-height: 1.7;
-    max-width: 560px;
+  /* Rule between the lead row and the full listing (Figma 123:1836). */
+  .blog-divider {
+    border: 0;
+    border-top: 1px solid var(--color-border-subtle, #d9d9d9);
+    margin: 0;
   }
 
   .blog-empty {
-    color: #64748b;
-    font-size: 1.0625rem;
-  }
-
-  .blog-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: 1.25rem;
-    grid-template-columns: 1fr;
-  }
-
-  @media (min-width: 768px) {
-    .blog-list {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  .blog-card {
-    border: 1px solid #e2e8f0;
-    border-radius: 0.75rem;
-    background: #ffffff;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
-  }
-
-  .blog-card:hover {
-    border-color: #cbd5e1;
-    box-shadow: 0 8px 24px -12px rgba(30, 58, 95, 0.25);
-    transform: translateY(-2px);
-  }
-
-  .blog-card__link {
-    display: block;
-    padding: 1.5rem;
-  }
-
-  .blog-card__date {
-    display: block;
-    font-size: 0.8125rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    color: #94a3b8;
-    margin-bottom: 0.5rem;
-  }
-
-  .blog-card__title {
-    font-size: 1.375rem;
-    font-weight: 700;
-    color: var(--color-primary, #1e3a5f);
-    line-height: 1.25;
-    margin-bottom: 0.5rem;
-  }
-
-  .blog-card__desc {
-    color: #475569;
-    line-height: 1.6;
-    margin-bottom: 0.75rem;
-  }
-
-  .blog-card__more {
-    font-size: 0.9375rem;
-    font-weight: 600;
-    color: var(--color-cta, #2563eb);
+    padding-block: 100px;
+    text-align: center;
+    font-size: 18px;
+    color: var(--color-text-secondary, #373434);
   }
 </style>

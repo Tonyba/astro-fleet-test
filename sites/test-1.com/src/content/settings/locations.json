@@ -1,0 +1,58 @@
+{
+  "services": [
+    "tree-removal",
+    "tree-trimming",
+    "stump-grinding",
+    "storm-damage",
+    "land-clearing",
+    "cabling-bracing"
+  ],
+  "hub": {
+    "seo": {
+      "title": "Service Areas — Erick's Tree Service",
+      "description": "Tree removal, trimming, stump grinding and 24/7 storm response across Bridgeport, Norwalk, Stamford, Fairfield and Westport, Connecticut.",
+      "keywords": [
+        "tree service areas Connecticut",
+        "Fairfield County tree service",
+        "Bridgeport tree service"
+      ]
+    },
+    "hero": {
+      "title": "Tree Service Areas Across Connecticut",
+      "description": "Erick's Tree Service has worked across Connecticut since 1991. Pick your town below for local crews, response times, and a dedicated page for each service we provide there.",
+      "image": "/src/assets/photos/service-areas/services-hero.jpg",
+      "imageAlt": "Log loader stacking freshly cut timber on a Connecticut job site",
+      "imageSplit": "53.75%"
+    },
+    "eyebrow": "Service Areas",
+    "heading": "Tree Services Across {state}",
+    "description": "Choose your town to see the crews, services, and response times we offer there. Every service below links to a dedicated page for that town.",
+    "footnote": "Don't see your town? We work throughout {state} — call {phone} and we'll confirm coverage."
+  },
+  "statePage": {
+    "heroTitle": "Tree Service Across {state}",
+    "heroDescription": "Licensed, insured crews covering every county we serve in {state} — tree removal, trimming, stump grinding, land clearing and 24/7 storm response.",
+    "heading": "Towns We Serve In {state}",
+    "description": "Pick your town to see the crews, services, and response times we offer there. Every service below links to a dedicated page for that town.",
+    "seoDescription": "Tree removal, trimming, stump grinding and emergency storm response across {state}. Licensed, insured, free written estimates."
+  },
+  "countyPage": {
+    "heroTitle": "Tree Service In {county}, {stateAbbr}",
+    "heroDescription": "Local crews across {county} — tree removal, trimming, stump grinding, land clearing and 24/7 storm response, with free written estimates.",
+    "heading": "Towns We Serve In {county}",
+    "description": "Choose your town to see the crews, services, and response times we offer there. Every service below links to a dedicated page for that town.",
+    "seoDescription": "Tree removal, trimming, stump grinding and emergency storm response throughout {county}, {stateAbbr}. Licensed, insured, free written estimates."
+  },
+  "cityDefaults": {
+    "heroDescription": "Licensed, insured tree care in {city}, {stateAbbr} — removal, trimming, stump grinding, land clearing and 24/7 storm response.",
+    "heroImage": "/src/assets/photos/service-areas/services-hero.jpg",
+    "heroImageAlt": "Log loader stacking freshly cut timber on a Connecticut job site",
+    "introImage": "/src/assets/photos/service-areas/about-arborist-tree.jpg",
+    "introImageAlt": "Climbing arborist making a cut high in a mature tree",
+    "permitImage": "/src/assets/photos/service-areas/services-pruning.jpg",
+    "permitImageAlt": "Arborist pruning a tree from a bucket lift",
+    "ctaLabel": "Get Free Quote Now",
+    "ctaHref": "#free-inspection"
+  },
+  "breadcrumbLabel": "Service Areas"
+}

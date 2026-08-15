@@ -1,0 +1,54 @@
+{
+  "seo": {
+    "title": "Page Not Found — Erick's Tree Service",
+    "description": "The page you were looking for doesn't exist or has been moved. Browse our tree services across Connecticut or get in touch for a free quote.",
+    "keywords": [
+      "page not found",
+      "404",
+      "Erick's Tree Service"
+    ]
+  },
+  "hero": {
+    "title": "Page Not Found",
+    "description": "",
+    "image": "/src/assets/photos/not-found/services-hero.jpg",
+    "imageAlt": "Arborist climbing a tall tree with safety ropes",
+    "imageSplit": "56.98%"
+  },
+  "body": {
+    "code": "404",
+    "heading": "We couldn't find that page",
+    "description": "The page you were looking for doesn't exist or has been moved. Use the links below to get back on track, or contact us and we'll point you in the right direction.",
+    "primaryCta": {
+      "label": "Go back home",
+      "href": "/"
+    },
+    "secondaryCta": {
+      "label": "Contact us",
+      "href": "/contact/"
+    },
+    "linksHeading": "Popular pages",
+    "links": [
+      {
+        "label": "Residential Services",
+        "href": "/services/residential/"
+      },
+      {
+        "label": "Commercial Services",
+        "href": "/services/commercial/"
+      },
+      {
+        "label": "Photo Gallery",
+        "href": "/projects/"
+      },
+      {
+        "label": "About Us",
+        "href": "/about/"
+      },
+      {
+        "label": "Blog",
+        "href": "/blog/"
+      }
+    ]
+  }
+}

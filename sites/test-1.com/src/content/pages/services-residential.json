@@ -1,0 +1,134 @@
+{
+  "seo": {
+    "title": "Residential Tree Services in Connecticut — Erick's Tree Service",
+    "description": "Expert tree removal, pruning, stump grinding, and storm cleanup for Connecticut homes — plus snow plowing, masonry, walkways, patios, and paving. Free estimates.",
+    "keywords": [
+      "residential tree service",
+      "tree removal",
+      "tree pruning",
+      "stump grinding",
+      "snow plowing",
+      "masonry",
+      "patio",
+      "paving",
+      "Connecticut"
+    ]
+  },
+  "hero": {
+    "title": "Trusted Tree Care Services for Residential Properties Across Connecticut",
+    "description": "Erick's Tree Services is a tree service company that helps customers maintain beautiful, healthy trees and shrubs. At the heart of our success are our arborists, experts who know and champion every tree, no matter the species.",
+    "primaryCta": {
+      "label": "Get free quote now",
+      "href": "#free-inspection"
+    },
+    "separator": "or",
+    "phoneCta": {
+      "label": "Call (203) 367-8219",
+      "number": "(203) 367-8219"
+    },
+    "image": "/src/assets/photos/services-residential/hero-image.jpg",
+    "imageAlt": "Arborist roping down a large limb above a residential property",
+    "imageSplit": "56.72%"
+  },
+  "stats": [
+    {
+      "value": "25+",
+      "label": "Years Experience"
+    },
+    {
+      "value": "1,000+",
+      "label": "Projects Completed"
+    },
+    {
+      "value": "24/7",
+      "label": "Emergency Services"
+    },
+    {
+      "value": "100%",
+      "label": "Commitment to Safety"
+    }
+  ],
+  "services": {
+    "heading": "Expert tree services for your home"
+  },
+  "outdoor": {
+    "heading": "Professional Outdoor Solutions Designed for Functionality & Curb Appeal"
+  },
+  "emergency": {
+    "heading": "TREE EMERGENCY? WE'RE READY TO HELP.",
+    "subtext": "24/7 Service For Emergency. Fast response. Safe removal. Peace of mind.",
+    "phoneLabel": "Call emergency line",
+    "phoneNumber": "(203) 650-8519"
+  },
+  "projects": {
+    "eyebrow": "Proyects",
+    "heading": "Real Projects, Real Results",
+    "description": "Explore our recent tree care projects across Connecticut, including tree removals, trimming, stump grinding, and emergency storm cleanup.",
+    "items": [
+      {
+        "image": "/src/assets/photos/services-residential/projects-items-0-image.jpg",
+        "alt": "Tall tree removal in progress"
+      },
+      {
+        "image": "/src/assets/photos/services-residential/projects-items-1-image.jpg",
+        "alt": "Storm-damaged tree cleanup"
+      },
+      {
+        "image": "/src/assets/photos/services-residential/projects-items-2-image.jpg",
+        "alt": "Crane-assisted tree removal"
+      },
+      {
+        "image": "/src/assets/photos/services-residential/projects-items-3-image.jpg",
+        "alt": "Completed tree care project"
+      },
+      {
+        "image": "/src/assets/photos/services-residential/projects-items-4-image.jpg",
+        "alt": "Professional tree service work"
+      }
+    ]
+  },
+  "faq": {
+    "eyebrow": "Common Questions",
+    "titleLead": "Questions?",
+    "titleRest": "We're here to help",
+    "subtitle": "Everything you need to know about our tree removal Connecticut services.",
+    "items": [
+      {
+        "question": "How much does tree removal cost?",
+        "answer": "The cost of tree removal depends on factors such as tree size, location, and job complexity. We offer free, personalized estimates for every customer. Contact us today for a no-obligation quote."
+      },
+      {
+        "question": "What method do you use for stump removal?",
+        "answer": "We use professional stump grinding equipment to grind the stump several inches below grade, then clean up the debris so the area is ready for grass, mulch, or replanting."
+      },
+      {
+        "question": "Do you provide 24/7 emergency services?",
+        "answer": "Yes. Storms and fallen limbs never wait for business hours, so our emergency crew is on call around the clock to make your property safe as quickly as possible."
+      },
+      {
+        "question": "Are you licensed and insured?",
+        "answer": "Absolutely. We are fully licensed and carry comprehensive liability and workers' compensation insurance, so you are protected on every job we perform."
+      },
+      {
+        "question": "What method do you use for stump removal?",
+        "answer": "For most residential jobs we grind the stump, but for larger commercial sites we can fully excavate the root ball when the space needs to be completely cleared."
+      },
+      {
+        "question": "How long does it take to remove or prune a tree?",
+        "answer": "Most standard removals and pruning jobs are completed within a single day. Larger or more complex trees near structures or power lines may take longer, and we will give you a clear timeline up front."
+      },
+      {
+        "question": "Do you offer any discounts?",
+        "answer": "We offer seasonal promotions as well as discounts for seniors, veterans, and repeat customers. Ask us about current offers when you request your free quote."
+      }
+    ]
+  },
+  "inspection": {
+    "heading": "Get A Free Tree Inspection. No call out fee!",
+    "lead": "Need professional tree removal, trimming, stump grinding, or emergency storm cleanup?",
+    "paragraphs": [
+      "Fill out the form below and our team will review your request and get back to you with a fast, no-obligation estimate.",
+      "We provide safe, reliable, and professional tree services for residential and commercial properties across Connecticut — always focused on safety, efficiency, and quality results."
+    ]
+  }
+}

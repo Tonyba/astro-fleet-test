@@ -1,0 +1,181 @@
+---
+/**
+ * ServiceSections.astro
+ * ---------------------
+ * The body of a service detail page, in the order the design fixes it.
+ *
+ * Both /service/<slug>/ and the service×city pages under /locations/ render
+ * this, so a change to the service page shape lands on all of them at once.
+ * The only difference between the two is the hero copy and the coverage hub
+ * that closes a service×city page — both passed in as props.
+ *
+ * The long-form prose is the entry's markdown body, handed in through the
+ * default slot.
+ */
+import type { CollectionEntry } from 'astro:content';
+
+import TreePageHero from '@astro-fleet/shared-ui/src/components/TreePageHero.astro';
+import TreeStatsRow from '@astro-fleet/shared-ui/src/components/TreeStatsRow.astro';
+import TreeServiceIntro from '@astro-fleet/shared-ui/src/components/TreeServiceIntro.astro';
+import TreeWhyChoose from '@astro-fleet/shared-ui/src/components/TreeWhyChoose.astro';
+import TreeCtaBanner from '@astro-fleet/shared-ui/src/components/TreeCtaBanner.astro';
+import TreeServiceCapabilities from '@astro-fleet/shared-ui/src/components/TreeServiceCapabilities.astro';
+import TreeServiceProse from '@astro-fleet/shared-ui/src/components/TreeServiceProse.astro';
+import TreeServiceChecklist from '@astro-fleet/shared-ui/src/components/TreeServiceChecklist.astro';
+import TreeEmergencyBanner from '@astro-fleet/shared-ui/src/components/TreeEmergencyBanner.astro';
+import TreeProjects from '@astro-fleet/shared-ui/src/components/TreeProjects.astro';
+import TreeTestimonials from '@astro-fleet/shared-ui/src/components/TreeTestimonials.astro';
+import TreeServiceAreas from '@astro-fleet/shared-ui/src/components/TreeServiceAreas.astro';
+import TreeLocationsHub from '@astro-fleet/shared-ui/src/components/TreeLocationsHub.astro';
+import type { LocationCard } from '@astro-fleet/shared-ui/src/components/TreeLocationsHub.astro';
+import TreeFaq from '@astro-fleet/shared-ui/src/components/TreeFaq.astro';
+import TreeInspectionForm from '@astro-fleet/shared-ui/src/components/TreeInspectionForm.astro';
+
+import site from '../content/settings/site.json';
+import home from '../content/homepage/home.json';
+import { getForm } from '../lib/forms';
+
+export interface Props {
+  service: CollectionEntry<'services'>['data'];
+  /** Overrides the entry's own hero title — "Tree Removal in Bridgeport, CT". */
+  heroTitle?: string;
+  heroDescription?: string;
+  /** Heading above the shared "why choose us" block. */
+  whyChooseHeading?: string;
+  /** Coverage hub that closes a service×city page. Omitted on /service/<slug>/. */
+  locations?: {
+    eyebrow?: string;
+    heading?: string;
+    description?: string;
+    footnote?: string;
+    areas: LocationCard[];
+  };
+}
+
+const { service: d, heroTitle, heroDescription, whyChooseHeading, locations } = Astro.props;
+
+const quoteForm = await getForm('quote');
+
+// Truthiness (`||`, not `??`) on purpose: Keystatic always writes an object for
+// every optional field group, so a service with no hero arrives as
+// `hero: { title: '', … }` rather than no `hero` key at all.
+const resolvedHeroTitle = heroTitle || d.hero?.title || `${d.title} Services Across Connecticut`;
+---
+
+{
+  d.hero?.image && (
+    <TreePageHero
+      title={resolvedHeroTitle}
+      description={heroDescription || d.hero.description}
+      primaryCta={{ label: 'Get free quote now', href: '#free-inspection' }}
+      phoneCta={{ label: `Call ${site.header.phone.number}`, number: site.header.phone.number }}
+      image={d.hero.image}
+      imageAlt={d.hero.imageAlt ?? ''}
+      imageSplit={d.hero.imageSplit}
+    />
+  )
+}
+
+<TreeStatsRow stats={home.stats.items} />
+
+{
+  d.intro?.heading && (
+    <TreeServiceIntro
+      heading={d.intro.heading}
+      paragraphs={d.intro.paragraphs}
+      ctaLabel={d.intro.ctaLabel}
+      ctaHref={d.intro.ctaHref}
+      image={d.intro.image ?? ''}
+      imageAlt={d.intro.imageAlt ?? ''}
+    />
+  )
+}
+
+<TreeWhyChoose
+  eyebrow={home.whyChoose.eyebrow}
+  heading={whyChooseHeading || d.whyChooseHeading || home.whyChoose.heading}
+  items={home.whyChoose.items}
+/>
+
+<TreeCtaBanner {...home.ctaBanner} />
+
+{
+  d.capabilities?.heading && (
+    <TreeServiceCapabilities
+      heading={d.capabilities.heading}
+      intro={d.capabilities.intro}
+      bullets={d.capabilities.bullets}
+      ctaLabel={d.capabilities.ctaLabel}
+      ctaHref={d.capabilities.ctaHref}
+      chips={d.capabilities.chips}
+    />
+  )
+}
+
+<TreeServiceProse
+  image={d.bodyImage}
+  imageAlt={d.bodyImageAlt}
+  ctaLabel={d.bodyCtaLabel}
+  ctaHref={d.bodyCtaHref}
+>
+  <slot />
+</TreeServiceProse>
+
+{
+  d.checklist?.heading && (
+    <TreeServiceChecklist
+      heading={d.checklist.heading}
+      intro={d.checklist.intro}
+      items={d.checklist.items}
+    />
+  )
+}
+
+<TreeEmergencyBanner {...home.emergency} />
+<TreeProjects
+  eyebrow={home.projects.eyebrow}
+  heading={home.projects.heading}
+  description={home.projects.description}
+  projects={home.projects.items}
+/>
+<TreeTestimonials
+  eyebrow={home.testimonials.eyebrow}
+  heading={home.testimonials.heading}
+  description={home.testimonials.description}
+  rating={home.testimonials.serviceRating}
+  reviews={home.testimonials.reviews}
+/>
+
+{
+  locations ? (
+    <TreeLocationsHub
+      eyebrow={locations.eyebrow}
+      heading={locations.heading}
+      description={locations.description}
+      areas={locations.areas}
+      footnote={locations.footnote}
+    />
+  ) : (
+    <TreeServiceAreas
+      eyebrow={home.serviceAreas.eyebrow}
+      heading={home.serviceAreas.heading}
+      description={home.serviceAreas.description}
+      areasLabel={home.serviceAreas.areasLabel}
+      areas={home.serviceAreas.areas}
+      ctaText={home.serviceAreas.ctaText}
+    />
+  )
+}
+
+<TreeFaq
+  eyebrow={home.faq.eyebrow}
+  titleLead={home.faq.titleLead}
+  titleRest={home.faq.titleRest}
+  faqs={home.faq.items}
+/>
+<TreeInspectionForm
+  heading={home.inspection.heading}
+  lead={home.inspection.lead}
+  paragraphs={home.inspection.paragraphs}
+  quote={quoteForm}
+/>

@@ -1,0 +1,56 @@
+---
+// Rendered per request: that is what lets a CMS edit appear without a build.
+export const prerender = false;
+
+import '../../../styles/global.css';
+import LocationsHubPage from '../../../components/LocationsHubPage.astro';
+
+import {
+  areaSettings,
+  fillTokens,
+  getAreaServices,
+  getLocationTree,
+  toHubCards,
+  type StateRef,
+} from '../../../lib/locations';
+import { resolveSeo } from '../../../lib/seo';
+
+// One page per state in the Service Areas content — /locations/connecticut/.
+// Resolved from the URL per request rather than enumerated at build, so adding
+// a town in the CMS makes its state page reachable without a deploy.
+const states: StateRef[] = await getLocationTree();
+const state = states.find((entry) => entry.slug === Astro.params.state);
+
+if (!state) {
+  return new Response(null, { status: 404, statusText: 'Not found' });
+}
+
+const services = await getAreaServices();
+
+const tokens = {
+  state: state.abbr,
+  stateName: state.name,
+  stateAbbr: state.abbr,
+};
+
+const copy = areaSettings().statePage;
+const seo = resolveSeo({
+  pattern: 'locationState',
+  tokens,
+  title: fillTokens(copy.heroTitle, tokens),
+  description: fillTokens(copy.seoDescription, tokens),
+  path: Astro.url.pathname,
+});
+---
+
+<LocationsHubPage
+  title={seo.title}
+  description={seo.description}
+  heroTitle={fillTokens(copy.heroTitle, tokens)}
+  heroDescription={fillTokens(copy.heroDescription, tokens)}
+  eyebrow={areaSettings().hub.eyebrow}
+  heading={fillTokens(copy.heading, { ...tokens, state: state.name })}
+  lead={fillTokens(copy.description, tokens)}
+  footnote={fillTokens(areaSettings().hub.footnote, { ...tokens, state: state.name })}
+  areas={toHubCards(state.cities, services)}
+/>
