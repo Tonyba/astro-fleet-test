@@ -122,7 +122,7 @@ Under the City of Connecticut's Protection of Trees By-law (No. 9958), most tree
 
 Different municipalities across Greater Connecticut have different bylaws. Burnaby, North Connecticut, West Connecticut, and Coquitlam each have unique tree protection regulations — our guide to the Connecticut tree bylaw breaks down the thresholds in detail. Our arborists know the requirements in every municipality we serve, so you never have to worry about compliance.
 
-Permit turnaround times vary by municipality — typically 2 to 6 weeks. We can expedite the process for hazardous trees that pose an immediate risk to people or structures. Most applications require a certified arborist report, which we prepare in-house. Emergency removals of imminently dangerous trees can proceed before permit approval under most municipal bylaws.
+Permit turnaround times vary by municipality — typically 2 to 6 weeks. We can expedite the process for hazardous trees that pose an immediate risk to people or structures. Most applications require a certified arborist report, which we prepare in-house. Emergency removals of imminently dangerous trees can proceed before permit approval under most municipal by laws.
 
 ## What Does Residential Tree Removal in Connecticut Cost?
 
