@@ -68,3 +68,48 @@ export function resolveImage(src: string | ImageMetadata): ImageMetadata | undef
 export function peek(image: ImageMetadata): ImageMetadata {
   return (image as ImageMetadata & { clone?: ImageMetadata }).clone ?? image;
 }
+
+// ---------------------------------------------------------------------------
+// Pre-built ladder (on-demand sites only)
+// ---------------------------------------------------------------------------
+/**
+ * Astro optimises images at BUILD time, and only for PRERENDERED routes. A site
+ * that renders pages on demand — so its CMS text is live without a rebuild —
+ * gets nothing from `<Picture>` but the untouched original, because workerd has
+ * no sharp at request time.
+ *
+ * Such a site prerenders ONE route that calls `getImage()` for every asset,
+ * which makes the build encode the ladder exactly as it would for a static
+ * site, then registers the resulting URLs here before rendering. Sites that do
+ * not do this never call `setImageLadder`, the map stays empty, `ladderFor`
+ * returns undefined, and nothing below changes for them.
+ */
+export type ImageLadder = {
+  width: number;
+  height: number;
+  /** srcset attribute per format, as Astro emitted it. */
+  avif: string;
+  webp: string;
+  fallback: { src: string; srcset: string; type: string };
+};
+
+let ladder: Record<string, ImageLadder> | null = null;
+
+/** Called once per request by the site's middleware, before anything renders. */
+export function setImageLadder(manifest: Record<string, ImageLadder> | null): void {
+  ladder = manifest;
+}
+
+/** The pre-built variants for a source path, if this site has any. */
+export function ladderFor(src: string | ImageMetadata): ImageLadder | undefined {
+  if (!ladder || typeof src !== 'string' || !src) return undefined;
+
+  const key = normalise(src);
+  return (
+    ladder[`/src/assets/${key}`] ??
+    // Same last resort as resolveImage: match on filename alone.
+    ladder[
+      Object.keys(ladder).find((path) => path.endsWith(`/${key.split('/').pop()}`)) ?? ''
+    ]
+  );
+}

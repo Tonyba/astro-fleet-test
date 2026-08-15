@@ -21,7 +21,7 @@
  */
 import type { ImageMetadata } from 'astro';
 import { getImage, Picture } from 'astro:assets';
-import { resolveImage, peek } from '../utils/images';
+import { resolveImage, peek, ladderFor } from '../utils/images';
 
 /** Where the image sits in the layout — decides the srcset ladder. */
 export type PictureVariant = 'hero' | 'card' | 'inline' | 'fixed';
@@ -107,9 +107,18 @@ const image = resolveImage(src);
 const widths = widthsFor(variant, width);
 const resolvedSizes = sizes ?? sizesFor(variant, width);
 
+// ---- pre-built ladder -----------------------------------------------------
+// Present only on a site that renders pages on demand and therefore cannot let
+// `<Picture>` optimise anything (see setImageLadder). When it is present these
+// URLs were produced by Astro at build time and no image service is involved at
+// request time; when it is absent — every prerendered site — both are undefined
+// and the branches below are unreachable.
+const built = ladderFor(src);
+const mobileBuilt = mobileSrc ? ladderFor(mobileSrc) : undefined;
+
 // ---- art-directed branch --------------------------------------------------
 const mobileImage = mobileSrc ? resolveImage(mobileSrc) : undefined;
-const artDirected = Boolean(image && mobileImage);
+const artDirected = Boolean((image && mobileImage) || (built && mobileBuilt));
 
 const mWidth = mobileWidth ?? width;
 const mHeight = mobileHeight ?? height;
@@ -140,24 +149,40 @@ const buildSources = async (
 // The mobile branch carries its own fallback format — the <img> below only ever
 // holds the desktop crop, so without it a no-AVIF/WebP browser would fall back
 // to the wrong art direction.
-const mobileSources = artDirected
-  ? await buildSources(mobileImage!, mWidth, mHeight, mVariant, [
-      ...FORMATS,
-      fallbackFor(mobileImage!),
-    ])
-  : [];
-const desktopSources = artDirected ? await buildSources(image!, width, height, variant) : [];
+/** The three `<source>`s for a pre-built entry, mobile branch included. */
+const builtSources = (entry: NonNullable<typeof built>) => [
+  { srcset: entry.avif, type: 'image/avif' },
+  { srcset: entry.webp, type: 'image/webp' },
+  { srcset: entry.fallback.srcset, type: entry.fallback.type },
+];
 
-const fallback = artDirected
-  ? await getImage({
-      src: image!,
-      width,
-      height,
-      widths,
-      format: fallbackFor(image!),
-      quality: QUALITY,
-    })
-  : null;
+const mobileSources = !artDirected
+  ? []
+  : mobileBuilt
+    ? builtSources(mobileBuilt)
+    : await buildSources(mobileImage!, mWidth, mHeight, mVariant, [
+        ...FORMATS,
+        fallbackFor(mobileImage!),
+      ]);
+
+const desktopSources = !artDirected
+  ? []
+  : built
+    ? builtSources(built).slice(0, 2) // the <img> below carries the fallback
+    : await buildSources(image!, width, height, variant);
+
+const fallback = !artDirected
+  ? null
+  : built
+    ? { src: built.fallback.src, srcSet: { attribute: built.fallback.srcset } }
+    : await getImage({
+        src: image!,
+        width,
+        height,
+        widths,
+        format: fallbackFor(image!),
+        quality: QUALITY,
+      });
 ---
 
 {
@@ -172,6 +197,25 @@ const fallback = artDirected
       <img
         src={fallback!.src}
         srcset={fallback!.srcSet.attribute || undefined}
+        sizes={resolvedSizes}
+        alt={alt}
+        width={width}
+        height={height}
+        class={className}
+        loading={loading}
+        fetchpriority={fetchpriority}
+        decoding={decoding}
+        aria-hidden={ariaHidden ? 'true' : undefined}
+        {...cidAttrs}
+      />
+    </picture>
+  ) : built ? (
+    <picture class={pictureClass} {...cidAttrs}>
+      <source srcset={built.avif} type="image/avif" sizes={resolvedSizes} />
+      <source srcset={built.webp} type="image/webp" sizes={resolvedSizes} />
+      <img
+        src={built.fallback.src}
+        srcset={built.fallback.srcset || undefined}
         sizes={resolvedSizes}
         alt={alt}
         width={width}

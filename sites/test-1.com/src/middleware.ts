@@ -18,7 +18,9 @@
  * D1 reads are strongly consistent and this bound is ours to choose.
  */
 import type { MiddlewareHandler } from 'astro';
+import { setImageLadder } from '@astro-fleet/shared-ui/src/utils/images';
 import { contentVersion, preloadSettings, store } from './lib/runtime-content';
+import { loadImageManifest } from './lib/image-manifest';
 
 /**
  * How long the EDGE may keep a rendered page.
@@ -63,10 +65,14 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     store() !== null &&
     typeof caches !== 'undefined';
 
-  // Settings are needed by anything that renders, whether or not this runtime
-  // offers a cache — so this is gated on the route, not on cacheability.
+  // Settings and the image ladder are needed by anything that renders, whether
+  // or not this runtime offers a cache — so this is gated on the route, not on
+  // cacheability.
   if (!cacheable) {
-    if (isPage) await preloadSettings();
+    if (isPage) {
+      setImageLadder(await loadImageManifest());
+      await preloadSettings();
+    }
     return next();
   }
 
@@ -92,6 +98,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
 
   // Only on the way to rendering — a cache hit never needs settings, which is
   // the whole point of checking the cache first.
+  setImageLadder(await loadImageManifest());
   await preloadSettings();
 
   const response = await next();
