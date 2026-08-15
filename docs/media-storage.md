@@ -127,3 +127,40 @@ unlike Keystatic's `directory` it can be renamed without orphaning anything.
 Objects are never deleted when a field is cleared or replaced. An entry pointing
 at a key that another entry also uses is a normal, safe thing here — the failure
 mode that made shared images dangerous under `fields.image` does not exist.
+
+## Cleaning up unreferenced objects
+
+Because clearing an image leaves its object behind, orphans accumulate. Sweep
+them with:
+
+```bash
+bun run prune-media --site <domain>                        # dry run
+bun run prune-media --site <domain> --apply                # keeps the last 7 days
+bun run prune-media --site <domain> --before <ISO> --apply # exact cutoff
+```
+
+Deleting at the moment a field is cleared is not an option, which is why this is
+a sweep. At that moment the CMS cannot know whether another entry uses the same
+object, whether the editor will actually save, or whether the edit is on a
+branch that will be merged. A sweep sees every reference at once.
+
+Three things keep it from deleting a live image, each covering a real way that
+could happen:
+
+- **It reads every branch tip**, not just the checkout — an image referenced
+  only by an unmerged Keystatic branch is not an orphan.
+- **It fetches and refuses to `--apply` while the checkout is behind its
+  upstream.** The CMS commits to the remote, so a stale clone cannot tell a new
+  reference from a missing one.
+- **It keeps recent uploads** (`--keep-days`, default 7). An object is uploaded
+  seconds *before* the entry referencing it is saved, so a sweep in that window
+  would delete an image out from under an editor mid-edit.
+
+`--before` exists for cleaning a known batch — after a migration the leftovers
+sit inside a few minutes, and "older than that instant" is precisely the right
+set, where "older than N days" would either catch nothing or reach too far.
+
+Listing a bucket is the one R2 operation wrangler cannot do, so this command
+uses Cloudflare's REST API with `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`
+— the same pair that deploys the site, not an R2-specific token. They are
+account-wide, so a `.env` at the repo root is the tidy home; every site reads it.

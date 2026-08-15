@@ -46,6 +46,14 @@ const site = option('site');
 const apply = flag('apply');
 /** Objects younger than this are never swept. */
 const keepDays = Number(option('keep-days', '7'));
+/**
+ * Absolute cutoff, e.g. --before 2026-08-15T20:00:00Z. Overrides --keep-days
+ * when a specific batch is being cleaned up: after a migration the leftovers
+ * sit in a known few minutes, and "older than that instant" is exactly the set
+ * worth deleting — where "older than N days" would either catch nothing or
+ * reach into images an editor uploaded moments ago.
+ */
+const before = option('before');
 
 if (!site) {
   console.error(
@@ -285,7 +293,17 @@ const referenced = new Set([...referencedInCheckout(), ...referencedInBranches()
 // Compare
 // ---------------------------------------------------------------------------
 const objects = await listObjects();
-const cutoff = Date.now() - keepDays * 24 * 60 * 60 * 1000;
+
+let cutoff;
+if (before) {
+  cutoff = Date.parse(before);
+  if (Number.isNaN(cutoff)) {
+    console.error(`--before "${before}" is not a date. Use an ISO timestamp, e.g. 2026-08-15T20:00:00Z.`);
+    process.exit(1);
+  }
+} else {
+  cutoff = Date.now() - keepDays * 24 * 60 * 60 * 1000;
+}
 
 const orphans = [];
 const tooYoung = [];
@@ -303,9 +321,8 @@ console.log(`\n${site} -> ${bucket}`);
 console.log(`  ${objects.length} objects, ${referenced.size} keys referenced by content or code`);
 console.log(`  ${orphans.length} unreferenced (${mb(total(orphans))})`);
 if (tooYoung.length) {
-  console.log(
-    `  ${tooYoung.length} unreferenced but newer than ${keepDays} day(s) — kept (${mb(total(tooYoung))})`
-  );
+  const boundary = before ? `uploaded after ${before}` : `newer than ${keepDays} day(s)`;
+  console.log(`  ${tooYoung.length} unreferenced but ${boundary} — kept (${mb(total(tooYoung))})`);
 }
 
 if (!orphans.length) {

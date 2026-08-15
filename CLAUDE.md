@@ -175,6 +175,10 @@ bun run migrate-media --site <domain>                    # dry run: what would m
 bun run migrate-media --site <domain> --apply            # upload + rewrite content references
 bun run migrate-media --site <domain> --apply --delete-local   # ...and drop the originals
 
+bun run prune-media --site <domain>                      # dry run: unreferenced bucket objects
+bun run prune-media --site <domain> --apply              # delete them (keeps the last 7 days)
+bun run prune-media --site <domain> --before <ISO> --apply   # exact cutoff instead of an age
+
 # One-time bucket setup per site
 wrangler r2 bucket create <domain>-media
 wrangler r2 bucket dev-url enable <domain>-media      # -> https://pub-<hash>.r2.dev
