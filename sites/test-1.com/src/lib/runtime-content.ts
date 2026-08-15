@@ -103,16 +103,27 @@ type Snapshot = { version: string; docs: Map<string, Doc> };
 let snapshot: Snapshot | null = null;
 let versionSeen = { value: '', readAt: 0 };
 
-async function readVersion(db: D1Database): Promise<string> {
+async function readVersion(db: D1Database): Promise<string | null> {
   const now = Date.now();
   if (versionSeen.value && now - versionSeen.readAt < VERSION_TTL_MS) {
     return versionSeen.value;
   }
-  const row = await db
-    .prepare("SELECT value FROM meta WHERE key = 'ver'")
-    .first<{ value: string }>();
-  versionSeen = { value: row?.value ?? 'empty', readAt: now };
-  return versionSeen.value;
+
+  try {
+    const row = await db
+      .prepare("SELECT value FROM meta WHERE key = 'ver'")
+      .first<{ value: string }>();
+    versionSeen = { value: row?.value ?? 'empty', readAt: now };
+    return versionSeen.value;
+  } catch (error) {
+    // The binding exists but the database does not answer — an unmigrated
+    // local D1 during `astro build`'s prerender pass, or a transient failure in
+    // production. Neither is a reason to serve a 500: the content bundled at
+    // build time is right there, and a page rendered from it is correct, just
+    // not current. Report and degrade.
+    console.error(`content: falling back to bundled content — ${(error as Error).message}`);
+    return null;
+  }
 }
 
 /**
@@ -124,11 +135,18 @@ async function ensureSnapshot(): Promise<Snapshot | null> {
   if (!db) return null;
 
   const version = await readVersion(db);
+  if (version === null) return null;
   if (snapshot?.version === version) return snapshot;
 
-  const { results } = await db
-    .prepare('SELECT id, slug, data, html FROM docs')
-    .all<{ id: string; slug: string; data: string; html: string }>();
+  let results: { id: string; slug: string; data: string; html: string }[] | undefined;
+  try {
+    ({ results } = await db
+      .prepare('SELECT id, slug, data, html FROM docs')
+      .all<{ id: string; slug: string; data: string; html: string }>());
+  } catch (error) {
+    console.error(`content: could not load documents — ${(error as Error).message}`);
+    return null;
+  }
 
   // An empty table means the first sync has not run. Fall back to the bundle
   // rather than serving a site with no content.
@@ -206,7 +224,9 @@ export async function listPublished<T extends { draft?: boolean }>(
 export async function contentVersion(): Promise<string> {
   const db = store();
   if (!db) return 'dev';
-  return readVersion(db);
+  // A failed read degrades to the bundled content, and naming that state means
+  // every request doing so shares one cache generation instead of thrashing it.
+  return (await readVersion(db)) ?? 'bundled';
 }
 
 // ---------------------------------------------------------------------------
