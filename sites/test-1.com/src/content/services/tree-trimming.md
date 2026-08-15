@@ -9,7 +9,7 @@ draft: false
 card:
   description: >-
     Professional trimming and pruning services designed to improve tree health,
-    appearance, and overall property safety
+    appearance, and overall property safety.
   image: r2:photos/image-4fada2dd.png
   icon: /media/icons/tree-trimming/card/icon.png
 seo:
