@@ -1,74 +1,98 @@
 ---
-import BaseLayout from '@astro-fleet/shared-ui/src/layouts/BaseLayout.astro';
-import Breadcrumb from '@astro-fleet/shared-ui/src/components/Breadcrumb.astro';
-import { CORPORATE } from '@astro-fleet/config/tokens';
-import { getCollection, render } from 'astro:content';
-import {
-  SITE_NAME,
-  TAGLINE,
-  LOGO_SRC,
-  navigation,
-  footerColumns,
-  contactInfo,
-  socialLinks,
-} from '../../lib/site-config';
+// Rendered per request: that is what lets a CMS edit appear without a build.
+export const prerender = false;
 
-export async function getStaticPaths() {
-  const posts = await getCollection('posts', ({ data }) => !data.draft);
-  return posts.map((post) => ({
-    params: { slug: post.id },
-    props: { post },
-  }));
+import '../../styles/global.css';
+import TreeLayout from '@astro-fleet/shared-ui/src/layouts/TreeLayout.astro';
+import TreePicture from '@astro-fleet/shared-ui/src/components/TreePicture.astro';
+import TreeInspectionForm from '@astro-fleet/shared-ui/src/components/TreeInspectionForm.astro';
+
+import { getForm } from '../../lib/forms';
+import { resolveSeo } from '../../lib/seo';
+import { getHeader } from '../../lib/header';
+
+import { getDoc, getDocFull, siteSettings } from '../../lib/runtime-content';
+
+// Settings for this request; middleware refreshed them before we got here.
+const site = siteSettings();
+const home = await getDoc("homepage/home");
+const blog = await getDoc("pages/blog");
+
+// Looked up per request instead of enumerated at build, so a post published in
+// the CMS is readable as soon as the sync lands.
+const { slug } = Astro.params;
+const post = slug ? await getDocFull<any>(`posts/${String(slug).replace(/\/+$/, '')}`) : null;
+
+if (!post || post.data?.draft) {
+  return new Response(null, { status: 404, statusText: 'Not found' });
 }
 
-const { post } = Astro.props;
-const { Content } = await render(post);
+const quoteForm = await getForm('quote');
 
-const dateFmt = new Intl.DateTimeFormat('en-US', {
+// Dates arrive from KV as ISO strings rather than the Date objects Astro's
+// collection schema used to coerce, so parse before formatting.
+const dateLabel = new Intl.DateTimeFormat('en-GB', {
+  day: '2-digit',
+  month: '2-digit',
   year: 'numeric',
-  month: 'long',
-  day: 'numeric',
+}).format(new Date(post.data.date));
+
+const seo = resolveSeo({
+  pattern: 'post',
+  tokens: { title: post.data.title },
+  title: `${post.data.title} — ${site.siteName}`,
+  description: post.data.description ?? post.data.title,
+  path: Astro.url.pathname,
 });
+
+// The Areas We Serve submenu is generated from the Service Areas content.
+const header = await getHeader();
+
 ---
 
-<BaseLayout
-  title={`${post.data.title} — ${SITE_NAME}`}
-  description={post.data.description ?? `${post.data.title} — ${SITE_NAME}`}
-  {navigation}
-  footerColumns={footerColumns}
-  {contactInfo}
-  {socialLinks}
-  siteName={SITE_NAME}
-  tagline={TAGLINE}
-  logoSrc={LOGO_SRC}
-  ctaText="Get Started"
-  ctaHref="/contact/"
-  designTokens={CORPORATE}
+<TreeLayout
+  title={seo.title}
+  description={seo.description}
+  siteName={site.siteName}
+  logoSrc={site.logo}
+  faviconSrc={site.favicon}
+  header={header}
+  footer={site.footer}
+  colors={site.theme.colors}
+  fonts={site.theme.fonts}
 >
-  <div class="container">
-    <Breadcrumb
-      items={[
-        { label: 'Home', href: '/' },
-        { label: 'Blog', href: '/blog/' },
-        { label: post.data.title },
-      ]}
-    />
-  </div>
+  <article class="post">
+    <div class="tree-container post__inner">
+      <nav class="post__crumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <span aria-hidden="true">/</span>
+        <a href="/blog/">Blog</a>
+      </nav>
 
-  <article class="section post">
-    <div class="container post__inner">
       <header class="post__header">
-        <time class="post__date" datetime={post.data.date.toISOString()}>
-          {dateFmt.format(post.data.date)}
-        </time>
+        <span class="post__date">
+          <img src="/media/icons/blog-calendar.svg" alt="" width="22" height="22" aria-hidden="true" />
+          <time datetime={new Date(post.data.date).toISOString()}>{dateLabel}</time>
+        </span>
         <h1 class="post__title">{post.data.title}</h1>
-        {post.data.description && (
-          <p class="post__lead">{post.data.description}</p>
-        )}
+        {post.data.description && <p class="post__lead">{post.data.description}</p>}
       </header>
 
+      <TreePicture
+        class="post__cover"
+        src={post.data.image ?? blog.fallbackImage}
+        alt={post.data.imageAlt ?? post.data.title}
+        width={952}
+        height={570}
+        variant="hero"
+        sizes="(max-width: 1024px) 100vw, 952px"
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+      />
+
       <div class="post__prose">
-        <Content />
+        <Fragment set:html={post.html} />
       </div>
 
       <footer class="post__footer">
@@ -76,113 +100,108 @@ const dateFmt = new Intl.DateTimeFormat('en-US', {
       </footer>
     </div>
   </article>
-</BaseLayout>
+
+  <TreeInspectionForm
+    heading={home.inspection.heading}
+    lead={home.inspection.lead}
+    paragraphs={home.inspection.paragraphs}
+    quote={quoteForm}
+  />
+</TreeLayout>
 
 <style>
-  .post__inner {
-    max-width: 720px;
-  }
+  /* Typography follows the Tree tokens (fonts come from TreeLayout), so the
+     article reads as part of the same site as every other page. */
+  .post { padding-block: 76px 90px; background: var(--color-bg-surface, #fff); }
+  /* No local width cap — .tree-container governs, same as every other page. */
+  .post__inner { display: flex; flex-direction: column; align-items: flex-start; gap: 30px; }
 
-  .post__header {
-    margin-bottom: 2rem;
+  .post__crumbs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--color-text-secondary, #373434);
   }
+  .post__crumbs a { color: var(--color-text-primary, #013b2d); }
+  .post__crumbs a:hover { text-decoration: underline; }
+
+  .post__header { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
 
   .post__date {
-    display: block;
-    font-size: 0.8125rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    background: var(--color-bg-action, #2f8328);
+    color: var(--color-text-inverse, #fff);
+    font-size: 16px;
     font-weight: 600;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    color: #94a3b8;
-    margin-bottom: 0.75rem;
   }
+  .post__date img { width: 22px; height: 22px; }
 
   .post__title {
-    font-size: clamp(1.875rem, 4vw, 2.75rem);
-    font-weight: 900;
-    letter-spacing: -0.03em;
-    line-height: 1.15;
-    color: var(--color-primary, #1e3a5f);
-    margin-bottom: 1rem;
+    font-size: 42px;
+    font-weight: 500;
+    line-height: 1.248;
+    color: var(--color-text-primary, #013b2d);
   }
+  .post__lead { font-size: 18px; line-height: 1.66; color: var(--color-text-secondary, #373434); }
 
-  .post__lead {
-    font-size: 1.1875rem;
-    color: #475569;
-    line-height: 1.7;
-  }
-
-  .post__prose {
-    color: #334155;
-    line-height: 1.8;
-  }
-
-  .post__prose :global(h2) {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--color-primary, #1e3a5f);
-    margin: 2rem 0 0.75rem;
-  }
-
-  .post__prose :global(h3) {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--color-primary, #1e3a5f);
-    margin: 1.75rem 0 0.5rem;
-  }
-
-  .post__prose :global(p) {
-    margin-bottom: 1.25rem;
-  }
-
-  .post__prose :global(ul),
-  .post__prose :global(ol) {
-    margin: 0 0 1.25rem 1.25rem;
-  }
-
-  .post__prose :global(li) {
-    margin-bottom: 0.5rem;
-  }
-
-  .post__prose :global(a) {
-    color: var(--color-cta, #2563eb);
-    text-decoration: underline;
-  }
-
-  .post__prose :global(img) {
-    max-width: 100%;
+  .post__inner > :global(picture) { display: contents; }
+  .post__inner :global(.post__cover) {
+    width: 100%;
     height: auto;
-    border-radius: 0.5rem;
+    aspect-ratio: 952 / 570;
+    object-fit: cover;
+    border-radius: var(--tree-radius-card, 12px);
   }
 
-  .post__prose :global(pre) {
-    background: #0f172a;
-    color: #e2e8f0;
-    padding: 1rem 1.25rem;
-    border-radius: 0.5rem;
-    overflow-x: auto;
-    margin-bottom: 1.25rem;
+  .post__prose { width: 100%; }
+  .post__prose :global(h2) {
+    font-size: 30px; font-weight: 500; line-height: 1.248;
+    color: var(--color-bg-brand-strong, #1e372e); margin-top: 40px;
   }
-
-  .post__prose :global(code) {
-    font-size: 0.9375em;
+  .post__prose :global(h3) {
+    font-size: 24px; font-weight: 600; line-height: 1.3;
+    color: var(--color-bg-brand-strong, #1e372e); margin-top: 32px;
   }
-
+  .post__prose :global(p),
+  .post__prose :global(li) { font-size: 18px; line-height: 1.66; color: var(--color-text-secondary, #373434); }
+  .post__prose :global(h2 + p),
+  .post__prose :global(h3 + p) { margin-top: 12px; }
+  .post__prose :global(p + p) { margin-top: 1.66em; }
+  .post__prose :global(ul),
+  .post__prose :global(ol) { margin: 1.66em 0 0 1.25em; display: flex; flex-direction: column; gap: 0.6em; }
+  .post__prose :global(a) { color: var(--color-bg-action, #2f8328); text-decoration: underline; }
+  .post__prose :global(strong) { color: var(--color-text-primary, #013b2d); }
+  .post__prose :global(img) { max-width: 100%; height: auto; border-radius: var(--tree-radius-card, 12px); }
   .post__prose :global(blockquote) {
-    border-left: 3px solid #cbd5e1;
-    padding-left: 1rem;
-    color: #64748b;
-    margin: 0 0 1.25rem;
+    margin: 1.66em 0 0;
+    padding: 16px 24px;
+    border-left: 4px solid var(--color-bg-accent, #c8f08f);
+    background: var(--color-bg-muted, #f5f6f7);
   }
 
-  .post__footer {
-    margin-top: 2.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid #e2e8f0;
+  .post__footer { width: 100%; padding-top: 24px; border-top: 1px solid var(--color-border-subtle, #d9d9d9); }
+  .post__back { font-size: 18px; font-weight: 600; color: var(--color-text-primary, #013b2d); }
+  .post__back:hover { text-decoration: underline; }
+
+  @media (max-width: 1024px) {
+    .post { padding-block: 56px 64px; }
+    .post__title { font-size: 34px; }
   }
 
-  .post__back {
-    font-weight: 600;
-    color: var(--color-cta, #2563eb);
+  @media (max-width: 767px) {
+    .post { padding-block: 40px 48px; }
+    .post__inner { gap: 24px; }
+    .post__title { font-size: 28px; }
+    .post__lead { font-size: 15px; }
+    .post__prose :global(h2) { font-size: 24px; }
+    .post__prose :global(h3) { font-size: 20px; }
+    .post__prose :global(p),
+    .post__prose :global(li) { font-size: 15px; }
   }
 </style>

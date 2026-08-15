@@ -1,0 +1,86 @@
+---
+// Rendered per request: that is what lets a CMS edit appear without a build.
+export const prerender = false;
+
+import '../../styles/global.css';
+import TreeLayout from '@astro-fleet/shared-ui/src/layouts/TreeLayout.astro';
+import TreePageHero from '@astro-fleet/shared-ui/src/components/TreePageHero.astro';
+import TreeStatsRow from '@astro-fleet/shared-ui/src/components/TreeStatsRow.astro';
+import TreeServices from '@astro-fleet/shared-ui/src/components/TreeServices.astro';
+import TreeEmergencyBanner from '@astro-fleet/shared-ui/src/components/TreeEmergencyBanner.astro';
+import TreeProjects from '@astro-fleet/shared-ui/src/components/TreeProjects.astro';
+import TreeFaq from '@astro-fleet/shared-ui/src/components/TreeFaq.astro';
+import TreeInspectionForm from '@astro-fleet/shared-ui/src/components/TreeInspectionForm.astro';
+
+import { getForm } from '../../lib/forms';
+import { getServiceCards } from '../../lib/services';
+import { resolveSeo } from '../../lib/seo';
+import { getHeader } from '../../lib/header';
+
+// CMS-editable content (Keystatic commits these JSON files; the build imports them).
+import { getDoc, siteSettings } from '../../lib/runtime-content';
+
+// Settings for this request; middleware refreshed them before we got here.
+const site = siteSettings();
+const services = await getDoc("pages/services-commercial");
+
+// Same form model the homepage uses — one definition, reused across pages.
+const quoteForm = await getForm('quote');
+
+// Cards come from the Single Service collection, filtered to the commercial term.
+const commercialServices = await getServiceCards({ category: 'commercial' });
+
+const seo = resolveSeo({
+  pattern: 'commercial',
+  title: services.seo.title,
+  description: services.seo.description,
+  path: Astro.url.pathname,
+});
+
+// The Areas We Serve submenu is generated from the Service Areas content.
+const header = await getHeader();
+
+---
+
+<TreeLayout
+  title={seo.title}
+  description={seo.description}
+  keywords={services.seo.keywords}
+  siteName={site.siteName}
+  logoSrc={site.logo}
+  faviconSrc={site.favicon}
+  header={header}
+  footer={site.footer}
+  colors={site.theme.colors}
+  fonts={site.theme.fonts}
+>
+  <TreePageHero {...services.hero} />
+  <TreeStatsRow stats={services.stats} />
+  <TreeServices
+    heading={services.services.heading}
+    services={commercialServices}
+    eyebrow=""
+    align="left"
+    showViewAll={false}
+  />
+  <TreeEmergencyBanner {...services.emergency} />
+  <TreeProjects
+    eyebrow={services.projects.eyebrow}
+    heading={services.projects.heading}
+    description={services.projects.description}
+    projects={services.projects.items}
+  />
+  <TreeFaq
+    eyebrow={services.faq.eyebrow}
+    titleLead={services.faq.titleLead}
+    titleRest={services.faq.titleRest}
+    subtitle={services.faq.subtitle}
+    faqs={services.faq.items}
+  />
+  <TreeInspectionForm
+    heading={services.inspection.heading}
+    lead={services.inspection.lead}
+    paragraphs={services.inspection.paragraphs}
+    quote={quoteForm}
+  />
+</TreeLayout>

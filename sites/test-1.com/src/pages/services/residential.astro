@@ -1,0 +1,104 @@
+---
+// Rendered per request: that is what lets a CMS edit appear without a build.
+export const prerender = false;
+
+import '../../styles/global.css';
+import TreeLayout from '@astro-fleet/shared-ui/src/layouts/TreeLayout.astro';
+import TreePageHero from '@astro-fleet/shared-ui/src/components/TreePageHero.astro';
+import TreeStatsRow from '@astro-fleet/shared-ui/src/components/TreeStatsRow.astro';
+import TreeServices from '@astro-fleet/shared-ui/src/components/TreeServices.astro';
+import TreeEmergencyBanner from '@astro-fleet/shared-ui/src/components/TreeEmergencyBanner.astro';
+import TreeProjects from '@astro-fleet/shared-ui/src/components/TreeProjects.astro';
+import TreeFaq from '@astro-fleet/shared-ui/src/components/TreeFaq.astro';
+import TreeInspectionForm from '@astro-fleet/shared-ui/src/components/TreeInspectionForm.astro';
+
+import { getForm } from '../../lib/forms';
+import { getServiceCards } from '../../lib/services';
+import { resolveSeo } from '../../lib/seo';
+import { getHeader } from '../../lib/header';
+
+// CMS-editable content (Keystatic commits these JSON files; the build imports them).
+import { getDoc, siteSettings } from '../../lib/runtime-content';
+
+// Settings for this request; middleware refreshed them before we got here.
+const site = siteSettings();
+const page = await getDoc("pages/services-residential");
+
+// Same form model the rest of the site uses — one definition, reused per page.
+const quoteForm = await getForm('quote');
+
+// Both grids come from the Single Service collection, filtered by taxonomy.
+const treeCare = await getServiceCards({ category: 'residential', group: 'tree-care' });
+const outdoor = await getServiceCards({ category: 'residential', group: 'outdoor-solutions' });
+
+const seo = resolveSeo({
+  pattern: 'servicesIndex',
+  title: page.seo.title,
+  description: page.seo.description,
+  path: Astro.url.pathname,
+});
+
+// The Areas We Serve submenu is generated from the Service Areas content.
+const header = await getHeader();
+
+---
+
+<TreeLayout
+  title={seo.title}
+  description={seo.description}
+  keywords={page.seo.keywords}
+  siteName={site.siteName}
+  logoSrc={site.logo}
+  faviconSrc={site.favicon}
+  header={header}
+  footer={site.footer}
+  colors={site.theme.colors}
+  fonts={site.theme.fonts}
+>
+  <TreePageHero {...page.hero} />
+  <TreeStatsRow stats={page.stats} />
+
+  {/*
+    Two card grids stacked inside one Figma "Services List" section (123:2243):
+    the tree-care six, then the outdoor-solutions seven. Both are the same card,
+    so both are TreeServices — only the heading and items differ.
+  */}
+  <TreeServices
+    heading={page.services.heading}
+    services={treeCare}
+    eyebrow=""
+    align="left"
+    showViewAll={false}
+    spacing="group-start"
+  />
+  <TreeServices
+    heading={page.outdoor.heading}
+    services={outdoor}
+    eyebrow=""
+    align="left"
+    showViewAll={false}
+    spacing="group-end"
+    headingWidth="1029px"
+  />
+
+  <TreeEmergencyBanner {...page.emergency} />
+  <TreeProjects
+    eyebrow={page.projects.eyebrow}
+    heading={page.projects.heading}
+    description={page.projects.description}
+    projects={page.projects.items}
+  />
+  <TreeFaq
+    eyebrow={page.faq.eyebrow}
+    titleLead={page.faq.titleLead}
+    titleRest={page.faq.titleRest}
+    subtitle={page.faq.subtitle}
+    faqs={page.faq.items}
+  />
+  <TreeInspectionForm
+    heading={page.inspection.heading}
+    lead={page.inspection.lead}
+    paragraphs={page.inspection.paragraphs}
+    quote={quoteForm}
+  />
+</TreeLayout>

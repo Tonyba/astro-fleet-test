@@ -1,0 +1,61 @@
+---
+// Rendered per request: that is what lets a CMS edit appear without a build.
+export const prerender = false;
+
+import '../../styles/global.css';
+import TreeLayout from '@astro-fleet/shared-ui/src/layouts/TreeLayout.astro';
+import ServiceSections from '../../components/ServiceSections.astro';
+
+import { getDocFull, siteSettings } from '../../lib/runtime-content';
+
+// Settings for this request; middleware refreshed them before we got here.
+const site = siteSettings();
+import { getHeader } from '../../lib/header';
+import { resolveSeo } from '../../lib/seo';
+
+// One page per entry in the `services` collection — the same collection that
+// feeds every services grid on the site. The section stack itself lives in
+// ServiceSections, shared with the service×city pages under /locations/.
+//
+// There is no getStaticPaths here, unlike test-2.com: the slug is read from the
+// URL and looked up per request, so publishing a new service in the CMS makes
+// its page reachable immediately instead of at the next build.
+const { slug } = Astro.params;
+const service = slug ? await getDocFull<any>(`services/${slug}`) : null;
+
+if (!service || service.data?.draft) {
+  return new Response(null, { status: 404, statusText: 'Not found' });
+}
+
+const d = service.data;
+
+const header = await getHeader();
+
+// The site-wide "service" pattern localises every service title the same way;
+// the entry's own SEO title is the fallback when that pattern is blank.
+const seo = resolveSeo({
+  pattern: 'service',
+  tokens: { service: d.title },
+  title: d.seo?.title || `${d.title} — ${site.siteName}`,
+  description: d.seo?.description || d.card.description,
+  path: Astro.url.pathname,
+});
+
+---
+
+<TreeLayout
+  title={seo.title}
+  description={seo.description}
+  keywords={d.seo?.keywords?.length ? d.seo.keywords : undefined}
+  siteName={site.siteName}
+  logoSrc={site.logo}
+  faviconSrc={site.favicon}
+  header={header}
+  footer={site.footer}
+  colors={site.theme.colors}
+  fonts={site.theme.fonts}
+>
+  <ServiceSections service={d}>
+    <Fragment set:html={service.html} />
+  </ServiceSections>
+</TreeLayout>

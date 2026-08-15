@@ -15,16 +15,27 @@ import type {
   ContactInfo,
   SocialLink,
 } from '@astro-fleet/shared-ui/src/components/Footer.astro';
+import settings from '../content/settings/site.json';
 
 // ---------------------------------------------------------------------------
 // Site identity
 // ---------------------------------------------------------------------------
 
+/**
+ * Canonical origin for the site — the single source of truth for every absolute
+ * URL we emit (canonical, og:url, sitemap, robots.txt).
+ *
+ * It is defined once in the CMS settings (`src/content/settings/site.json`) and
+ * re-exported here so pages and `astro.config.mjs` read the same value. Prefer
+ * `Astro.site` inside components; reach for this only where `Astro` is absent.
+ */
+export const SITE_URL = settings.siteUrl;
+
 /** The human-readable name of your site, used in the <title>, header, and footer. */
-export const SITE_NAME = 'Test-1';
+export const SITE_NAME = 'Test-2';
 
 /** A short tagline displayed in the footer beneath the site name. */
-export const TAGLINE = 'Powered by Test-1';
+export const TAGLINE = 'Powered by Test-2';
 
 /** Absolute URL path to the logo image rendered in the header.
  *  Use '/favicon.svg' to fall back to the SVG favicon, or swap in
@@ -49,7 +60,6 @@ export const navigation: MenuItem[] = [
   { label: 'Home',     href: '/'          },
   { label: 'About',    href: '/about/'    },
   { label: 'Services', href: '/services/' },
-  { label: 'Blog',     href: '/blog/'     },
   { label: 'Contact',  href: '/contact/'  },
 ];
 

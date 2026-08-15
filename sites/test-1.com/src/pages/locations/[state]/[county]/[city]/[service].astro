@@ -1,0 +1,103 @@
+---
+// Rendered per request: that is what lets a CMS edit appear without a build.
+export const prerender = false;
+
+/**
+ * Service × city page — /locations/{state}/{county}/{city}/{service}/.
+ * The same template as /service/<slug>/ (ServiceSections), localised to the
+ * town: the hero, the SEO title and the coverage hub in the tail. One page per
+ * town per service in Service Areas Settings → Services.
+ */
+import '../../../../../styles/global.css';
+import TreeLayout from '@astro-fleet/shared-ui/src/layouts/TreeLayout.astro';
+import ServiceSections from '../../../../../components/ServiceSections.astro';
+
+import { getDocFull, siteSettings } from '../../../../../lib/runtime-content';
+
+// Settings for this request; middleware refreshed them before we got here.
+const site = siteSettings();
+import { getHeader } from '../../../../../lib/header';
+import {
+  areaSettings,
+  fillTokens,
+  getAreaServices,
+  getCities,
+  toHubCards,
+  type CityRef,
+} from '../../../../../lib/locations';
+import { resolveSeo } from '../../../../../lib/seo';
+
+// This route is the cross product of every town and every service — on
+// test-2.com getStaticPaths enumerated all of them at build time, which is why
+// adding one town there meant rebuilding a page per service. Here both halves
+// are resolved from the URL, so a new town or service is live as soon as it
+// syncs, and nothing is generated for combinations nobody visits.
+const [header, services, cities] = await Promise.all([getHeader(), getAreaServices(), getCities()]);
+
+const city: CityRef | undefined = cities.find(
+  (candidate) =>
+    candidate.slug === Astro.params.city &&
+    candidate.stateSlug === Astro.params.state &&
+    candidate.countySlug === Astro.params.county
+);
+
+// Only services the Service Areas settings actually offer per town — otherwise
+// any service slug would render under any city.
+const offered = services.some((service) => service.slug === Astro.params.service);
+const entry = offered ? await getDocFull<any>(`services/${Astro.params.service}`) : null;
+
+if (!city || !entry || entry.data?.draft) {
+  return new Response(null, { status: 404, statusText: 'Not found' });
+}
+
+const d = entry.data;
+
+const tokens = {
+  service: d.title,
+  city: city.name,
+  county: city.county,
+  state: city.stateAbbr,
+  stateName: city.state,
+  stateAbbr: city.stateAbbr,
+};
+
+const heroTitle = `${d.title} in ${city.label}`;
+
+const seo = resolveSeo({
+  pattern: 'locationCityService',
+  tokens,
+  title: `${heroTitle} — ${site.siteName}`,
+  description: d.seo?.description || d.card.description,
+  path: Astro.url.pathname,
+});
+
+---
+
+<TreeLayout
+  title={seo.title}
+  description={seo.description}
+  keywords={d.seo?.keywords?.length ? d.seo.keywords : undefined}
+  siteName={site.siteName}
+  logoSrc={site.logo}
+  faviconSrc={site.favicon}
+  header={header}
+  footer={site.footer}
+  colors={site.theme.colors}
+  fonts={site.theme.fonts}
+>
+  <ServiceSections
+    service={d}
+    heroTitle={heroTitle}
+    heroDescription={d.hero?.description}
+    whyChooseHeading={`Why ${city.name} Chooses ${site.siteName}`}
+    locations={{
+      eyebrow: areaSettings().hub.eyebrow,
+      heading: fillTokens(areaSettings().hub.heading, { ...tokens, state: city.state }),
+      description: fillTokens(areaSettings().hub.description, tokens),
+      footnote: fillTokens(areaSettings().hub.footnote, { ...tokens, state: city.state }),
+      areas: toHubCards(cities, services),
+    }}
+  >
+    <Fragment set:html={entry.html} />
+  </ServiceSections>
+</TreeLayout>

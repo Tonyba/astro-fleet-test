@@ -1,131 +1,107 @@
 ---
-import CpaLayout from '@astro-fleet/shared-ui/src/layouts/CpaLayout.astro';
-import CpaHero from '@astro-fleet/shared-ui/src/components/CpaHero.astro';
-import CpaFeatureStrip from '@astro-fleet/shared-ui/src/components/CpaFeatureStrip.astro';
-import CpaServices from '@astro-fleet/shared-ui/src/components/CpaServices.astro';
-import CpaAbout from '@astro-fleet/shared-ui/src/components/CpaAbout.astro';
-import CpaStatsBar from '@astro-fleet/shared-ui/src/components/CpaStatsBar.astro';
-import CpaTestimonials from '@astro-fleet/shared-ui/src/components/CpaTestimonials.astro';
-import CpaCtaBanner from '@astro-fleet/shared-ui/src/components/CpaCtaBanner.astro';
-import CpaFaq from '@astro-fleet/shared-ui/src/components/CpaFaq.astro';
-import CpaBlog from '@astro-fleet/shared-ui/src/components/CpaBlog.astro';
-import CpaContact from '@astro-fleet/shared-ui/src/components/CpaContact.astro';
+// Rendered per request: that is what lets a CMS edit appear without a build.
+export const prerender = false;
 
-// All content is CMS-managed via Sveltia (see public/admin/config.yml).
-import settings from '../data/settings.json';
-import home from '../data/home.json';
+import '../styles/global.css';
+import TreeLayout from '@astro-fleet/shared-ui/src/layouts/TreeLayout.astro';
+import TreeHero from '@astro-fleet/shared-ui/src/components/TreeHero.astro';
+import TreeTrustBar from '@astro-fleet/shared-ui/src/components/TreeTrustBar.astro';
+import TreeServices from '@astro-fleet/shared-ui/src/components/TreeServices.astro';
+import TreeWhyChoose from '@astro-fleet/shared-ui/src/components/TreeWhyChoose.astro';
+import TreeCtaBanner from '@astro-fleet/shared-ui/src/components/TreeCtaBanner.astro';
+import TreeAbout from '@astro-fleet/shared-ui/src/components/TreeAbout.astro';
+import TreeStatsBar from '@astro-fleet/shared-ui/src/components/TreeStatsBar.astro';
+import TreeCommercial from '@astro-fleet/shared-ui/src/components/TreeCommercial.astro';
+import TreeProjects from '@astro-fleet/shared-ui/src/components/TreeProjects.astro';
+import TreeEmergencyBanner from '@astro-fleet/shared-ui/src/components/TreeEmergencyBanner.astro';
+import TreeProcess from '@astro-fleet/shared-ui/src/components/TreeProcess.astro';
+import TreeTestimonials from '@astro-fleet/shared-ui/src/components/TreeTestimonials.astro';
+import TreeServiceAreas from '@astro-fleet/shared-ui/src/components/TreeServiceAreas.astro';
+import TreeFaq from '@astro-fleet/shared-ui/src/components/TreeFaq.astro';
+import TreeBlogPreview from '@astro-fleet/shared-ui/src/components/TreeBlogPreview.astro';
+import TreeInspectionForm from '@astro-fleet/shared-ui/src/components/TreeInspectionForm.astro';
 
-// Fixed brand-widget assets (not user content).
-const GOOGLE_G = '/images/home/google-g.svg';
-const TP_STARS = '/images/home/trustpilot-stars.svg';
-const TP_STAR = '/images/home/trustpilot-star.svg';
+import { getForm } from '../lib/forms';
+import { getServiceCards } from '../lib/services';
+import { resolveSeo } from '../lib/seo';
+import { getHeader } from '../lib/header';
 
-const header = {
-  navigation: settings.header.nav,
-  ctaText: settings.header.ctaText,
-  ctaHref: settings.header.ctaHref,
-};
+// CMS-editable content (Keystatic commits these JSON files; the build imports them).
+import { getDoc, listPublished, siteSettings } from '../lib/runtime-content';
+
+// Settings for this request; middleware refreshed them before we got here.
+const site = siteSettings();
+const home = await getDoc("homepage/home");
+
+// Forms are their own content model — the same definition is reused by the hero
+// card and the closing inspection section.
+const quoteForm = await getForm('quote');
+
+// The homepage grid shows the core tree-care services from the Single Service
+// collection — same source as both /services/ pages.
+const homeServices = await getServiceCards({ group: 'tree-care' });
+
+// Blog preview — pulled from the CMS `posts` collection (latest 3, non-draft).
+const dateFmt = (d: Date) =>
+  `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+const blogPosts = (await listPublished('posts'))
+  .sort((a, b) => new Date(b.data.date).valueOf() - new Date(a.data.date).valueOf())
+  .slice(0, 3)
+  .map((post) => ({
+    title: post.data.title,
+    excerpt: post.data.description ?? '',
+    date: dateFmt(new Date(post.data.date)),
+    href: `/blog/${post.slug}/`,
+    image: post.data.image ?? '/src/assets/photos/blog-tree-power-lines.jpg',
+    imageAlt: post.data.imageAlt ?? post.data.title,
+  }));
+
+// Title comes from the CMS "home" pattern; the page's own title is the fallback.
+const seo = resolveSeo({
+  pattern: 'home',
+  title: home.seo.title,
+  description: home.seo.description,
+  path: Astro.url.pathname,
+});
+
+// The Areas We Serve submenu is generated from the Service Areas content.
+const header = await getHeader();
+
 ---
 
-<CpaLayout
-  title={home.seo.title}
-  description={home.seo.description}
-  siteName={settings.site.name}
-  logoSrc={settings.site.logo}
-  logoAlt={settings.site.logoAlt}
-  announcement={settings.announcement}
+<TreeLayout
+  title={seo.title}
+  description={seo.description}
+  keywords={home.seo.keywords}
+  siteName={site.siteName}
+  logoSrc={site.logo}
+  faviconSrc={site.favicon}
   header={header}
-  footer={settings.footer}
-  colors={settings.colors}
-  fonts={settings.fonts}
+  footer={site.footer}
+  colors={site.theme.colors}
+  fonts={site.theme.fonts}
 >
-  <CpaHero
-    eyebrow={home.hero.eyebrow}
-    title={home.hero.title}
-    description={home.hero.description}
-    buttons={home.hero.buttons}
-    photoSrc={home.hero.photoSrc}
-    photoAlt={home.hero.photoAlt}
-    badgeSrc={home.hero.badgeSrc}
-    badgeAlt={home.hero.badgeAlt}
-    reviewCardSrc={home.hero.reviewCardSrc}
-    reviewCardAlt={home.hero.reviewCardAlt}
-    googleG={GOOGLE_G}
-    trustpilotStars={TP_STARS}
-    trustpilotStar={TP_STAR}
-    googleRating={home.hero.googleRating}
-    googleLabel={home.hero.googleLabel}
-    trustpilotLabel={home.hero.trustpilotLabel}
-    nameCard={{ name: home.hero.nameCardName, lines: home.hero.nameCardLines }}
+  <TreeHero {...home.hero} quote={quoteForm} />
+  <TreeTrustBar {...home.trustBar} />
+  <TreeServices eyebrow={home.services.eyebrow} heading={home.services.heading} services={homeServices} viewAllHref="/services/residential/" />
+  <TreeWhyChoose eyebrow={home.whyChoose.eyebrow} heading={home.whyChoose.heading} items={home.whyChoose.items} />
+  <TreeCtaBanner {...home.ctaBanner} />
+  <TreeAbout {...home.about} />
+  <TreeStatsBar eyebrow={home.stats.eyebrow} heading={home.stats.heading} stats={home.stats.items} />
+  <TreeCommercial {...home.commercial} />
+  <TreeProjects eyebrow={home.projects.eyebrow} heading={home.projects.heading} description={home.projects.description} projects={home.projects.items} />
+  <TreeEmergencyBanner {...home.emergency} />
+  <TreeProcess eyebrow={home.process.eyebrow} heading={home.process.heading} description={home.process.description} steps={home.process.steps} />
+  <TreeTestimonials eyebrow={home.testimonials.eyebrow} heading={home.testimonials.heading} description={home.testimonials.description} rating={home.testimonials.rating} reviews={home.testimonials.reviews} />
+  <TreeServiceAreas
+    eyebrow={home.serviceAreas.eyebrow}
+    heading={home.serviceAreas.heading}
+    description={home.serviceAreas.description}
+    areasLabel={home.serviceAreas.areasLabel}
+    areas={home.serviceAreas.areas}
+    ctaText={home.serviceAreas.ctaText}
   />
-
-  <CpaFeatureStrip items={home.featureStrip.items} />
-
-  <CpaServices
-    eyebrow={home.services.eyebrow}
-    title={home.services.title}
-    subtitle={home.services.subtitle}
-    services={home.services.items}
-    ctaText={home.services.ctaText}
-    ctaHref={home.services.ctaHref}
-  />
-
-  <CpaAbout
-    eyebrow={home.about.eyebrow}
-    title={home.about.title}
-    description={home.about.description}
-    features={home.about.features}
-    imageSrc={home.about.imageSrc}
-    imageAlt={home.about.imageAlt}
-    primaryButton={home.about.primaryButton}
-    secondaryButton={home.about.secondaryButton}
-  />
-
-  <CpaStatsBar stats={home.stats} />
-
-  <CpaTestimonials
-    title={home.testimonials.title}
-    testimonials={home.testimonials.items}
-    googleG={GOOGLE_G}
-    googleRating={home.testimonials.googleRating}
-    googleLabel={home.testimonials.googleLabel}
-    reviewsLabel={home.testimonials.reviewsLabel}
-    ctaText={home.testimonials.ctaText}
-    ctaHref={home.testimonials.ctaHref}
-  />
-
-  <CpaCtaBanner
-    title={home.ctaBanner.title}
-    subtitle={home.ctaBanner.subtitle}
-    backgroundSrc={home.ctaBanner.backgroundSrc}
-    primaryButton={home.ctaBanner.primaryButton}
-    secondaryButton={home.ctaBanner.secondaryButton}
-  />
-
-  <CpaFaq
-    eyebrow={home.faq.eyebrow}
-    title={home.faq.title}
-    subtitle={home.faq.subtitle}
-    items={home.faq.items}
-    footerText={home.faq.footerText}
-    whatsapp={{ text: home.faq.whatsappText, href: home.faq.whatsappHref }}
-  />
-
-  <CpaBlog
-    eyebrow={home.blog.eyebrow}
-    title={home.blog.title}
-    posts={home.blog.posts}
-    viewAll={{ text: home.blog.viewAllText, href: home.blog.viewAllHref }}
-  />
-
-  <CpaContact
-    eyebrow={home.contact.eyebrow}
-    title={home.contact.title}
-    leadHtml={home.contact.leadHtml}
-    description={home.contact.description}
-    features={home.contact.features}
-    formTitle={home.contact.formTitle}
-    flagSrc={home.contact.flagSrc}
-    submitText={home.contact.submitText}
-  />
-</CpaLayout>
+  <TreeFaq eyebrow={home.faq.eyebrow} titleLead={home.faq.titleLead} titleRest={home.faq.titleRest} faqs={home.faq.items} />
+  <TreeBlogPreview eyebrow={home.blog.eyebrow} title={home.blog.title} posts={blogPosts.length ? blogPosts : undefined} />
+  <TreeInspectionForm heading={home.inspection.heading} lead={home.inspection.lead} paragraphs={home.inspection.paragraphs} quote={quoteForm} />
+</TreeLayout>
