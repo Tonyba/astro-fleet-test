@@ -19,7 +19,8 @@
     "lint": "turbo lint",
     "prepare": "git config core.hooksPath .githooks || true",
     "new-site": "./scripts/new-site.sh",
-    "setup-infra": "./scripts/setup-infra.sh"
+    "setup-infra": "./scripts/setup-infra.sh",
+    "prune-media": "node scripts/prune-media.mjs"
   },
   "devDependencies": {
     "turbo": "^2"

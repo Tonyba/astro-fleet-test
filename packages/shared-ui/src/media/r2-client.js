@@ -256,12 +256,25 @@ export function s3Store(creds) {
       await s3Fetch(creds, { method: 'DELETE', path: `${bucketPath}/${encodeKeyPath(key)}` });
     },
     async list(prefix = '', limit = 1000) {
-      const response = await s3Fetch(creds, {
-        method: 'GET',
-        path: bucketPath,
-        query: { 'list-type': '2', prefix, 'max-keys': String(limit) },
-      });
-      return parseListXml(await response.text());
+      // Paginated: S3 caps a page at 1000 keys regardless of what is asked for,
+      // and a bucket holding a fleet's photographs passes that quickly. A
+      // caller asking for orphans has to see ALL of them, so a silently
+      // truncated first page would be worse than useless.
+      /** @type {R2ObjectInfo[]} */
+      const items = [];
+      let token;
+      do {
+        /** @type {Record<string,string>} */
+        const query = { 'list-type': '2', prefix, 'max-keys': String(Math.min(limit, 1000)) };
+        if (token) query['continuation-token'] = token;
+
+        const response = await s3Fetch(creds, { method: 'GET', path: bucketPath, query });
+        const body = await response.text();
+        items.push(...parseListXml(body));
+        token = /<NextContinuationToken>([\s\S]*?)<\/NextContinuationToken>/.exec(body)?.[1];
+      } while (token && items.length < limit);
+
+      return items.slice(0, limit);
     },
     async head(key) {
       const response = await s3Fetch(creds, {
