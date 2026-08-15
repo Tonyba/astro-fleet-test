@@ -44,3 +44,4 @@ bodyImage: /src/assets/photos/stump-grinding/bodyImage.jpg
 bodyCtaLabel: hey
 bodyCtaHref: '#'
 ---
+mas cosas aca escritas
