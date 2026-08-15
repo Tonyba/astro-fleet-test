@@ -177,7 +177,10 @@ bun run migrate-media --site <domain> --apply --delete-local   # ...and drop the
 
 # One-time bucket setup per site
 wrangler r2 bucket create <domain>-media
-wrangler r2 bucket domain add <domain>-media --domain media.<domain>   # or enable the r2.dev URL
+wrangler r2 bucket dev-url enable <domain>-media      # -> https://pub-<hash>.r2.dev
+# Custom domain instead? It must be a domain Cloudflare already manages for you,
+# and --zone-id is REQUIRED (find it on the zone's dashboard Overview page):
+#   wrangler r2 bucket domain add <domain>-media --domain media.<domain> --zone-id <id>
 # then set Site Settings -> Technical -> Media Bucket URL to that origin
 
 # Scaffold a new site

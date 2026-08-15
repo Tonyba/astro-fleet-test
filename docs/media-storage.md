@@ -53,10 +53,26 @@ rebuilds.
 
 ```bash
 wrangler r2 bucket create <domain>-media
-# public read: a custom domain (preferred) …
-wrangler r2 bucket domain add <domain>-media --domain media.<domain>
-# … or the bucket's r2.dev address from the dashboard, for a quick start
+wrangler r2 bucket dev-url enable <domain>-media    # -> https://pub-<hash>.r2.dev
 ```
+
+A **custom domain** is the alternative, but it only works for a domain Cloudflare
+already manages for you — the bucket is attached to a zone, and `--zone-id` is
+required (dashboard → the zone → Overview → Zone ID in the right sidebar):
+
+```bash
+wrangler r2 bucket domain add <domain>-media --domain media.<domain> --zone-id <zone id>
+```
+
+With no zones in the account that command cannot succeed; use the r2.dev URL.
+
+**Does r2.dev's rate limiting matter?** Barely, because of where these URLs are
+read. The build downloads each original once and the site serves the encoded
+copies from `dist/_astro`, so a visitor never touches the bucket. Only the build
+and the CMS preview do. The one exception is a **runtime-content site**
+(test-1.com): an image uploaded after the last build has no ladder entry and is
+served to visitors straight from the bucket until the next build. If that site
+goes to production traffic, put it behind a custom domain.
 
 1. `sites/<domain>/wrangler.jsonc` — bind it as `MEDIA` (already there for
    test-1.com and test-2.com).
