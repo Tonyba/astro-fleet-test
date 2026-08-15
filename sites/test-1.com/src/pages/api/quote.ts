@@ -2,11 +2,12 @@
  * POST /api/quote  — on-demand Astro endpoint (runs on the Cloudflare worker)
  * ---------------------------------------------------------------------------
  * Receives quote/inspection form submissions, verifies the Cloudflare
- * Turnstile token, and persists the submission TWICE:
+ * Turnstile token, persists the submission TWICE, then emails it out:
  *
  *   1. a row in D1 (`submissions`)  — the durable store, written first
  *   2. a markdown entry in the repo — what Keystatic's "Form Submissions"
  *                                     collection reads
+ *   3. a notification to the site's contact address, via Brevo (see notify.ts)
  *
  * Two stores because they fail for different reasons and a lost lead is the
  * one unacceptable outcome here. The commit needs GITHUB_TOKEN, network egress
@@ -26,6 +27,8 @@
  *   GITHUB_TOKEN      — repo-scoped token used to commit submissions
  *   GITHUB_REPO       — "owner/repo" (defaults to tonyba/astro-fleet-test)
  *   GITHUB_BRANCH     — target branch (defaults to main)
+ *   BREVO_API_KEY     — lead notification email; skipped when unset
+ *   BREVO_FROM_EMAIL  — verified Brevo sender address
  *
  * Bindings:
  *   CONTENT_DB        — D1, see db/schema.sql
@@ -36,6 +39,7 @@ import type { APIRoute } from 'astro';
 import { env as workerEnv } from 'cloudflare:workers';
 import { dump as dumpYaml } from 'js-yaml';
 import { getDoc } from '../../lib/runtime-content';
+import { notifyLead } from '../../lib/notify';
 
 export const prerender = false;
 
@@ -389,6 +393,23 @@ export const POST: APIRoute = async ({ request }) => {
     if (!import.meta.env.DEV) {
       return jsonResponse({ ok: false, error: 'Could not save submission' }, 500);
     }
+  }
+
+  // 3. Tell somebody. Last, and best-effort by construction: the lead is
+  // already durable, so a Brevo failure is logged and never reaches the
+  // visitor. `preloadSettings()` deliberately skips /api/*, so the contact
+  // address is read straight from the store rather than the settings holder.
+  try {
+    const site = await getDoc<{
+      siteName: string;
+      business: { contact: { email: string } };
+    }>('settings/site');
+    await notifyLead(env, lead, {
+      to: site.business.contact.email,
+      siteName: site.siteName,
+    });
+  } catch (err) {
+    console.error(`Submission ${lead.id}: could not send notification —`, err);
   }
 
   return jsonResponse({ ok: true });

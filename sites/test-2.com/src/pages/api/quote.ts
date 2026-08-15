@@ -22,10 +22,23 @@ import type { APIRoute } from 'astro';
 // Astro 6's Cloudflare adapter removed `Astro.locals.runtime.env`; secrets and
 // bindings come from this import now.
 import { env as workerEnv } from 'cloudflare:workers';
+import site from '../../content/settings/site.json';
+import { notifyLead } from '../../lib/notify';
 
 export const prerender = false;
 
 const FIELDS = ['form_name', 'full_name', 'email', 'phone', 'project_type', 'service', 'message'] as const;
+
+/** Human labels for the notification email — the field names are not readable. */
+const LABELS: Record<(typeof FIELDS)[number], string> = {
+  form_name: 'Form',
+  full_name: 'Full Name',
+  email: 'Email Address',
+  phone: 'Phone Number',
+  project_type: 'Project Type',
+  service: 'Service',
+  message: 'Message',
+};
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -47,11 +60,14 @@ async function verifyTurnstile(secret: string, token: string, ip: string | null)
   return data.success === true;
 }
 
-async function commitSubmission(env: Env, record: Record<string, string>): Promise<void> {
+async function commitSubmission(
+  env: Env,
+  record: Record<string, string>,
+  slug: string,
+  received: string
+): Promise<void> {
   const repo = env.GITHUB_REPO || 'tonyba/astro-fleet-test';
   const branch = env.GITHUB_BRANCH || 'main';
-  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const slug = `${stamp}-${(record.full_name || 'lead').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40)}`;
   const path = `sites/test-2.com/src/content/submissions/${slug}.md`;
 
   // Every value is quoted so YAML never coerces it — `received` in particular
@@ -65,7 +81,7 @@ async function commitSubmission(env: Env, record: Record<string, string>): Promi
     `phone: ${q(record.phone)}`,
     `project_type: ${q(record.project_type)}`,
     `service: ${q(record.service)}`,
-    `received: ${q(new Date().toISOString())}`,
+    `received: ${q(received)}`,
     '---',
     '',
     (record.message || '').replace(/\r?\n/g, '\n'),
@@ -117,9 +133,17 @@ export const POST: APIRoute = async ({ request }) => {
     return jsonResponse({ ok: false, error: 'Missing required fields' }, 400);
   }
 
+  // One timestamp for both the entry's filename and its `received` value — they
+  // used to be two separate `new Date()` calls that could disagree.
+  const received = new Date().toISOString();
+  const slug = `${received.replace(/[:.]/g, '-')}-${(record.full_name || 'lead')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .slice(0, 40)}`;
+
   try {
     if (env.GITHUB_TOKEN) {
-      await commitSubmission(env, record);
+      await commitSubmission(env, record, slug, received);
     } else {
       console.log('New lead (no GITHUB_TOKEN configured):', JSON.stringify(record));
     }
@@ -127,6 +151,27 @@ export const POST: APIRoute = async ({ request }) => {
     console.error('Failed to persist submission:', err);
     return jsonResponse({ ok: false, error: 'Could not save submission' }, 500);
   }
+
+  // Notify last and best-effort: the submission is already committed, so a
+  // Brevo failure is logged and never reaches the visitor.
+  await notifyLead(
+    env,
+    {
+      id: slug,
+      formName: record.form_name,
+      name: record.full_name,
+      email: record.email,
+      phone: record.phone,
+      answers: FIELDS.filter((key) => key !== 'form_name').map((key) => ({
+        name: key,
+        label: LABELS[key],
+        type: key === 'message' ? 'textarea' : 'text',
+        value: record[key],
+      })),
+      received,
+    },
+    { to: site.business.contact.email, siteName: site.siteName }
+  );
 
   return jsonResponse({ ok: true });
 };

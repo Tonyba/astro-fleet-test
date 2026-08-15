@@ -21,6 +21,16 @@ interface Env {
   /** Target branch for submission commits. */
   GITHUB_BRANCH?: string;
 
+  /**
+   * Brevo — lead notification email on /api/quote. Absent means no email is
+   * sent; the submission is still stored. See src/lib/notify.ts.
+   */
+  BREVO_API_KEY?: string;
+  /** Sender address; must be a verified sender in that Brevo account. */
+  BREVO_FROM_EMAIL?: string;
+  /** Optional sender display name; defaults to the site name. */
+  BREVO_FROM_NAME?: string;
+
   /* Keystatic GitHub mode — created by the GitHub App setup flow at /keystatic. */
   KEYSTATIC_GITHUB_CLIENT_ID?: string;
   KEYSTATIC_GITHUB_CLIENT_SECRET?: string;
