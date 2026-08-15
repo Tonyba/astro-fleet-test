@@ -23,8 +23,20 @@ import { contentVersion, preloadSettings, store } from './lib/runtime-content';
 /** How long a worker isolate may reuse the sync generation it last read. */
 const VERSION_TTL_MS = 5_000;
 
-/** How long the edge may keep a rendered page. Generation changes supersede it. */
+/**
+ * How long the EDGE may keep a rendered page. Generation changes supersede it.
+ *
+ * Sent as `s-maxage`, which only shared caches obey, alongside `max-age=0` for
+ * the browser. Sending plain `max-age` here was a bug worth remembering: it
+ * told every visitor's browser to keep the page for an hour, so an editor who
+ * saved in Keystatic and refreshed saw their own cached copy and concluded the
+ * sync was broken — while the worker had already been serving the new text for
+ * seconds. The edge cache is ours to invalidate; a browser cache is not.
+ */
 const EDGE_TTL_SECONDS = 3600;
+
+/** Fresh at the edge for an hour, never reused by a browser without asking. */
+const CACHE_CONTROL = `public, max-age=0, s-maxage=${EDGE_TTL_SECONDS}`;
 
 let cachedVersion = { value: '', readAt: 0 };
 
@@ -78,6 +90,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   const hit = await cache.match(cacheKey);
   if (hit) {
     const headers = new Headers(hit.headers);
+    headers.set('cache-control', CACHE_CONTROL);
     headers.set('x-content-cache', 'HIT');
     headers.set('x-content-version', version);
     return new Response(hit.body, { status: hit.status, headers });
@@ -94,7 +107,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   const contentType = response.headers.get('content-type') ?? '';
   if (response.status === 200 && contentType.includes('text/html')) {
     const headers = new Headers(response.headers);
-    headers.set('cache-control', `public, max-age=${EDGE_TTL_SECONDS}`);
+    headers.set('cache-control', CACHE_CONTROL);
     headers.set('x-content-version', version);
 
     const toCache = new Response(response.clone().body, { status: 200, headers });
