@@ -20,7 +20,6 @@ hero:
   image: /src/assets/photos/stump-grinding/hero/image.png
 intro:
   paragraphs: []
-  image: /src/assets/photos/stump-grinding/intro/image.png
 whyChooseHeading: why choose
 capabilities:
   heading: algo
