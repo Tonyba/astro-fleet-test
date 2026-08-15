@@ -70,10 +70,11 @@ const photo = ({ label, description, required = false }: ImageOpts) =>
  * Keystatic derives an image's path from the FIELD path alone — the singleton
  * it belongs to is not part of it. Two singletons that share a field shape
  * therefore resolve to the SAME file: every page built from `pageHero` wanted
- * `photos/hero/image.jpg`, and all three `projectsCarousel` pages wanted
- * `photos/projects/items/0/image.jpg`. Saving one page then relocated that file
- * and left the others pointing at a path that no longer existed, which GitHub
- * rejects outright ("A path was requested for deletion which does not exist").
+ * `photos/hero/image.jpg`, and the three pages that each carried their own copy
+ * of the projects carousel all wanted `photos/projects/items/0/image.jpg`.
+ * Saving one page then relocated that file and left the others pointing at a
+ * path that no longer existed, which GitHub rejects outright ("A path was
+ * requested for deletion which does not exist").
  *
  * Passing the page's own scope into the shared helpers keeps each page's photos
  * apart, so saving one can never disturb another.
@@ -118,6 +119,18 @@ const icon = ({ label, description, required = false }: ImageOpts) =>
     publicPath: '/media/icons/',
     validation: { isRequired: required },
   });
+
+/** The same, in a folder of its own — see `scopedPhoto` for why scoping matters. */
+const scopedIcon =
+  (scope: string) =>
+  ({ label, description, required = false }: ImageOpts) =>
+    fields.image({
+      label,
+      description,
+      directory: `public/media/icons/${scope}`,
+      publicPath: `/media/icons/${scope}/`,
+      validation: { isRequired: required },
+    });
 
 /**
  * Favicon — lives at the root of public/ (where it has always been requested
@@ -212,58 +225,107 @@ const seoOptional = fields.object(
   { label: 'SEO' }
 );
 
-const emergencyBanner = fields.object(
-  {
-    heading: str('Heading'),
-    subtext: textArea('Subtext'),
-    phoneLabel: str('Phone Label'),
-    phoneNumber: str('Phone Number'),
-  },
-  { label: 'Emergency Banner' }
-);
+// ---------------------------------------------------------------------------
+// Global sections — one definition, rendered on many pages
+// ---------------------------------------------------------------------------
+// These seven blocks are the site's shared furniture: the trust bar, reviews,
+// coverage list, FAQ, inspection form, emergency banner and project carousel.
+//
+// They used to be duplicated. The homepage owned a copy and the commercial,
+// residential, about and projects pages each owned another, so changing the FAQ
+// meant changing it in five places — and the copies had already drifted (three
+// byte-identical sets of the same five project photos, in three folders). Each
+// is now a singleton of its own under "Global Sections" in the CMS, and every
+// page reads that one entry: edit it once, it changes everywhere it appears.
+//
+// Each is a FIELD MAP rather than a `fields.object`, because a singleton's
+// `schema` takes its fields at the top level. That also keeps the form flat —
+// one screen per section, with nothing to expand first.
 
-const projectsCarousel = (scope: string) =>
-  fields.object(
-  {
-    eyebrow: str('Eyebrow'),
-    heading: str('Heading'),
-    description: textArea('Description'),
-    items: fields.array(
-      fields.object({
-        image: scopedPhoto(scope)({ label: 'Photo', required: true }),
-        alt: str('Alt Text'),
-      }),
-      { label: 'Project Photos', itemLabel: (props) => props.fields.alt.value || 'Photo' }
-    ),
-  },
-  { label: 'Projects' }
-);
+const trustBarSection = {
+  slogan: str('Slogan'),
+  phoneNumber: str('Phone Number'),
+  phoneLabel: strOpt('Phone Label'),
+  alertIconSrc: scopedIcon('global/trust-bar')({ label: 'Alert Icon', required: true }),
+  alertIconAlt: str('Alert Icon Alt Text'),
+};
 
-const faqSection = fields.object(
-  {
-    eyebrow: str('Eyebrow'),
-    titleLead: str('Title (bold line)'),
-    titleRest: str('Title (second line)'),
-    subtitle: textAreaOpt('Subtitle'),
-    items: fields.array(
-      fields.object({
-        question: str('Question'),
-        answer: textArea('Answer'),
-      }),
-      { label: 'Questions', itemLabel: (props) => props.fields.question.value || 'Question' }
-    ),
-  },
-  { label: 'FAQ' }
-);
+const testimonialsSection = {
+  eyebrow: str('Eyebrow'),
+  heading: str('Heading'),
+  description: textArea('Description'),
+  rating: fields.object(
+    {
+      score: str('Score'),
+      caption: str('Caption'),
+    },
+    { label: 'Rating' }
+  ),
+  serviceRating: fields.object(
+    {
+      score: strOpt('Score', 'Leave blank for the logo-and-caption-only badge.'),
+      caption: str('Caption'),
+    },
+    { label: 'Service Pages Badge', description: 'The reviews badge shown on service detail pages.' }
+  ),
+  reviews: fields.array(
+    fields.object({
+      title: str('Title'),
+      quote: textArea('Quote'),
+      name: str('Name'),
+    }),
+    { label: 'Reviews', itemLabel: (props) => props.fields.name.value || 'Review' }
+  ),
+};
 
-const inspectionSection = fields.object(
-  {
-    heading: str('Heading'),
-    lead: textArea('Lead'),
-    paragraphs: paragraphs(),
-  },
-  { label: 'Inspection Form Section' }
-);
+const serviceAreasSection = {
+  eyebrow: str('Eyebrow'),
+  heading: str('Heading'),
+  description: textArea('Description'),
+  areasLabel: str('Areas Label'),
+  areas: stringList('Areas', 'Area'),
+  ctaText: str('CTA Text'),
+};
+
+const faqSection = {
+  eyebrow: str('Eyebrow'),
+  titleLead: str('Title (bold line)'),
+  titleRest: str('Title (second line)'),
+  subtitle: textAreaOpt('Subtitle', 'Shown on the interior pages; the homepage omits it.'),
+  items: fields.array(
+    fields.object({
+      question: str('Question'),
+      answer: textArea('Answer'),
+    }),
+    { label: 'Questions', itemLabel: (props) => props.fields.question.value || 'Question' }
+  ),
+};
+
+const inspectionSection = {
+  heading: str('Heading'),
+  lead: textArea('Lead'),
+  paragraphs: paragraphs(),
+};
+
+const emergencySection = {
+  heading: str('Heading'),
+  subtext: textArea('Subtext'),
+  phoneLabel: str('Phone Label'),
+  phoneNumber: str('Phone Number'),
+};
+
+const projectsSection = {
+  eyebrow: str('Eyebrow'),
+  heading: str('Heading'),
+  description: textArea('Description'),
+  items: fields.array(
+    fields.object({
+      image: scopedPhoto('global/projects')({ label: 'Photo', required: true }),
+      alt: str('Alt Text'),
+    }),
+    { label: 'Project Photos', itemLabel: (props) => props.fields.alt.value || 'Photo' }
+  ),
+};
 
 const statsList = fields.array(
   fields.object({
@@ -540,7 +602,17 @@ export default config({
       'Service Areas': ['serviceAreas', 'locations'],
       Blog: ['blogPage', 'posts'],
       Forms: ['forms', 'submissions'],
-      Settings: ['settings'],
+      // Edited once, rendered on every page that includes them.
+      'Global Sections': [
+        'globalTrustBar',
+        'globalTestimonials',
+        'globalServiceAreas',
+        'globalFaq',
+        'globalInspection',
+        'globalEmergency',
+        'globalProjects',
+      ],
+      Settings: ['settings', 'headerFooter'],
     },
   },
 
@@ -602,6 +674,22 @@ export default config({
           },
           { label: 'Theme' }
         ),
+      },
+    }),
+
+    // -----------------------------------------------------------------------
+    // Header & Footer — the site chrome, on a screen of its own so the two
+    // menus are edited without scrolling past every other global setting.
+    //
+    // Keystatic derives an image's path from the FIELD path alone (see the note
+    // on `scopedPhoto` above), so moving these out of Site Settings left every
+    // badge and social icon exactly where it already was.
+    // -----------------------------------------------------------------------
+    headerFooter: singleton({
+      label: 'Header & Footer',
+      path: 'src/content/settings/header-footer',
+      format: { data: 'json' },
+      schema: {
         header: fields.object(
           {
             navigation: fields.array(
@@ -697,6 +785,59 @@ export default config({
     }),
 
     // -----------------------------------------------------------------------
+    // Global Sections — the shared furniture. One entry each; every page that
+    // renders the section reads this entry, so an edit here lands everywhere.
+    // -----------------------------------------------------------------------
+    globalTrustBar: singleton({
+      label: 'Trust Bar',
+      path: 'src/content/global/trust-bar',
+      format: { data: 'json' },
+      schema: trustBarSection,
+    }),
+
+    globalTestimonials: singleton({
+      label: 'Testimonials',
+      path: 'src/content/global/testimonials',
+      format: { data: 'json' },
+      schema: testimonialsSection,
+    }),
+
+    globalServiceAreas: singleton({
+      label: 'Service Areas',
+      path: 'src/content/global/service-areas',
+      format: { data: 'json' },
+      schema: serviceAreasSection,
+    }),
+
+    globalFaq: singleton({
+      label: 'FAQ',
+      path: 'src/content/global/faq',
+      format: { data: 'json' },
+      schema: faqSection,
+    }),
+
+    globalInspection: singleton({
+      label: 'Inspection Form',
+      path: 'src/content/global/inspection',
+      format: { data: 'json' },
+      schema: inspectionSection,
+    }),
+
+    globalEmergency: singleton({
+      label: 'Emergency Banner',
+      path: 'src/content/global/emergency',
+      format: { data: 'json' },
+      schema: emergencySection,
+    }),
+
+    globalProjects: singleton({
+      label: 'Projects',
+      path: 'src/content/global/projects',
+      format: { data: 'json' },
+      schema: projectsSection,
+    }),
+
+    // -----------------------------------------------------------------------
     // Homepage — per-section editable content.
     // -----------------------------------------------------------------------
     homepage: singleton({
@@ -741,19 +882,8 @@ export default config({
           },
           { label: 'Hero' }
         ),
-        trustBar: fields.object(
-          {
-            slogan: str('Slogan'),
-            phoneNumber: str('Phone Number'),
-            phoneLabel: strOpt('Phone Label'),
-            alertIconSrc: icon({ label: 'Alert Icon', required: true }),
-            alertIconAlt: str('Alert Icon Alt Text'),
-          },
-          {
-            label: 'Trust Bar',
-            description: 'The two-tone strip under the hero. Also used on the Service Areas pages.',
-          }
-        ),
+        // Trust Bar, Projects, Emergency Banner, Testimonials, FAQ, Service
+        // Areas and the Inspection Form all live under Global Sections now.
         // Service cards are generated from the Single Service collection —
         // edit a card by editing its service there, not here.
         services: fields.object(
@@ -851,8 +981,6 @@ export default config({
           },
           { label: 'CTA Banner' }
         ),
-        projects: projectsCarousel('homepage'),
-        emergency: emergencyBanner,
         process: fields.object(
           {
             eyebrow: str('Eyebrow'),
@@ -871,62 +999,6 @@ export default config({
           },
           { label: 'Process' }
         ),
-        testimonials: fields.object(
-          {
-            eyebrow: str('Eyebrow'),
-            heading: str('Heading'),
-            description: textArea('Description'),
-            rating: fields.object(
-              {
-                score: str('Score'),
-                caption: str('Caption'),
-              },
-              { label: 'Rating' }
-            ),
-            serviceRating: fields.object(
-              {
-                score: strOpt('Score', 'Leave blank for the logo-and-caption-only badge.'),
-                caption: str('Caption'),
-              },
-              { label: 'Service Pages Badge', description: 'The reviews badge shown on service detail pages.' }
-            ),
-            reviews: fields.array(
-              fields.object({
-                title: str('Title'),
-                quote: textArea('Quote'),
-                name: str('Name'),
-              }),
-              { label: 'Reviews', itemLabel: (props) => props.fields.name.value || 'Review' }
-            ),
-          },
-          { label: 'Testimonials' }
-        ),
-        faq: fields.object(
-          {
-            eyebrow: str('Eyebrow'),
-            titleLead: str('Title Lead'),
-            titleRest: str('Title Rest'),
-            items: fields.array(
-              fields.object({
-                question: str('Question'),
-                answer: textArea('Answer'),
-              }),
-              { label: 'Questions', itemLabel: (props) => props.fields.question.value || 'Question' }
-            ),
-          },
-          { label: 'FAQ' }
-        ),
-        serviceAreas: fields.object(
-          {
-            eyebrow: str('Eyebrow'),
-            heading: str('Heading'),
-            description: textArea('Description'),
-            areasLabel: str('Areas Label'),
-            areas: stringList('Areas', 'Area'),
-            ctaText: str('CTA Text'),
-          },
-          { label: 'Service Areas' }
-        ),
         blog: fields.object(
           {
             eyebrow: str('Eyebrow'),
@@ -934,7 +1006,6 @@ export default config({
           },
           { label: 'Blog (heading)' }
         ),
-        inspection: inspectionSection,
       },
     }),
 
@@ -978,10 +1049,6 @@ export default config({
           label: 'Services',
           description: 'Cards come from the Single Service collection.',
         }),
-        emergency: emergencyBanner,
-        projects: projectsCarousel('services-commercial'),
-        faq: faqSection,
-        inspection: inspectionSection,
       },
     }),
 
@@ -1036,10 +1103,6 @@ export default config({
           label: 'Outdoor Solutions Grid',
           description: 'Cards come from the Single Service collection.',
         }),
-        emergency: emergencyBanner,
-        projects: projectsCarousel('services-residential'),
-        faq: faqSection,
-        inspection: inspectionSection,
       },
     }),
 
@@ -1150,8 +1213,6 @@ export default config({
           },
           { label: 'Core Values' }
         ),
-        faq: faqSection,
-        inspection: inspectionSection,
       },
     }),
 
@@ -1270,8 +1331,6 @@ export default config({
           },
           { label: 'Gallery' }
         ),
-        faq: faqSection,
-        inspection: inspectionSection,
       },
     }),
 

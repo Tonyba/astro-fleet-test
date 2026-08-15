@@ -11,6 +11,7 @@ import { getHeader } from '../lib/header';
 
 // CMS-editable content (Keystatic commits these JSON files; the build imports them).
 import site from '../content/settings/site.json';
+import chrome from '../content/settings/header-footer.json';
 import page from '../content/pages/contact.json';
 
 // Same form model every other page uses — one definition, reused.
@@ -35,7 +36,7 @@ const header = await getHeader();
   logoSrc={site.logo}
   faviconSrc={site.favicon}
   header={header}
-  footer={site.footer}
+  footer={chrome.footer}
   colors={site.theme.colors}
   fonts={site.theme.fonts}
 >

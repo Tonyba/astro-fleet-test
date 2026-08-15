@@ -237,7 +237,7 @@ export async function contentVersion(): Promise<string> {
 // ---------------------------------------------------------------------------
 // Settings — preloaded, then read synchronously
 // ---------------------------------------------------------------------------
-// The two settings singletons are read by almost everything, including
+// The settings singletons are read by almost everything, including
 // `resolveSeo` and `fillTokens`, which are called 42 times across the site from
 // ordinary synchronous expressions. Making those async to reach the database
 // would have meant editing every call site and turning a pile of template
@@ -253,14 +253,53 @@ export async function contentVersion(): Promise<string> {
 // rather than undefined.
 import siteBundle from '../content/settings/site.json';
 import areaBundle from '../content/settings/locations.json';
+import chromeBundle from '../content/settings/header-footer.json';
+
+// The seven "Global Sections" entries belong here for the same reason: the FAQ
+// and the inspection form are on nearly every page, and the pages that render
+// them are the same ones already reading settings synchronously.
+import trustBarBundle from '../content/global/trust-bar.json';
+import testimonialsBundle from '../content/global/testimonials.json';
+import serviceAreasBundle from '../content/global/service-areas.json';
+import faqBundle from '../content/global/faq.json';
+import inspectionBundle from '../content/global/inspection.json';
+import emergencyBundle from '../content/global/emergency.json';
+import projectsBundle from '../content/global/projects.json';
 
 export type SiteSettings = typeof siteBundle;
 export type AreaSettings = typeof areaBundle;
+export type ChromeSettings = typeof chromeBundle;
+
+const globalBundle = {
+  trustBar: trustBarBundle,
+  testimonials: testimonialsBundle,
+  serviceAreas: serviceAreasBundle,
+  faq: faqBundle,
+  inspection: inspectionBundle,
+  emergency: emergencyBundle,
+  projects: projectsBundle,
+};
+
+/** CMS path of each global section, keyed the way pages read them. */
+const GLOBAL_IDS = {
+  trustBar: 'global/trust-bar',
+  testimonials: 'global/testimonials',
+  serviceAreas: 'global/service-areas',
+  faq: 'global/faq',
+  inspection: 'global/inspection',
+  emergency: 'global/emergency',
+  projects: 'global/projects',
+} as const;
+
+export type GlobalSections = typeof globalBundle;
 
 let settings = {
   site: siteBundle as SiteSettings,
   areas: areaBundle as AreaSettings,
+  chrome: chromeBundle as ChromeSettings,
 };
+
+let globals = globalBundle as GlobalSections;
 
 /** Refresh the settings holder. Call once per request, before rendering. */
 export async function preloadSettings(): Promise<void> {
@@ -270,7 +309,16 @@ export async function preloadSettings(): Promise<void> {
   settings = {
     site: (current.docs.get('settings/site')?.data as SiteSettings) ?? settings.site,
     areas: (current.docs.get('settings/locations')?.data as AreaSettings) ?? settings.areas,
+    chrome:
+      (current.docs.get('settings/header-footer')?.data as ChromeSettings) ?? settings.chrome,
   };
+
+  globals = Object.fromEntries(
+    Object.entries(GLOBAL_IDS).map(([key, id]) => [
+      key,
+      current.docs.get(id)?.data ?? globalBundle[key as keyof GlobalSections],
+    ])
+  ) as GlobalSections;
 }
 
 /** Site settings — live after `preloadSettings`, bundled before it. */
@@ -278,3 +326,16 @@ export const siteSettings = (): SiteSettings => settings.site;
 
 /** Service-area settings, same contract. */
 export const areaSettings = (): AreaSettings => settings.areas;
+
+/**
+ * Header & Footer — the site chrome, edited in its own CMS entry
+ * (`settings/header-footer`). Same contract as the two above.
+ */
+export const chromeSettings = (): ChromeSettings => settings.chrome;
+
+/**
+ * The seven Global Sections, keyed by section — `globalSections().faq`. One
+ * entry each in the CMS, so every page that renders a section renders the same
+ * copy of it. Same contract as the accessors above.
+ */
+export const globalSections = (): GlobalSections => globals;

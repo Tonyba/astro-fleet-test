@@ -23,11 +23,11 @@ import TreeCtaBanner from '@astro-fleet/shared-ui/src/components/TreeCtaBanner.a
 import TreeFaq from '@astro-fleet/shared-ui/src/components/TreeFaq.astro';
 import TreeInspectionForm from '@astro-fleet/shared-ui/src/components/TreeInspectionForm.astro';
 
-import site from '../content/settings/site.json';
 import home from '../content/homepage/home.json';
 import { getForm } from '../lib/forms';
 import { getHeader } from '../lib/header';
 import { areaSettings } from '../lib/locations';
+import { siteSettings, chromeSettings, globalSections } from '../lib/runtime-content';
 
 export interface Props {
   title: string;
@@ -55,6 +55,12 @@ const {
   areas,
 } = Astro.props;
 
+// Read through the runtime store like every page does — a static import of
+// site.json would pin this template to the settings bundled at build time.
+const site = siteSettings();
+const chrome = chromeSettings();
+const globals = globalSections();
+
 const quoteForm = await getForm('quote');
 const header = await getHeader();
 const hero = areaSettings().hub.hero;
@@ -68,7 +74,7 @@ const hero = areaSettings().hub.hero;
   logoSrc={site.logo}
   faviconSrc={site.favicon}
   header={header}
-  footer={site.footer}
+  footer={chrome.footer}
   colors={site.theme.colors}
   fonts={site.theme.fonts}
 >
@@ -76,12 +82,12 @@ const hero = areaSettings().hub.hero;
     title={heroTitle}
     description={heroDescription}
     primaryCta={{ label: 'Get Free Quote Now', href: '#free-inspection' }}
-    phoneCta={{ label: `Call ${site.header.phone.number}`, number: site.header.phone.number }}
+    phoneCta={{ label: `Call ${chrome.header.phone.number}`, number: chrome.header.phone.number }}
     image={hero.image}
     imageAlt={hero.imageAlt}
     imageSplit={hero.imageSplit}
   />
-  <TreeTrustBar {...home.trustBar} />
+  <TreeTrustBar {...globals.trustBar} />
 
   <TreeLocationsHub
     eyebrow={eyebrow}
@@ -98,23 +104,23 @@ const hero = areaSettings().hub.hero;
   />
   <TreeStatsRow stats={home.stats.items} />
   <TreeTestimonials
-    eyebrow={home.testimonials.eyebrow}
-    heading={home.testimonials.heading}
-    description={home.testimonials.description}
-    rating={home.testimonials.serviceRating}
-    reviews={home.testimonials.reviews}
+    eyebrow={globals.testimonials.eyebrow}
+    heading={globals.testimonials.heading}
+    description={globals.testimonials.description}
+    rating={globals.testimonials.serviceRating}
+    reviews={globals.testimonials.reviews}
   />
   <TreeCtaBanner {...home.ctaBanner} />
   <TreeFaq
-    eyebrow={home.faq.eyebrow}
-    titleLead={home.faq.titleLead}
-    titleRest={home.faq.titleRest}
-    faqs={home.faq.items}
+    eyebrow={globals.faq.eyebrow}
+    titleLead={globals.faq.titleLead}
+    titleRest={globals.faq.titleRest}
+    faqs={globals.faq.items}
   />
   <TreeInspectionForm
-    heading={home.inspection.heading}
-    lead={home.inspection.lead}
-    paragraphs={home.inspection.paragraphs}
+    heading={globals.inspection.heading}
+    lead={globals.inspection.lead}
+    paragraphs={globals.inspection.paragraphs}
     quote={quoteForm}
   />
 </TreeLayout>

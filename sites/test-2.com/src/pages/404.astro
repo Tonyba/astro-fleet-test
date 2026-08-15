@@ -6,6 +6,7 @@ import TreeCtaBanner from '@astro-fleet/shared-ui/src/components/TreeCtaBanner.a
 
 // CMS-editable content (Keystatic commits these JSON files; the build imports them).
 import site from '../content/settings/site.json';
+import chrome from '../content/settings/header-footer.json';
 import home from '../content/homepage/home.json';
 import page from '../content/pages/404.json';
 import { resolveSeo } from '../lib/seo';
@@ -31,7 +32,7 @@ const header = await getHeader();
   logoSrc={site.logo}
   faviconSrc={site.favicon}
   header={header}
-  footer={site.footer}
+  footer={chrome.footer}
   colors={site.theme.colors}
   fonts={site.theme.fonts}
 >

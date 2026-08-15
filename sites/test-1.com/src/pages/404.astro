@@ -8,10 +8,11 @@ import TreePageHero from '@astro-fleet/shared-ui/src/components/TreePageHero.ast
 import TreeCtaBanner from '@astro-fleet/shared-ui/src/components/TreeCtaBanner.astro';
 
 // CMS-editable content (Keystatic commits these JSON files; the build imports them).
-import { getDoc, siteSettings } from '../lib/runtime-content';
+import { getDoc, siteSettings, chromeSettings } from '../lib/runtime-content';
 
 // Settings for this request; middleware refreshed them before we got here.
 const site = siteSettings();
+const chrome = chromeSettings();
 const home = await getDoc("homepage/home");
 const page = await getDoc("pages/404");
 import { resolveSeo } from '../lib/seo';
@@ -38,7 +39,7 @@ const header = await getHeader();
   logoSrc={site.logo}
   faviconSrc={site.favicon}
   header={header}
-  footer={site.footer}
+  footer={chrome.footer}
   colors={site.theme.colors}
   fonts={site.theme.fonts}
 >

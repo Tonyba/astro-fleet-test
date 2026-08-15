@@ -13,11 +13,12 @@ import { resolveSeo } from '../../lib/seo';
 import { getHeader } from '../../lib/header';
 
 // CMS-editable content (Keystatic commits these JSON files; the build imports them).
-import { getDoc, listPublished, siteSettings } from '../../lib/runtime-content';
+import { getDoc, listPublished, siteSettings, chromeSettings, globalSections } from '../../lib/runtime-content';
 
 // Settings for this request; middleware refreshed them before we got here.
 const site = siteSettings();
-const home = await getDoc("homepage/home");
+const chrome = chromeSettings();
+const globals = globalSections();
 const page = await getDoc("pages/blog");
 
 const quoteForm = await getForm('quote');
@@ -65,7 +66,7 @@ const header = await getHeader();
   logoSrc={site.logo}
   faviconSrc={site.favicon}
   header={header}
-  footer={site.footer}
+  footer={chrome.footer}
   colors={site.theme.colors}
   fonts={site.theme.fonts}
 >
@@ -104,9 +105,9 @@ const header = await getHeader();
   )}
 
   <TreeInspectionForm
-    heading={home.inspection.heading}
-    lead={home.inspection.lead}
-    paragraphs={home.inspection.paragraphs}
+    heading={globals.inspection.heading}
+    lead={globals.inspection.lead}
+    paragraphs={globals.inspection.paragraphs}
     quote={quoteForm}
   />
 </TreeLayout>

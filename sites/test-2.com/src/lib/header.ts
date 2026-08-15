@@ -3,24 +3,24 @@
  * ---------
  * Builds the header every page renders.
  *
- * The navigation itself is edited in Site Settings → Header, with one
+ * The navigation itself is edited in Header & Footer → Header, with one
  * exception: the item pointing at /locations/ gets its submenu generated from
  * the Service Areas content — towns on the second level, that town's services
  * on the third. Adding a town in the CMS therefore updates the menu on every
  * page, and the item's label and position stay editable like any other.
  */
-import site from '../content/settings/site.json';
+import chrome from '../content/settings/header-footer.json';
 import { LOCATIONS_ROOT, cityServiceHref, getAreaServices, getCities } from './locations';
 
-type Nav = typeof site.header.navigation;
+type Nav = typeof chrome.header.navigation;
 
 export async function getHeader() {
   const isAreasItem = (href: string) => href.replace(/\/+$/, '/') === LOCATIONS_ROOT;
-  if (!site.header.navigation.some((item) => isAreasItem(item.href))) return site.header;
+  if (!chrome.header.navigation.some((item) => isAreasItem(item.href))) return chrome.header;
 
   const [cities, services] = await Promise.all([getCities(), getAreaServices()]);
 
-  const navigation = site.header.navigation.map((item) => {
+  const navigation = chrome.header.navigation.map((item) => {
     if (!isAreasItem(item.href)) return item;
     return {
       ...item,
@@ -36,5 +36,5 @@ export async function getHeader() {
     };
   }) as unknown as Nav;
 
-  return { ...site.header, navigation };
+  return { ...chrome.header, navigation };
 }

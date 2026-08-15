@@ -25,10 +25,12 @@ import TreeLocationsHub from '@astro-fleet/shared-ui/src/components/TreeLocation
 import TreeFaq from '@astro-fleet/shared-ui/src/components/TreeFaq.astro';
 import TreeInspectionForm from '@astro-fleet/shared-ui/src/components/TreeInspectionForm.astro';
 
-import { getDoc, getDocFull, siteSettings } from '../../../../../lib/runtime-content';
+import { getDoc, getDocFull, siteSettings, chromeSettings, globalSections } from '../../../../../lib/runtime-content';
 
 // Settings for this request; middleware refreshed them before we got here.
 const site = siteSettings();
+const chrome = chromeSettings();
+const globals = globalSections();
 const home = await getDoc("homepage/home");
 import { getForm } from '../../../../../lib/forms';
 import { getHeader } from '../../../../../lib/header';
@@ -104,7 +106,7 @@ const seo = resolveSeo({
   path: Astro.url.pathname,
 });
 
-const faqItems = d.faq?.items?.length ? d.faq.items : home.faq.items;
+const faqItems = d.faq?.items?.length ? d.faq.items : globals.faq.items;
 
 ---
 
@@ -116,7 +118,7 @@ const faqItems = d.faq?.items?.length ? d.faq.items : home.faq.items;
   logoSrc={site.logo}
   faviconSrc={site.favicon}
   header={header}
-  footer={site.footer}
+  footer={chrome.footer}
   colors={site.theme.colors}
   fonts={site.theme.fonts}
 >
@@ -124,12 +126,12 @@ const faqItems = d.faq?.items?.length ? d.faq.items : home.faq.items;
     title={d.hero?.title || `Tree Service in ${city.label}`}
     description={d.hero?.description || fillTokens(defaults.heroDescription, tokens)}
     primaryCta={{ label: defaults.ctaLabel, href: defaults.ctaHref }}
-    phoneCta={{ label: `Call ${site.header.phone.number}`, number: site.header.phone.number }}
+    phoneCta={{ label: `Call ${chrome.header.phone.number}`, number: chrome.header.phone.number }}
     image={heroImage}
     imageAlt={d.hero?.imageAlt || defaults.heroImageAlt}
     imageSplit={d.hero?.imageSplit}
   />
-  <TreeTrustBar {...home.trustBar} />
+  <TreeTrustBar {...globals.trustBar} />
 
   {
     d.intro?.heading && (
@@ -163,7 +165,7 @@ const faqItems = d.faq?.items?.length ? d.faq.items : home.faq.items;
     )
   }
 
-  <TreeEmergencyBanner {...home.emergency} />
+  <TreeEmergencyBanner {...globals.emergency} />
 
   <TreeServiceProse
     image={permitImage}
@@ -181,17 +183,17 @@ const faqItems = d.faq?.items?.length ? d.faq.items : home.faq.items;
     steps={home.process.steps}
   />
   <TreeProjects
-    eyebrow={home.projects.eyebrow}
-    heading={home.projects.heading}
-    description={home.projects.description}
-    projects={home.projects.items}
+    eyebrow={globals.projects.eyebrow}
+    heading={globals.projects.heading}
+    description={globals.projects.description}
+    projects={globals.projects.items}
   />
   <TreeTestimonials
-    eyebrow={home.testimonials.eyebrow}
+    eyebrow={globals.testimonials.eyebrow}
     heading={`What ${city.name} Customers Say`}
-    description={home.testimonials.description}
-    rating={home.testimonials.serviceRating}
-    reviews={home.testimonials.reviews}
+    description={globals.testimonials.description}
+    rating={globals.testimonials.serviceRating}
+    reviews={globals.testimonials.reviews}
   />
 
   <TreeLocationsHub
@@ -203,16 +205,16 @@ const faqItems = d.faq?.items?.length ? d.faq.items : home.faq.items;
   />
 
   <TreeFaq
-    eyebrow={d.faq?.eyebrow || home.faq.eyebrow}
-    titleLead={d.faq?.titleLead || home.faq.titleLead}
-    titleRest={d.faq?.titleRest || home.faq.titleRest}
+    eyebrow={d.faq?.eyebrow || globals.faq.eyebrow}
+    titleLead={d.faq?.titleLead || globals.faq.titleLead}
+    titleRest={d.faq?.titleRest || globals.faq.titleRest}
     subtitle={d.faq?.subtitle}
     faqs={faqItems}
   />
   <TreeInspectionForm
-    heading={home.inspection.heading}
-    lead={home.inspection.lead}
-    paragraphs={home.inspection.paragraphs}
+    heading={globals.inspection.heading}
+    lead={globals.inspection.lead}
+    paragraphs={globals.inspection.paragraphs}
     quote={quoteForm}
   />
 </TreeLayout>

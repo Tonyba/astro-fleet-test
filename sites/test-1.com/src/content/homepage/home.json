@@ -53,13 +53,6 @@
       }
     ]
   },
-  "trustBar": {
-    "slogan": "WE GO OUT ON A LIMB FOR YOU.",
-    "phoneNumber": "(203) 650-8519",
-    "phoneLabel": "Emergency line",
-    "alertIconSrc": "/media/icons/trustBar/alertIconSrc.png",
-    "alertIconAlt": "Emergency alert"
-  },
   "services": {
     "eyebrow": "Our Services",
     "heading": "Professional Tree Services for Residential & Commercial Properties"
@@ -172,39 +165,6 @@
     "primaryLabel": "Get free quote now",
     "phoneNumber": "(203) 367-8219"
   },
-  "projects": {
-    "eyebrow": "Proyects",
-    "heading": "Real Projects, Real Results",
-    "description": "Explore our recent tree care projects across Connecticut, including tree removals, trimming, stump grinding, and emergency storm cleanup.",
-    "items": [
-      {
-        "image": "/src/assets/photos/homepage/projects/items/0/image.jpg",
-        "alt": "Tall tree removal in progress"
-      },
-      {
-        "image": "/src/assets/photos/homepage/projects/items/1/image.jpg",
-        "alt": "Storm-damaged tree cleanup"
-      },
-      {
-        "image": "/src/assets/photos/homepage/projects/items/2/image.jpg",
-        "alt": "Crane-assisted tree removal"
-      },
-      {
-        "image": "/src/assets/photos/homepage/projects/items/3/image.jpg",
-        "alt": "Completed tree care project"
-      },
-      {
-        "image": "/src/assets/photos/homepage/projects/items/4/image.jpg",
-        "alt": "Professional tree service work"
-      }
-    ]
-  },
-  "emergency": {
-    "heading": "TREE EMERGENCY? WE'RE READY TO HELP.",
-    "subtext": "24/7 Service For Emergency. Fast response. Safe removal. Peace of mind.",
-    "phoneLabel": "Call emergency line",
-    "phoneNumber": "(203) 650-8519"
-  },
   "process": {
     "eyebrow": "How it works",
     "heading": "Simple, Safe & Efficient Tree Service Process",
@@ -240,101 +200,8 @@
       }
     ]
   },
-  "testimonials": {
-    "eyebrow": "Reviews",
-    "heading": "What Our Customers Are Saying",
-    "description": "See why our clients trust Erick's Tree Services for their tree service needs.",
-    "rating": {
-      "score": "4.8",
-      "caption": "Based on 14.000 reviews"
-    },
-    "serviceRating": {
-      "score": "4.8",
-      "caption": "Based on true reviews"
-    },
-    "reviews": [
-      {
-        "title": "Tree removal",
-        "quote": "From the initial call to Eric I knew I had found the right man for the job. He came to give us a bid exactly when he said. He promptly showed up to do the job, which was a very large downed oak. He and his crew made very quick work of it and were very neat, respectful of the property and did exactly what he said they",
-        "name": "Fabien Cutillo"
-      },
-      {
-        "title": "Storm cleanup",
-        "quote": "After a bad storm brought down two huge limbs onto our driveway, Erick's crew responded the same day. They were fast, careful around the house, and cleaned up every last branch before they left. Highly recommend for any emergency work.",
-        "name": "Danielle Roberts"
-      },
-      {
-        "title": "Stump grinding",
-        "quote": "We had four old stumps that had been an eyesore for years. The team ground them all well below grade, hauled away the debris, and left the yard looking better than we expected. Fair price and true professionals.",
-        "name": "Michael Alvarez"
-      },
-      {
-        "title": "Tree trimming",
-        "quote": "Erick and his crew trimmed several large trees hanging over our roof. They explained exactly what they would do, showed up on time, and the results look fantastic. We'll definitely be using them again next season.",
-        "name": "Sofia Nguyen"
-      }
-    ]
-  },
-  "faq": {
-    "eyebrow": "Common Questions",
-    "titleLead": "Questions?",
-    "titleRest": "We're here to help",
-    "items": [
-      {
-        "question": "How much does tree removal cost?",
-        "answer": "The cost of tree removal depends on factors such as tree size, location, and job complexity. We offer free, personalized estimates for every customer. Contact us today for a no-obligation quote."
-      },
-      {
-        "question": "What method do you use for stump removal?",
-        "answer": "We use professional stump grinding equipment to grind the stump several inches below grade, then clean up the debris so the area is ready for grass, mulch, or replanting."
-      },
-      {
-        "question": "Do you provide 24/7 emergency services?",
-        "answer": "Yes. Storms and fallen limbs never wait for business hours, so our emergency crew is on call around the clock to make your property safe as quickly as possible."
-      },
-      {
-        "question": "Are you licensed and insured?",
-        "answer": "Absolutely. We are fully licensed and carry comprehensive liability and workers' compensation insurance, so you are protected on every job we perform."
-      },
-      {
-        "question": "What method do you use for stump removal?",
-        "answer": "For most residential jobs we grind the stump, but for larger commercial sites we can fully excavate the root ball when the space needs to be completely cleared."
-      },
-      {
-        "question": "How long does it take to remove or prune a tree?",
-        "answer": "Most standard removals and pruning jobs are completed within a single day. Larger or more complex trees near structures or power lines may take longer, and we will give you a clear timeline up front."
-      },
-      {
-        "question": "Do you offer any discounts?",
-        "answer": "We offer seasonal promotions as well as discounts for seniors, veterans, and repeat customers. Ask us about current offers when you request your free quote."
-      }
-    ]
-  },
-  "serviceAreas": {
-    "eyebrow": "Service Areas",
-    "heading": "Discover Our Tree Services Coverage Across the Greater Toronto Area",
-    "description": "Erick's Tree Services proudly serves homeowners and businesses throughout Connecticut. Whether you need tree removal, trimming, stump grinding, or emergency storm cleanup, our team provides fast, reliable, and professional service in your local area and surrounding communities.",
-    "areasLabel": "We Serve In The Following Areas:",
-    "areas": [
-      "Norwalk",
-      "Stamford",
-      "Fairfield",
-      "Bridgeport",
-      "Westport",
-      "surrounding areas in Connecticut"
-    ],
-    "ctaText": "Get free quote now"
-  },
   "blog": {
     "eyebrow": "Recent Articles",
     "title": "our Blog"
-  },
-  "inspection": {
-    "heading": "Get A Free Tree Inspection No Call Out Fee!",
-    "lead": "Need professional tree removal, trimming, stump grinding, or emergency storm cleanup?",
-    "paragraphs": [
-      "Fill out the form below and our team will review your request and get back to you with a fast, no-obligation estimate.",
-      "We provide safe, reliable, and professional tree services for residential and commercial properties across Connecticut — always focused on safety, efficiency, and quality results."
-    ]
   }
 }

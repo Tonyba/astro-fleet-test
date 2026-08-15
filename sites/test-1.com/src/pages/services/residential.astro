@@ -18,10 +18,12 @@ import { resolveSeo } from '../../lib/seo';
 import { getHeader } from '../../lib/header';
 
 // CMS-editable content (Keystatic commits these JSON files; the build imports them).
-import { getDoc, siteSettings } from '../../lib/runtime-content';
+import { getDoc, siteSettings, chromeSettings, globalSections } from '../../lib/runtime-content';
 
 // Settings for this request; middleware refreshed them before we got here.
 const site = siteSettings();
+const chrome = chromeSettings();
+const globals = globalSections();
 const page = await getDoc("pages/services-residential");
 
 // Same form model the rest of the site uses — one definition, reused per page.
@@ -51,7 +53,7 @@ const header = await getHeader();
   logoSrc={site.logo}
   faviconSrc={site.favicon}
   header={header}
-  footer={site.footer}
+  footer={chrome.footer}
   colors={site.theme.colors}
   fonts={site.theme.fonts}
 >
@@ -81,24 +83,24 @@ const header = await getHeader();
     headingWidth="1029px"
   />
 
-  <TreeEmergencyBanner {...page.emergency} />
+  <TreeEmergencyBanner {...globals.emergency} />
   <TreeProjects
-    eyebrow={page.projects.eyebrow}
-    heading={page.projects.heading}
-    description={page.projects.description}
-    projects={page.projects.items}
+    eyebrow={globals.projects.eyebrow}
+    heading={globals.projects.heading}
+    description={globals.projects.description}
+    projects={globals.projects.items}
   />
   <TreeFaq
-    eyebrow={page.faq.eyebrow}
-    titleLead={page.faq.titleLead}
-    titleRest={page.faq.titleRest}
-    subtitle={page.faq.subtitle}
-    faqs={page.faq.items}
+    eyebrow={globals.faq.eyebrow}
+    titleLead={globals.faq.titleLead}
+    titleRest={globals.faq.titleRest}
+    subtitle={globals.faq.subtitle}
+    faqs={globals.faq.items}
   />
   <TreeInspectionForm
-    heading={page.inspection.heading}
-    lead={page.inspection.lead}
-    paragraphs={page.inspection.paragraphs}
+    heading={globals.inspection.heading}
+    lead={globals.inspection.lead}
+    paragraphs={globals.inspection.paragraphs}
     quote={quoteForm}
   />
 </TreeLayout>

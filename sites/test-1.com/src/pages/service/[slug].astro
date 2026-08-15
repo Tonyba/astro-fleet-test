@@ -6,10 +6,11 @@ import '../../styles/global.css';
 import TreeLayout from '@astro-fleet/shared-ui/src/layouts/TreeLayout.astro';
 import ServiceSections from '../../components/ServiceSections.astro';
 
-import { getDocFull, siteSettings } from '../../lib/runtime-content';
+import { getDocFull, siteSettings, chromeSettings } from '../../lib/runtime-content';
 
 // Settings for this request; middleware refreshed them before we got here.
 const site = siteSettings();
+const chrome = chromeSettings();
 import { getHeader } from '../../lib/header';
 import { resolveSeo } from '../../lib/seo';
 
@@ -51,7 +52,7 @@ const seo = resolveSeo({
   logoSrc={site.logo}
   faviconSrc={site.favicon}
   header={header}
-  footer={site.footer}
+  footer={chrome.footer}
   colors={site.theme.colors}
   fonts={site.theme.fonts}
 >

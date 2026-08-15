@@ -11,11 +11,12 @@ import { getForm } from '../../lib/forms';
 import { resolveSeo } from '../../lib/seo';
 import { getHeader } from '../../lib/header';
 
-import { getDoc, getDocFull, siteSettings } from '../../lib/runtime-content';
+import { getDoc, getDocFull, siteSettings, chromeSettings, globalSections } from '../../lib/runtime-content';
 
 // Settings for this request; middleware refreshed them before we got here.
 const site = siteSettings();
-const home = await getDoc("homepage/home");
+const chrome = chromeSettings();
+const globals = globalSections();
 const blog = await getDoc("pages/blog");
 
 // Looked up per request instead of enumerated at build, so a post published in
@@ -57,7 +58,7 @@ const header = await getHeader();
   logoSrc={site.logo}
   faviconSrc={site.favicon}
   header={header}
-  footer={site.footer}
+  footer={chrome.footer}
   colors={site.theme.colors}
   fonts={site.theme.fonts}
 >
@@ -102,9 +103,9 @@ const header = await getHeader();
   </article>
 
   <TreeInspectionForm
-    heading={home.inspection.heading}
-    lead={home.inspection.lead}
-    paragraphs={home.inspection.paragraphs}
+    heading={globals.inspection.heading}
+    lead={globals.inspection.lead}
+    paragraphs={globals.inspection.paragraphs}
     quote={quoteForm}
   />
 </TreeLayout>

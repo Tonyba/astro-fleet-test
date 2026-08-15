@@ -13,10 +13,11 @@ import { resolveSeo } from '../lib/seo';
 import { getHeader } from '../lib/header';
 
 // CMS-editable content (Keystatic commits these JSON files; the build imports them).
-import { getDoc, siteSettings } from '../lib/runtime-content';
+import { getDoc, siteSettings, chromeSettings } from '../lib/runtime-content';
 
 // Settings for this request; middleware refreshed them before we got here.
 const site = siteSettings();
+const chrome = chromeSettings();
 const page = await getDoc("pages/contact");
 
 // Same form model every other page uses — one definition, reused.
@@ -42,7 +43,7 @@ const header = await getHeader();
   logoSrc={site.logo}
   faviconSrc={site.favicon}
   header={header}
-  footer={site.footer}
+  footer={chrome.footer}
   colors={site.theme.colors}
   fonts={site.theme.fonts}
 >

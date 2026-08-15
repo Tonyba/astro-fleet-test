@@ -41,7 +41,9 @@ Astro Fleet is a multi-site Astro monorepo for agencies and multi-brand companie
     * font sizes
     * spacing
 - All elements inside a section that are repeatable (ex: accordion items, tabs, carousel items, etc.) must be editable from CMS too
-- All sections or ui elements used in other pages for new created pages or edited pages if they got any section that look the same they must be reused
+- Create a section in cms sidebar names "Global Sections" if it doesnt exist.
+- All sections or ui elements used in other pages for new created pages or edited pages if they got any section that look the same they must be reused and added in "Global Sections".
+- Header & Footer sections must be added in cms sidebar with title "Header & Footer"
 - Images must use proper <img> tags with descriptive alt attributes.
 - Follow modern CSS best practices. Navbar Requirements:
 * On desktop: standard horizontal navigation layout.

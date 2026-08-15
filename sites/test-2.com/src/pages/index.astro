@@ -26,7 +26,9 @@ import { getHeader } from '../lib/header';
 
 // CMS-editable content (Keystatic commits these JSON files; the build imports them).
 import site from '../content/settings/site.json';
+import chrome from '../content/settings/header-footer.json';
 import home from '../content/homepage/home.json';
+import { globals } from '../lib/global-sections';
 
 // Forms are their own content model — the same definition is reused by the hero
 // card and the closing inspection section.
@@ -71,31 +73,31 @@ const header = await getHeader();
   logoSrc={site.logo}
   faviconSrc={site.favicon}
   header={header}
-  footer={site.footer}
+  footer={chrome.footer}
   colors={site.theme.colors}
   fonts={site.theme.fonts}
 >
   <TreeHero {...home.hero} quote={quoteForm} />
-  <TreeTrustBar {...home.trustBar} />
+  <TreeTrustBar {...globals.trustBar} />
   <TreeServices eyebrow={home.services.eyebrow} heading={home.services.heading} services={homeServices} viewAllHref="/services/residential/" />
   <TreeWhyChoose eyebrow={home.whyChoose.eyebrow} heading={home.whyChoose.heading} items={home.whyChoose.items} />
   <TreeCtaBanner {...home.ctaBanner} />
   <TreeAbout {...home.about} />
   <TreeStatsBar eyebrow={home.stats.eyebrow} heading={home.stats.heading} stats={home.stats.items} />
   <TreeCommercial {...home.commercial} />
-  <TreeProjects eyebrow={home.projects.eyebrow} heading={home.projects.heading} description={home.projects.description} projects={home.projects.items} />
-  <TreeEmergencyBanner {...home.emergency} />
+  <TreeProjects eyebrow={globals.projects.eyebrow} heading={globals.projects.heading} description={globals.projects.description} projects={globals.projects.items} />
+  <TreeEmergencyBanner {...globals.emergency} />
   <TreeProcess eyebrow={home.process.eyebrow} heading={home.process.heading} description={home.process.description} steps={home.process.steps} />
-  <TreeTestimonials eyebrow={home.testimonials.eyebrow} heading={home.testimonials.heading} description={home.testimonials.description} rating={home.testimonials.rating} reviews={home.testimonials.reviews} />
+  <TreeTestimonials eyebrow={globals.testimonials.eyebrow} heading={globals.testimonials.heading} description={globals.testimonials.description} rating={globals.testimonials.rating} reviews={globals.testimonials.reviews} />
   <TreeServiceAreas
-    eyebrow={home.serviceAreas.eyebrow}
-    heading={home.serviceAreas.heading}
-    description={home.serviceAreas.description}
-    areasLabel={home.serviceAreas.areasLabel}
-    areas={home.serviceAreas.areas}
-    ctaText={home.serviceAreas.ctaText}
+    eyebrow={globals.serviceAreas.eyebrow}
+    heading={globals.serviceAreas.heading}
+    description={globals.serviceAreas.description}
+    areasLabel={globals.serviceAreas.areasLabel}
+    areas={globals.serviceAreas.areas}
+    ctaText={globals.serviceAreas.ctaText}
   />
-  <TreeFaq eyebrow={home.faq.eyebrow} titleLead={home.faq.titleLead} titleRest={home.faq.titleRest} faqs={home.faq.items} />
+  <TreeFaq eyebrow={globals.faq.eyebrow} titleLead={globals.faq.titleLead} titleRest={globals.faq.titleRest} faqs={globals.faq.items} />
   <TreeBlogPreview eyebrow={home.blog.eyebrow} title={home.blog.title} posts={blogPosts.length ? blogPosts : undefined} />
-  <TreeInspectionForm heading={home.inspection.heading} lead={home.inspection.lead} paragraphs={home.inspection.paragraphs} quote={quoteForm} />
+  <TreeInspectionForm heading={globals.inspection.heading} lead={globals.inspection.lead} paragraphs={globals.inspection.paragraphs} quote={quoteForm} />
 </TreeLayout>

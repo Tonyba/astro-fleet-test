@@ -16,7 +16,9 @@ import { getHeader } from '../../lib/header';
 
 // CMS-editable content (Keystatic commits these JSON files; the build imports them).
 import site from '../../content/settings/site.json';
+import chrome from '../../content/settings/header-footer.json';
 import services from '../../content/pages/services-commercial.json';
+import { globals } from '../../lib/global-sections';
 
 // Same form model the homepage uses — one definition, reused across pages.
 const quoteForm = await getForm('quote');
@@ -43,7 +45,7 @@ const header = await getHeader();
   logoSrc={site.logo}
   faviconSrc={site.favicon}
   header={header}
-  footer={site.footer}
+  footer={chrome.footer}
   colors={site.theme.colors}
   fonts={site.theme.fonts}
 >
@@ -56,24 +58,24 @@ const header = await getHeader();
     align="left"
     showViewAll={false}
   />
-  <TreeEmergencyBanner {...services.emergency} />
+  <TreeEmergencyBanner {...globals.emergency} />
   <TreeProjects
-    eyebrow={services.projects.eyebrow}
-    heading={services.projects.heading}
-    description={services.projects.description}
-    projects={services.projects.items}
+    eyebrow={globals.projects.eyebrow}
+    heading={globals.projects.heading}
+    description={globals.projects.description}
+    projects={globals.projects.items}
   />
   <TreeFaq
-    eyebrow={services.faq.eyebrow}
-    titleLead={services.faq.titleLead}
-    titleRest={services.faq.titleRest}
-    subtitle={services.faq.subtitle}
-    faqs={services.faq.items}
+    eyebrow={globals.faq.eyebrow}
+    titleLead={globals.faq.titleLead}
+    titleRest={globals.faq.titleRest}
+    subtitle={globals.faq.subtitle}
+    faqs={globals.faq.items}
   />
   <TreeInspectionForm
-    heading={services.inspection.heading}
-    lead={services.inspection.lead}
-    paragraphs={services.inspection.paragraphs}
+    heading={globals.inspection.heading}
+    lead={globals.inspection.lead}
+    paragraphs={globals.inspection.paragraphs}
     quote={quoteForm}
   />
 </TreeLayout>

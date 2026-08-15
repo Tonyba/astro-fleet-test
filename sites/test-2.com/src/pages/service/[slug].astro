@@ -5,6 +5,7 @@ import ServiceSections from '../../components/ServiceSections.astro';
 
 import { getCollection, render } from 'astro:content';
 import site from '../../content/settings/site.json';
+import chrome from '../../content/settings/header-footer.json';
 import { getHeader } from '../../lib/header';
 import { resolveSeo } from '../../lib/seo';
 
@@ -44,7 +45,7 @@ const seo = resolveSeo({
   logoSrc={site.logo}
   faviconSrc={site.favicon}
   header={header}
-  footer={site.footer}
+  footer={chrome.footer}
   colors={site.theme.colors}
   fonts={site.theme.fonts}
 >
