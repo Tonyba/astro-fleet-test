@@ -503,6 +503,12 @@ const businessSection = fields.object(
         timezone: str('Timezone', 'IANA name, e.g. America/New_York.'),
         gtmId: strOpt('GTM Container ID'),
         ga4Id: strOpt('GA4 Measurement ID'),
+        turnstileSiteKey: strOpt(
+          'Turnstile Site Key',
+          'Public key from Cloudflare → Turnstile. Renders the anti-spam widget on every form. ' +
+            'Leave empty only if TURNSTILE_SECRET is also unset on the worker — a secret with no ' +
+            'site key rejects every submission.'
+        ),
         defaultOgImage: photo({
           label: 'Default OG Image',
           description: '1200×630 social share image used when a page sets none.',

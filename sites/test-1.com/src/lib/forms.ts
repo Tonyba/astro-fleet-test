@@ -1,5 +1,16 @@
 import { getDocFull } from './runtime-content';
 import type { Props as FormProps } from '@astro-fleet/shared-ui/src/components/TreeQuoteForm.astro';
+import site from '../content/settings/site.json';
+
+/**
+ * Turnstile site key, inlined at build time. It is public by design, so the
+ * CMS-editable settings value is the source of truth — a build from CI has no
+ * .env, and a form shipped without the key posts no token, which /api/quote
+ * rejects the moment TURNSTILE_SECRET exists. PUBLIC_TURNSTILE_SITE_KEY still
+ * overrides it locally, for testing against Cloudflare's dummy keys.
+ */
+const turnstileSiteKey =
+  import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || site.business.technical.turnstileSiteKey || undefined;
 
 /**
  * forms.ts
@@ -31,5 +42,5 @@ export async function getForm(id: string): Promise<FormProps> {
   // field list, and every field an editor adds in the CMS would be dropped on
   // submit.
   const { name: _label, ...form } = entry.data;
-  return { ...form, formId: id };
+  return { ...form, formId: id, turnstileSiteKey };
 }

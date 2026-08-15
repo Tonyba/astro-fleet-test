@@ -81,6 +81,7 @@
       "locale": "en-US",
       "timezone": "America/New_York",
       "gtmId": "GTM-N8BQF629",
+      "turnstileSiteKey": "0x4AAAAAAEQ6cS4QA_PVA77F",
       "schemaType": "HomeAndConstructionBusiness",
       "additionalType": "https://en.wikipedia.org/wiki/Arboriculture",
       "priceRange": "$$",

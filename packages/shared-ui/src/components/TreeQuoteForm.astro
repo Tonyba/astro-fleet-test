@@ -3,10 +3,14 @@
  * TreeQuoteForm.astro
  * -------------------
  * The "Get Your Free Quote" card used in the hero. Figma node 123:172.
- * A real <form> with HTML5 validation; the phone field is progressively
- * enhanced with intl-tel-input and Cloudflare Turnstile in a later phase
- * (hooks: `.js-tel-input` and the Turnstile placeholder). Submits to the
- * `action` endpoint (a Cloudflare Pages Function).
+ * A real <form> with HTML5 validation, progressively enhanced with
+ * intl-tel-input for the phone field and Cloudflare Turnstile for spam
+ * protection. Submits to the `action` endpoint (/api/quote on the worker).
+ *
+ * Turnstile renders only when `turnstileSiteKey` is set. The endpoint enforces
+ * the check only when TURNSTILE_SECRET is set on the worker — keep the two in
+ * step: a secret without a site key rejects every submission, since the form
+ * would post no token.
  */
 /** A single, fully CMS-editable form field. */
 export interface FieldDef {
@@ -54,7 +58,10 @@ export interface Props {
    * by `getForm(id)`; only forms built from literal props lack it.
    */
   formId?: string;
-  /** Turnstile site key; when set the widget renders. */
+  /**
+   * Turnstile site key; when set the widget renders and the form will not
+   * submit without a token. Injected for every form by `getForm()`.
+   */
   turnstileSiteKey?: string;
 }
 
@@ -178,7 +185,11 @@ const autocompleteFor = (field: FieldDef): string | undefined =>
     )}
 
     {turnstileSiteKey && (
-      <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="light"></div>
+      <div
+        class="cf-turnstile"
+        data-sitekey={turnstileSiteKey}
+        data-theme={variant === 'inverse' ? 'dark' : 'light'}
+      ></div>
     )}
 
     <button type="submit" class="tree-quote__submit">{submitText}</button>
@@ -235,6 +246,9 @@ const autocompleteFor = (field: FieldDef): string | undefined =>
   }
   .tree-quote--inverse .tree-quote__status.is-success { color: var(--color-bg-accent, #c8f08f); }
   .tree-quote__form { display: flex; flex-direction: column; gap: 20px; }
+
+  /* Reserve the widget's height before its iframe loads so nothing shifts. */
+  .cf-turnstile { min-height: 65px; max-width: 100%; }
 
   .tree-quote__head { display: flex; flex-direction: column; gap: 12px; text-align: center; }
   .tree-quote__title {
@@ -346,6 +360,35 @@ const autocompleteFor = (field: FieldDef): string | undefined =>
   import intlTelInput from 'intl-tel-input';
   import 'intl-tel-input/build/css/intlTelInput.css';
 
+  /**
+   * Turnstile's api.js is injected on demand — only pages that actually render
+   * a widget pay for it — and only once, however many forms the page carries.
+   * `render=explicit` so we own each widget's id and can reset it after a
+   * submit: a token is single-use, so a second submit with the same one is
+   * rejected by siteverify.
+   */
+  const TURNSTILE_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+  let turnstileLoad: Promise<void> | null = null;
+
+  function loadTurnstile(): Promise<void> {
+    if (turnstileLoad) return turnstileLoad;
+    turnstileLoad = new Promise<void>((resolve, reject) => {
+      if ((window as any).turnstile) return resolve();
+      const existing = document.querySelector<HTMLScriptElement>('script[data-turnstile]');
+      const script = existing ?? document.createElement('script');
+      script.addEventListener('load', () => resolve());
+      script.addEventListener('error', () => reject(new Error('Turnstile failed to load')));
+      if (!existing) {
+        script.src = TURNSTILE_SRC;
+        script.async = true;
+        script.defer = true;
+        script.dataset.turnstile = 'true';
+        document.head.appendChild(script);
+      }
+    });
+    return turnstileLoad;
+  }
+
   function enhanceQuoteForm(form: HTMLFormElement) {
     if (form.dataset.enhanced) return;
     form.dataset.enhanced = 'true';
@@ -359,6 +402,32 @@ const autocompleteFor = (field: FieldDef): string | undefined =>
         loadUtils: () => import('intl-tel-input/utils') as any,
       });
     }
+
+    // Turnstile: render into this form's placeholder, if it has one. The widget
+    // writes its token into a hidden `cf-turnstile-response` input it appends
+    // inside the container — which is inside the form, so FormData picks it up.
+    const holder = form.querySelector('.cf-turnstile') as HTMLElement | null;
+    let widgetId: string | null = null;
+    if (holder) {
+      loadTurnstile()
+        .then(() => {
+          widgetId = (window as any).turnstile.render(holder, {
+            sitekey: holder.dataset.sitekey,
+            theme: holder.dataset.theme || 'light',
+          });
+        })
+        .catch((err) => console.error('[TreeQuoteForm]', err));
+    }
+
+    /** The token can lag the page by a moment; wait rather than reject a real visitor. */
+    const awaitToken = async (): Promise<string> => {
+      for (let i = 0; i < 50; i++) {
+        const token = widgetId !== null ? (window as any).turnstile?.getResponse(widgetId) : '';
+        if (token) return token;
+        await new Promise((r) => setTimeout(r, 100));
+      }
+      return '';
+    };
 
     const setStatus = (msg: string, kind: 'error' | 'success') => {
       if (!status) return;
@@ -382,16 +451,20 @@ const autocompleteFor = (field: FieldDef): string | undefined =>
         phone.focus();
         return;
       }
-      // Turnstile (when present) must have a token.
-      const turnstile = form.querySelector('[name="cf-turnstile-response"]') as HTMLInputElement | null;
-      if (form.querySelector('.cf-turnstile') && !(turnstile && turnstile.value)) {
-        setStatus('Please complete the anti-spam check.', 'error');
-        return;
-      }
-
       const submit = form.querySelector('.tree-quote__submit') as HTMLButtonElement | null;
       const original = submit?.textContent ?? '';
       if (submit) { submit.disabled = true; submit.textContent = 'Sending…'; }
+
+      // Turnstile (when present) must have a token — the endpoint rejects the
+      // submission without one.
+      if (holder) {
+        const token = await awaitToken();
+        if (!token) {
+          setStatus('Please complete the anti-spam check and try again.', 'error');
+          if (submit) { submit.disabled = false; submit.textContent = original; }
+          return;
+        }
+      }
 
       const data = new FormData(form);
       if (iti && phone) data.set(phone.name, iti.getNumber() || phone.value);
@@ -409,6 +482,9 @@ const autocompleteFor = (field: FieldDef): string | undefined =>
         setStatus('Something went wrong. Please call us or try again.', 'error');
       } finally {
         if (submit) { submit.disabled = false; submit.textContent = original; }
+        // The token was spent by siteverify (or lost with the failed request);
+        // either way the next attempt needs a fresh one.
+        if (widgetId !== null) (window as any).turnstile?.reset(widgetId);
       }
     });
   }
