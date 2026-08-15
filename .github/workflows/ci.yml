@@ -6,9 +6,20 @@ on:
   pull_request:
     branches: [main]
 
+# Superseding a PR check is free — only the latest commit's result matters.
+# Superseding a push to main is not: that run BUILDS AND DEPLOYS, and each run
+# only covers the diff since the previous commit. Cancelling one therefore drops
+# its changes on the floor permanently, because the next push diffs against the
+# commit that was cancelled and never revisits it.
+#
+# That is not theoretical. A commit adding a new photo had its build cancelled
+# by the content-only commit behind it; that second run correctly skipped
+# building (content reaches the site without one), so the photo was never
+# compiled into the image ladder and the site served the unoptimised runtime
+# copy indefinitely.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
