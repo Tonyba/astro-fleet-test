@@ -17,7 +17,7 @@ seo:
 hero:
   title: hey we
   description: description aca
-  image: /src/assets/photos/stump-grinding/hero/image.png
+  image: /src/assets/photos/stump-grinding/hero/image.jpg
 intro:
   paragraphs: []
 whyChooseHeading: why choose
