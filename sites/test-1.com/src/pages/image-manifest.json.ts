@@ -58,28 +58,37 @@ const images = import.meta.glob<{ default: ImageMetadata }>(
 );
 
 /**
- * The committed content, read as data so every `r2:<key>` in it can be
- * encoded too. This is the same JSON the build compiles against and the same
- * JSON the webhook syncs into D1, so a key that is live is a key that is here —
- * unless it arrived after this build, which is what the CI rule covers.
+ * The committed content, read as RAW TEXT so every `r2:<key>` in it can be
+ * encoded too. Same files the build compiles against and the webhook syncs into
+ * D1, so a key that is live is a key that is here — unless it arrived after
+ * this build, which is what the CI rule covers.
+ *
+ * BOTH FORMATS, AND AS TEXT. Singletons are .json; every collection entry —
+ * services, posts — is .md with YAML frontmatter. Globbing only .json missed
+ * all of them, so a photo uploaded to a service was served straight from the
+ * bucket, unoptimised, no matter how many times the site rebuilt. Reading raw
+ * text rather than parsed objects also means one code path for both formats,
+ * and no dependency on how a value happens to be quoted.
  */
-const contentFiles = import.meta.glob<Record<string, unknown>>('/src/content/**/*.json', {
+const contentFiles = import.meta.glob<string>('/src/content/**/*.{json,md,mdx,yaml,yml}', {
   eager: true,
+  query: '?raw',
+  import: 'default',
 });
 
-/** Every distinct `r2:` value anywhere in the content tree. */
+/**
+ * Every distinct `r2:` value anywhere in the content tree.
+ *
+ * A key ends at whitespace or a quote: JSON writes `"r2:photos/x.png"`, YAML
+ * writes it bare as `image: r2:photos/x.png`, and both have to match.
+ */
 function r2KeysInContent(): string[] {
   const found = new Set<string>();
-  const walk = (node: unknown) => {
-    if (typeof node === 'string') {
-      if (isR2Value(node)) found.add(node);
-    } else if (Array.isArray(node)) {
-      node.forEach(walk);
-    } else if (node && typeof node === 'object') {
-      Object.values(node).forEach(walk);
+  for (const source of Object.values(contentFiles)) {
+    for (const match of String(source).matchAll(/r2:[^\s"'\\,}\]]+/g)) {
+      if (isR2Value(match[0])) found.add(match[0]);
     }
-  };
-  walk(contentFiles);
+  }
   return [...found];
 }
 

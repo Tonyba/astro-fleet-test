@@ -180,9 +180,17 @@ jobs:
                     | grep -v "^sites/$site/src/content/" | head -1 || true)
                   # Added lines only (`^+`), so re-saving an entry that already
                   # referenced the image does not force a pointless rebuild.
+                  #
+                  # UNQUOTED ON PURPOSE. This first read `"r2:..."` with quotes,
+                  # which matches JSON entries and silently misses every
+                  # collection entry — those are .md, and Keystatic writes YAML
+                  # frontmatter bare: `image: r2:photos/x.png`. Three uploaded
+                  # service photos went live unoptimised before anyone noticed,
+                  # because the diff looked like a text edit and the build was
+                  # skipped.
                   newmedia=$(git diff "$TURBO_SCM_BASE" "$TURBO_SCM_HEAD" \
                     -- "sites/$site/src/content/" \
-                    | grep -E '^\+.*"r2:[^"]+"' | head -1 || true)
+                    | grep -E "^\+.*[\"' :]r2:[^\"' ]+" | head -1 || true)
                   if [ -n "$newmedia" ]; then
                     echo "::notice::$site: content adds a new R2 image — building so its ladder is encoded."
                   fi
