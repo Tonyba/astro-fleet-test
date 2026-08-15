@@ -4,8 +4,10 @@
   "private": true,
   "type": "module",
   "//deploy": "Opt this site into CI deploys. The mode is detected from the build: a site carrying the Cloudflare adapter emits dist/server/wrangler.json and ships as a Worker; anything else is a static Pages deploy and needs projectName.",
+  "//runtimeContent": "This site reads its content from KV at request time, and the GitHub webhook in src/pages/api/content-sync.ts puts it there within seconds of the commit. A commit that changes nothing but src/content/ is therefore already live before CI could finish, so CI skips building and deploying this site for it. Any other change here — a page, a component, a config — still builds and deploys as normal.",
   "deploy": {
-    "enabled": true
+    "enabled": true,
+    "runtimeContent": true
   },
   "scripts": {
     "dev": "astro dev",

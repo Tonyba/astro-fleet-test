@@ -131,7 +131,49 @@ jobs:
           done
           DEPLOYABLE=$(echo "$DEPLOYABLE" | xargs || true)
           echo "deployable: ${DEPLOYABLE:-<none>}"
+
+          # A site marked `deploy.runtimeContent` reads its content from KV at
+          # request time, and a webhook syncs it seconds after the commit — so a
+          # commit that touches nothing but that site's src/content/ is already
+          # live and rebuilding it would only redeploy identical code.
+          #
+          # The bar for skipping is deliberately high. Anything changed outside
+          # sites/ — packages/, scripts/, root config — can change what a site
+          # renders, so it disables skipping for everyone. Another site's files
+          # cannot, since sites share code only through packages/.
+          SKIPPED=""
+          if [ -n "$TURBO_SCM_BASE" ] && [ -n "$DEPLOYABLE" ]; then
+            CHANGED=$(git diff --name-only "$TURBO_SCM_BASE" "$TURBO_SCM_HEAD" || true)
+            OUTSIDE=$(printf '%s\n' "$CHANGED" | grep -v '^sites/' | head -1 || true)
+
+            if [ -n "$OUTSIDE" ]; then
+              echo "changes outside sites/ ($OUTSIDE) — building everything affected"
+            else
+              KEEP=""
+              for site in $DEPLOYABLE; do
+                runtime=$(node -p "(require('./sites/$site/package.json').deploy || {}).runtimeContent === true")
+                noncontent=""
+                if [ "$runtime" = "true" ]; then
+                  noncontent=$(printf '%s\n' "$CHANGED" \
+                    | grep "^sites/$site/" \
+                    | grep -v "^sites/$site/src/content/" | head -1 || true)
+                fi
+                if [ "$runtime" = "true" ] && [ -z "$noncontent" ]; then
+                  echo "::notice::$site: content-only change — already live via the content webhook, skipping build and deploy."
+                  SKIPPED="$SKIPPED $site"
+                else
+                  KEEP="$KEEP $site"
+                fi
+              done
+              DEPLOYABLE=$(echo "$KEEP" | xargs || true)
+              SKIPPED=$(echo "$SKIPPED" | xargs || true)
+            fi
+          fi
+
+          echo "to deploy: ${DEPLOYABLE:-<none>}"
+          echo "skipped:   ${SKIPPED:-<none>}"
           echo "sites=$DEPLOYABLE" >> "$GITHUB_OUTPUT"
+          echo "skipped=$SKIPPED" >> "$GITHUB_OUTPUT"
 
       # Deploying needs Cloudflare credentials, and any site running Keystatic
       # also needs the app slug: it is a PUBLIC_ variable, compiled into the
@@ -209,10 +251,14 @@ jobs:
           # rebuilt below with their own value.
           PUBLIC_KEYSTATIC_GITHUB_APP_SLUG: ${{ vars.PUBLIC_KEYSTATIC_GITHUB_APP_SLUG }}
           OVERRIDES: ${{ steps.slugs.outputs.overrides }}
+          SKIPPED: ${{ steps.affected.outputs.skipped }}
           ALL_VARS: ${{ toJSON(vars) }}
         run: |
+          # Excluded for two different reasons: a site with its own Keystatic app
+          # is built separately below, and a site whose content-only change is
+          # already live is not built at all.
           exclude=""
-          for site in $OVERRIDES; do exclude="$exclude --filter=!$site"; done
+          for site in $OVERRIDES $SKIPPED; do exclude="$exclude --filter=!$site"; done
 
           if [ -z "$TURBO_SCM_BASE" ]; then
             echo "No diff base — building every package."
@@ -227,6 +273,7 @@ jobs:
           # the one that lands in its bundle. `--affected` still applies, so a
           # site nobody touched is a no-op here rather than a rebuild.
           for site in $OVERRIDES; do
+            case " $SKIPPED " in *" $site "*) echo "$site: skipped (content-only)"; continue;; esac
             key="PUBLIC_KEYSTATIC_GITHUB_APP_SLUG_$(echo "$site" | tr '[:lower:]' '[:upper:]' | tr '.-' '__')"
             slug=$(node -e "process.stdout.write((JSON.parse(process.env.ALL_VARS)['$key'] || ''))")
             echo "::group::build $site (app: $slug)"
