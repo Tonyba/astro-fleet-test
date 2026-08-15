@@ -141,8 +141,8 @@ jobs:
         id: deploy_ready
         env:
           HAS_CLOUDFLARE: ${{ secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
-          APP_SLUG: ${{ vars.PUBLIC_KEYSTATIC_GITHUB_APP_SLUG }}
           SITES: ${{ steps.affected.outputs.sites }}
+          ALL_VARS: ${{ toJSON(vars) }}
         run: |
           if [ "${{ github.event_name }}" != "push" ] || [ -z "$SITES" ]; then
             echo "ready=false" >> "$GITHUB_OUTPUT"; exit 0
@@ -152,8 +152,14 @@ jobs:
             echo "ready=false" >> "$GITHUB_OUTPUT"; exit 0
           fi
           for site in $SITES; do
-            if [ -f "sites/$site/keystatic.config.ts" ] && [ -z "$APP_SLUG" ]; then
-              echo "::error::$site runs Keystatic but the repository variable PUBLIC_KEYSTATIC_GITHUB_APP_SLUG is empty. It is inlined at build time, so deploying without it ships a broken /keystatic."
+            [ -f "sites/$site/keystatic.config.ts" ] || continue
+            # A site's own variable satisfies this as well as the shared one —
+            # otherwise a fleet that has moved entirely to per-site apps would
+            # fail on an empty default it no longer uses.
+            key="PUBLIC_KEYSTATIC_GITHUB_APP_SLUG_$(echo "$site" | tr '[:lower:]' '[:upper:]' | tr '.-' '__')"
+            slug=$(node -e "const v=JSON.parse(process.env.ALL_VARS); process.stdout.write(v['$key'] || v.PUBLIC_KEYSTATIC_GITHUB_APP_SLUG || '')")
+            if [ -z "$slug" ]; then
+              echo "::error::$site runs Keystatic but neither $key nor PUBLIC_KEYSTATIC_GITHUB_APP_SLUG is set. The slug is inlined at build time, so deploying without it ships a CMS whose Install-GitHub-App links point nowhere."
               exit 1
             fi
           done
@@ -163,19 +169,74 @@ jobs:
       # plus anything that depends on them — so a CMS edit under
       # sites/<domain>/src/content/ rebuilds that one site, while a change in
       # packages/shared-ui still rebuilds every site that consumes it.
+      # A site whose Keystatic app is not the fleet default declares its own
+      # slug as PUBLIC_KEYSTATIC_GITHUB_APP_SLUG_<SITE> (dots and dashes to
+      # underscores, upper-cased): test-1.com uses its own GitHub App, so
+      # PUBLIC_KEYSTATIC_GITHUB_APP_SLUG_TEST_1_COM.
+      #
+      # It cannot simply be exported for the whole run. The slug is compiled
+      # INTO each admin bundle, and one turbo invocation carries one value for
+      # a variable — so a site with its own app has to be built on its own.
+      # Everything else still builds together, in parallel, as before.
+      - name: Work out per-site Keystatic slugs
+        id: slugs
+        env:
+          ALL_VARS: ${{ toJSON(vars) }}
+        run: |
+          overrides=""
+          for dir in sites/*/; do
+            site=$(basename "$dir")
+            key="PUBLIC_KEYSTATIC_GITHUB_APP_SLUG_$(echo "$site" | tr '[:lower:]' '[:upper:]' | tr '.-' '__')"
+            value=$(node -e "process.stdout.write((JSON.parse(process.env.ALL_VARS)['$key'] || ''))")
+            if [ -n "$value" ]; then
+              echo "$site -> $value"
+              overrides="$overrides $site"
+            fi
+          done
+          overrides=$(echo "$overrides" | xargs || true)
+          echo "sites with their own app: ${overrides:-<none>}"
+          echo "overrides=$overrides" >> "$GITHUB_OUTPUT"
+
+      # `--affected` builds only the packages touched since the base commit,
+      # plus anything that depends on them — so a CMS edit under
+      # sites/<domain>/src/content/ rebuilds that one site, while a change in
+      # packages/shared-ui still rebuilds every site that consumes it.
       - name: Build affected packages
         env:
           TURBO_SCM_BASE: ${{ steps.diff.outputs.base }}
           TURBO_SCM_HEAD: ${{ github.sha }}
-          # Compiled into the Keystatic admin bundle — see the check above.
+          # The fleet default. Sites listed in `overrides` are excluded here and
+          # rebuilt below with their own value.
           PUBLIC_KEYSTATIC_GITHUB_APP_SLUG: ${{ vars.PUBLIC_KEYSTATIC_GITHUB_APP_SLUG }}
+          OVERRIDES: ${{ steps.slugs.outputs.overrides }}
+          ALL_VARS: ${{ toJSON(vars) }}
         run: |
+          exclude=""
+          for site in $OVERRIDES; do exclude="$exclude --filter=!$site"; done
+
           if [ -z "$TURBO_SCM_BASE" ]; then
             echo "No diff base — building every package."
-            bun run turbo build
+            # shellcheck disable=SC2086
+            bun run turbo build $exclude
           else
-            bun run turbo build --affected
+            # shellcheck disable=SC2086
+            bun run turbo build --affected $exclude
           fi
+
+          # Each site with its own GitHub App, built on its own so its slug is
+          # the one that lands in its bundle. `--affected` still applies, so a
+          # site nobody touched is a no-op here rather than a rebuild.
+          for site in $OVERRIDES; do
+            key="PUBLIC_KEYSTATIC_GITHUB_APP_SLUG_$(echo "$site" | tr '[:lower:]' '[:upper:]' | tr '.-' '__')"
+            slug=$(node -e "process.stdout.write((JSON.parse(process.env.ALL_VARS)['$key'] || ''))")
+            echo "::group::build $site (app: $slug)"
+            if [ -z "$TURBO_SCM_BASE" ]; then
+              PUBLIC_KEYSTATIC_GITHUB_APP_SLUG="$slug" bun run turbo build --filter="$site"
+            else
+              PUBLIC_KEYSTATIC_GITHUB_APP_SLUG="$slug" bun run turbo build --affected --filter="$site"
+            fi
+            echo "::endgroup::"
+          done
 
       # A commit that touches no site — a workflow edit, a docs change — leaves
       # `--affected` with nothing to build and no cache directory behind. Asking
