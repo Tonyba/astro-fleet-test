@@ -11,12 +11,12 @@
   "hero": {
     "title": "Our Blog",
     "description": "Explore all the latest news, updates, tips and more.",
-    "image": "/src/assets/photos/blog/contact-hero.jpg",
+    "image": "r2:photos/blog/contact-hero-09f8ca5b.jpg",
     "imageAlt": "Close-up of a freshly cut tree trunk showing its growth rings",
     "imageSplit": "56.98%"
   },
   "recentHeading": "Recent blog posts",
   "allHeading": "All blog posts",
   "emptyMessage": "No posts published yet — check back soon.",
-  "fallbackImage": "/src/assets/photos/blog/blog-tree-power-lines.jpg"
+  "fallbackImage": "r2:photos/blog/blog-tree-power-lines-f41e066f.jpg"
 }

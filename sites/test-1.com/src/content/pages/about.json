@@ -21,7 +21,7 @@
       "label": "Call (203) 367-8219",
       "number": "(203) 367-8219"
     },
-    "image": "/src/assets/photos/about/hero-image.jpg",
+    "image": "r2:photos/about/hero-image-27ed4e7a.jpg",
     "imageAlt": "Erick’s Tree Services crew on site",
     "imageSplit": "56.46%",
     "minHeight": "396px"
@@ -37,7 +37,7 @@
     ],
     "ctaLabel": "Get free quote now",
     "ctaHref": "#free-inspection",
-    "image": "/src/assets/photos/about/story-image.jpg",
+    "image": "r2:photos/about/story-image-d92601de.jpg",
     "imageAlt": "Arborist working on a mature tree"
   },
   "stats": {
@@ -68,27 +68,27 @@
     "description": "We are fully ISO accredited in Quality, Environmental and Work Health & Safety. Our systems, training and processes ensure we meet the highest industry standards and deliver consistent, complian outcomes for our clients.",
     "badges": [
       {
-        "src": "/src/assets/badges/approach/badges/0/src.png",
+        "src": "r2:badges/approach/badges/0/src-17caaa1c.png",
         "alt": "ISO 45001 accredited"
       },
       {
-        "src": "/src/assets/badges/approach/badges/1/src.png",
+        "src": "r2:badges/approach/badges/1/src-35fe0289.png",
         "alt": "ISO 14001 accredited"
       },
       {
-        "src": "/src/assets/badges/approach/badges/2/src.png",
+        "src": "r2:badges/approach/badges/2/src-4f7169d7.png",
         "alt": "ISO 9001 accredited"
       }
     ],
     "ctaLabel": "Get free quote now",
     "ctaHref": "#free-inspection",
-    "image": "/src/assets/photos/about/approach-image.jpg",
+    "image": "r2:photos/about/approach-image-9f782bc6.jpg",
     "imageAlt": "Crew operating tree care equipment on site"
   },
   "mission": {
     "heading": "Our mission",
     "description": "Our mission is to bring beauty, innovation, and sustainability to your outdoor spaces. We are dedicated to providing top-notch tree removal, tree installation, tree trimming, landscape lighting maintenance, landscape lighting design, and holiday lighting services. With a focus on quality workmanship and customer satisfaction, we strive to exceed your expectations and create stunning landscapes that inspire and impress.",
-    "backgroundImage": "/src/assets/photos/about/mission-backgroundImage.jpg"
+    "backgroundImage": "r2:photos/about/mission-backgroundimage-16d7e7c9.jpg"
   },
   "coreValues": {
     "eyebrow": "Core Values",

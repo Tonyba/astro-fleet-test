@@ -29,6 +29,7 @@
  * media section of the site's keystatic.config.ts.
  */
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, readdirSync, statSync, unlinkSync, existsSync } from 'node:fs';
 import { join, relative, extname, basename, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -81,24 +82,114 @@ function loadEnvFile(path) {
 
 const env = { ...loadEnvFile(join(siteDir, '.env')), ...process.env };
 
-function requireCredentials() {
-  const missing = ['R2_ACCOUNT_ID', 'R2_ACCESS_KEY_ID', 'R2_SECRET_ACCESS_KEY', 'R2_BUCKET'].filter(
-    (key) => !env[key]
-  );
-  if (missing.length) {
-    console.error(
-      `Missing ${missing.join(', ')} — put them in sites/${site}/.env (see .env.example) ` +
-        'or export them. A dry run needs no credentials.'
+/** The bucket this site writes to, straight from the binding it deploys with. */
+/**
+ * The bucket's public origin, from the same CMS setting the site builds against.
+ * Used to ask "is this object already there?" over plain HTTP — which is both
+ * cheaper than a wrangler process per file and a better question, since it
+ * tests exactly what the build and the browser will do.
+ */
+function publicBase() {
+  if (env.PUBLIC_MEDIA_BASE_URL) return env.PUBLIC_MEDIA_BASE_URL.replace(/\/+$/, '');
+  const settings = join(siteDir, 'src', 'content', 'settings', 'site.json');
+  if (!existsSync(settings)) return undefined;
+  const url = JSON.parse(readFileSync(settings, 'utf8'))?.business?.technical?.mediaBaseUrl;
+  return url ? String(url).replace(/\/+$/, '') : undefined;
+}
+
+const PUBLIC_BASE = publicBase();
+
+/** True when the key is already readable at the public URL. */
+async function existsInBucket(key) {
+  if (!PUBLIC_BASE) return false;
+  try {
+    const response = await fetch(
+      `${PUBLIC_BASE}/${key.split('/').map(encodeURIComponent).join('/')}`,
+      { method: 'HEAD' }
     );
-    process.exit(1);
+    return response.ok;
+  } catch {
+    return false;
   }
-  return s3Store({
+}
+
+function bucketName() {
+  if (env.R2_BUCKET) return env.R2_BUCKET;
+  const config = join(siteDir, 'wrangler.jsonc');
+  if (existsSync(config)) {
+    // Matched rather than parsed: the file is JSONC, and one field is all we want.
+    const match = /"bucket_name"\s*:\s*"([^"]+)"/.exec(readFileSync(config, 'utf8'));
+    if (match) return match[1];
+  }
+  return undefined;
+}
+
+const WRANGLER = join(ROOT, 'node_modules', 'wrangler', 'bin', 'wrangler.js');
+
+/**
+ * Uploads through the wrangler CLI, using whatever account auth wrangler
+ * already has. This is the path that needs no new credentials — creating an R2
+ * API token just to run a one-off migration is a step worth not asking for.
+ *
+ * Invoked as `node .../wrangler.js` rather than through bunx/npx so there is no
+ * .cmd shim, no shell, and no quoting to get wrong on Windows.
+ */
+function wranglerUploader(bucket) {
+  return {
+    kind: 'wrangler',
+    put(key, path, contentType) {
+      execFileSync(
+        process.execPath,
+        [
+          WRANGLER, 'r2', 'object', 'put', `${bucket}/${key}`,
+          '--file', path,
+          '--content-type', contentType,
+          '--remote',
+        ],
+        { cwd: ROOT, stdio: 'pipe' }
+      );
+    },
+  };
+}
+
+/** S3 API — faster (no process per file), but needs an R2 API token. */
+function s3Uploader(bucket) {
+  const store = s3Store({
     accountId: env.R2_ACCOUNT_ID,
     accessKeyId: env.R2_ACCESS_KEY_ID,
     secretAccessKey: env.R2_SECRET_ACCESS_KEY,
-    bucket: env.R2_BUCKET,
+    bucket,
     endpoint: env.R2_ENDPOINT,
   });
+  return {
+    kind: 's3',
+    async put(key, path, contentType) {
+      await store.put(key, readFileSync(path), contentType);
+    },
+  };
+}
+
+function resolveUploader() {
+  const bucket = bucketName();
+  if (!bucket) {
+    console.error(
+      `No bucket for ${site}: add an r2_buckets entry to sites/${site}/wrangler.jsonc, ` +
+        'or set R2_BUCKET.'
+    );
+    process.exit(1);
+  }
+
+  const hasS3 = ['R2_ACCOUNT_ID', 'R2_ACCESS_KEY_ID', 'R2_SECRET_ACCESS_KEY'].every((k) => env[k]);
+  if (hasS3) return { bucket, ...s3Uploader(bucket) };
+
+  if (!existsSync(WRANGLER)) {
+    console.error(
+      'No R2 credentials and no wrangler. Either run `bun install`, or put ' +
+        `R2_ACCOUNT_ID / R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY in sites/${site}/.env.`
+    );
+    process.exit(1);
+  }
+  return { bucket, ...wranglerUploader(bucket) };
 }
 
 // ---------------------------------------------------------------------------
@@ -230,14 +321,25 @@ if (!apply) {
 // ---------------------------------------------------------------------------
 // Apply
 // ---------------------------------------------------------------------------
-const store = requireCredentials();
+const uploader = resolveUploader();
+console.log(`uploading to ${uploader.bucket} via ${uploader.kind}\n`);
 
 let uploaded = 0;
+let skipped = 0;
 for (const item of plan) {
-  const extension = extname(item.path).slice(1).toLowerCase().replace('jpeg', 'jpg');
-  await store.put(item.key, item.bytes, CONTENT_TYPES[extension] ?? 'application/octet-stream');
-  uploaded += 1;
-  process.stdout.write(`\ruploaded ${uploaded}/${plan.length}`);
+  // Keys are content-addressed, so an object that is already there is already
+  // correct. Skipping it makes a repeat run (the usual reason being a first
+  // pass without --delete-local) cost a HEAD request instead of a re-upload.
+  if (await existsInBucket(item.key)) {
+    item.confirmed = true;
+    skipped += 1;
+  } else {
+    const extension = extname(item.path).slice(1).toLowerCase().replace('jpeg', 'jpg');
+    await uploader.put(item.key, item.path, CONTENT_TYPES[extension] ?? 'application/octet-stream');
+    item.confirmed = true;
+    uploaded += 1;
+  }
+  process.stdout.write(`\r${uploaded} uploaded, ${skipped} already present (${uploaded + skipped}/${plan.length})`);
 }
 process.stdout.write('\n');
 
@@ -261,29 +363,51 @@ console.log(`rewrote ${rewritten} content file(s)`);
 
 if (deleteLocal) {
   let removed = 0;
-  const kept = [];
+  const keptForCode = [];
+  const keptUnconfirmed = [];
+
   for (const item of plan) {
-    // Re-read: a file referenced only by content is safe now that content has
-    // been rewritten, but one named in code would break the build.
-    const stillReferenced = item.usedInCode.length > 0;
-    if (stillReferenced) {
-      kept.push(item);
+    // A file referenced only by content is safe now that content has been
+    // rewritten, but one named in code would break the build.
+    if (item.usedInCode.length > 0) {
+      keptForCode.push(item);
+      continue;
+    }
+    // Deleting the only copy on the strength of "the upload call returned" is
+    // not good enough. Ask the public URL — the same fetch the build will make
+    // — and keep anything that does not answer.
+    if (!(await existsInBucket(item.key))) {
+      keptUnconfirmed.push(item);
       continue;
     }
     unlinkSync(item.path);
     removed += 1;
   }
+
   console.log(`removed ${removed} local file(s)`);
-  if (kept.length) {
+
+  if (keptForCode.length) {
     console.log(
-      `\nKept ${kept.length} file(s) still named in code — change the default, then delete:`
+      `\nKept ${keptForCode.length} file(s) still named in code — change the default, then delete:`
     );
-    for (const item of kept) {
+    for (const item of keptForCode) {
       console.log(
         `  ${relative(siteDir, item.path).split(sep).join('/')} <- ${item.usedInCode
           .map((file) => relative(ROOT, file).split(sep).join('/'))
           .join(', ')}`
       );
+    }
+  }
+
+  if (keptUnconfirmed.length) {
+    console.log(
+      `\n::warning:: kept ${keptUnconfirmed.length} file(s) the bucket did not serve back. ` +
+        (PUBLIC_BASE
+          ? 'Re-run to retry the upload.'
+          : 'No Media Bucket URL is set for this site, so nothing could be confirmed.')
+    );
+    for (const item of keptUnconfirmed) {
+      console.log(`  ${relative(siteDir, item.path).split(sep).join('/')}`);
     }
   }
 }

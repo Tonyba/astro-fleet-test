@@ -11,7 +11,7 @@
   "hero": {
     "title": "Page Not Found",
     "description": "",
-    "image": "/src/assets/photos/not-found/services-hero.jpg",
+    "image": "r2:photos/not-found/services-hero-b16c0331.jpg",
     "imageAlt": "Arborist climbing a tall tree with safety ropes",
     "imageSplit": "56.98%"
   },

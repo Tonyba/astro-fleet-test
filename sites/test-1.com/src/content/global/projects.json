@@ -4,23 +4,23 @@
   "description": "Explore our recent tree care projects across Connecticut, including tree removals, trimming, stump grinding, and emergency storm cleanup.",
   "items": [
     {
-      "image": "/src/assets/photos/global/projects/items/0/image.jpg",
+      "image": "r2:photos/global/projects/items/0/image-daf9efd7.jpg",
       "alt": "Tall tree removal in progress"
     },
     {
-      "image": "/src/assets/photos/global/projects/items/1/image.jpg",
+      "image": "r2:photos/global/projects/items/1/image-7dcc7cf4.jpg",
       "alt": "Storm-damaged tree cleanup"
     },
     {
-      "image": "/src/assets/photos/global/projects/items/2/image.jpg",
+      "image": "r2:photos/global/projects/items/2/image-8df74f03.jpg",
       "alt": "Crane-assisted tree removal"
     },
     {
-      "image": "/src/assets/photos/global/projects/items/3/image.jpg",
+      "image": "r2:photos/global/projects/items/3/image-89a7b90c.jpg",
       "alt": "Completed tree care project"
     },
     {
-      "image": "/src/assets/photos/global/projects/items/4/image.jpg",
+      "image": "r2:photos/global/projects/items/4/image-84928918.jpg",
       "alt": "Professional tree service work"
     }
   ]

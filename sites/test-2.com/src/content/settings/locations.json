@@ -20,7 +20,7 @@
     "hero": {
       "title": "Tree Service Areas Across Connecticut",
       "description": "Erick's Tree Service has worked across Connecticut since 1991. Pick your town below for local crews, response times, and a dedicated page for each service we provide there.",
-      "image": "/src/assets/photos/service-areas/services-hero.jpg",
+      "image": "r2:photos/service-areas/services-hero-b16c0331.jpg",
       "imageAlt": "Log loader stacking freshly cut timber on a Connecticut job site",
       "imageSplit": "53.75%"
     },
@@ -45,11 +45,11 @@
   },
   "cityDefaults": {
     "heroDescription": "Licensed, insured tree care in {city}, {stateAbbr} — removal, trimming, stump grinding, land clearing and 24/7 storm response.",
-    "heroImage": "/src/assets/photos/service-areas/services-hero.jpg",
+    "heroImage": "r2:photos/service-areas/services-hero-b16c0331.jpg",
     "heroImageAlt": "Log loader stacking freshly cut timber on a Connecticut job site",
-    "introImage": "/src/assets/photos/service-areas/about-arborist-tree.jpg",
+    "introImage": "r2:photos/service-areas/about-arborist-tree-5aaee7bf.jpg",
     "introImageAlt": "Climbing arborist making a cut high in a mature tree",
-    "permitImage": "/src/assets/photos/service-areas/services-pruning.jpg",
+    "permitImage": "r2:photos/service-areas/services-pruning-3350dcdf.jpg",
     "permitImageAlt": "Arborist pruning a tree from a bucket lift",
     "ctaLabel": "Get Free Quote Now",
     "ctaHref": "#free-inspection"

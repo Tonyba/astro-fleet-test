@@ -82,7 +82,7 @@
       "timezone": "America/New_York",
       "gtmId": "GTM-N8BQF629",
       "turnstileSiteKey": "0x4AAAAAAEQ6cS4QA_PVA77F",
-      "mediaBaseUrl": null,
+      "mediaBaseUrl": "https://pub-7937c5e2849745328b6261f65deeba01.r2.dev",
       "schemaType": "HomeAndConstructionBusiness",
       "additionalType": "https://en.wikipedia.org/wiki/Arboriculture",
       "priceRange": "$$",

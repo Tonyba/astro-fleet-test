@@ -30,23 +30,23 @@
       "label": "Call US",
       "number": "(203) 367-8219"
     },
-    "backgroundImage": "/src/assets/photos/homepage/hero/backgroundImage.jpg",
-    "backgroundImageMobile": "/src/assets/photos/homepage/hero/backgroundImageMobile.jpg",
+    "backgroundImage": "r2:photos/homepage/hero/backgroundimage-0327e6fb.jpg",
+    "backgroundImageMobile": "r2:photos/homepage/hero/backgroundimagemobile-897eb243.jpg",
     "badges": [
       {
-        "src": "/src/assets/badges/hero/badges/0/src.png",
+        "src": "r2:badges/hero/badges/0/src-703c09c8.png",
         "alt": "BBB Accredited Business A+ rating",
         "width": 112,
         "height": 82
       },
       {
-        "src": "/src/assets/badges/hero/badges/1/src.png",
+        "src": "r2:badges/hero/badges/1/src-82a7ffbf.png",
         "alt": "100% Service Guaranteed",
         "width": 108,
         "height": 108
       },
       {
-        "src": "/src/assets/badges/hero/badges/2/src.png",
+        "src": "r2:badges/hero/badges/2/src-da3ca319.png",
         "alt": "24/7 Emergency Service",
         "width": 82,
         "height": 82
@@ -75,7 +75,7 @@
       "href": "/about/"
     },
     "photo": {
-      "src": "/src/assets/photos/homepage/about/photo/src.jpg",
+      "src": "r2:photos/homepage/about/photo/src-5aaee7bf.jpg",
       "alt": "Certified arborist harnessed to a tall pine, pruning branches with a chainsaw",
       "width": 616,
       "height": 566
@@ -83,7 +83,7 @@
     "review": {
       "name": "Fabien Cutillo",
       "quote": "Used Erik twice. Excellent service. Will use him again. Does a great job",
-      "avatarSrc": "/src/assets/photos/homepage/about/review/avatarSrc.png",
+      "avatarSrc": "r2:photos/homepage/about/review/avatarsrc-fdfbb016.png",
       "avatarAlt": "Fabien Cutillo",
       "starsSrc": "/media/icons/about/review/starsSrc.svg",
       "verifiedSrc": "/media/icons/about/review/verifiedSrc.svg",
@@ -107,7 +107,7 @@
       "href": "/services/commercial/"
     },
     "photo": {
-      "src": "/src/assets/photos/homepage/commercial/photo/src.jpg",
+      "src": "r2:photos/homepage/commercial/photo/src-54d1a1e9.jpg",
       "alt": "Professional arborist climbing a tree with rigging ropes and a chainsaw"
     }
   },
@@ -172,28 +172,28 @@
     "steps": [
       {
         "number": "01",
-        "icon": "/src/assets/graphics/process/steps/0/icon.png",
+        "icon": "r2:graphics/process/steps/0/icon-15cae001.png",
         "iconAlt": "Appointment calendar",
         "title": "Book your request",
         "description": "Contact our team by phone or online form. We'll gather basic details about your project and schedule a convenient time for an assessment."
       },
       {
         "number": "02",
-        "icon": "/src/assets/graphics/process/steps/1/icon.png",
+        "icon": "r2:graphics/process/steps/1/icon-3601e329.png",
         "iconAlt": "Checklist with magnifier",
         "title": "On-Site Evaluation",
         "description": "Our experts visit your property to evaluate the situation, identify risks, and determine the best and safest approach for the work required."
       },
       {
         "number": "03",
-        "icon": "/src/assets/graphics/process/steps/2/icon.png",
+        "icon": "r2:graphics/process/steps/2/icon-f5275f24.png",
         "iconAlt": "Chainsaw",
         "title": "Professional Service Execution",
         "description": "Our trained crew completes the job using professional equipment and strict safety standards, ensuring efficient and precise results."
       },
       {
         "number": "04",
-        "icon": "/src/assets/graphics/process/steps/3/icon.png",
+        "icon": "r2:graphics/process/steps/3/icon-940e4325.png",
         "iconAlt": "Broom",
         "title": "Cleanup & Final Inspection",
         "description": "We thoroughly clean the site and perform a final inspection to make sure everything is safe, clear, and left in excellent condition."
