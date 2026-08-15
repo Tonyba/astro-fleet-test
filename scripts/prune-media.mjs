@@ -171,8 +171,27 @@ async function listObjects() {
   process.exit(1);
 }
 
+/**
+ * Delete, in order of preference: S3 (fewest round trips), the REST API, then
+ * wrangler. The REST path matters most in CI — wrangler costs a Node process
+ * per object, which turns a hundred deletions into minutes of process startup.
+ */
 async function deleteObject(key) {
   if (store) return store.delete(key);
+
+  const token = env.CLOUDFLARE_API_TOKEN;
+  const account = env.CLOUDFLARE_ACCOUNT_ID;
+  if (token && account) {
+    const response = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${account}/r2/buckets/${bucket}` +
+        `/objects/${encodeURIComponent(key)}`,
+      { method: 'DELETE', headers: { authorization: `Bearer ${token}` } }
+    );
+    const body = await response.json().catch(() => ({}));
+    if (!body.success) throw new Error(`delete ${key} failed: ${JSON.stringify(body.errors)}`);
+    return;
+  }
+
   execFileSync(
     process.execPath,
     [WRANGLER, 'r2', 'object', 'delete', `${bucket}/${key}`, '--remote'],
@@ -261,18 +280,35 @@ function checkFreshness() {
     console.warn('  (could not fetch — reference data may be stale)');
     return;
   }
-  const behind = execFileSync('git', ['rev-list', '--count', '@{u}..HEAD', '--right-only'], {
-    cwd: ROOT,
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
-  }).trim();
-  const missing = Number(
-    execFileSync('git', ['rev-list', '--count', 'HEAD..@{u}'], {
-      cwd: ROOT,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'pipe'],
-    }).trim()
-  );
+  // CI checks out a detached HEAD, which has no @{u} — so fall back to the
+  // remote-tracking branch by name. Without this the command dies on the
+  // exact machine it is most useful on.
+  const git = (args) =>
+    execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] })
+      .trim();
+
+  let upstream;
+  for (const candidate of ['@{u}', 'origin/HEAD', 'origin/main']) {
+    try {
+      upstream = git(['rev-parse', '--verify', '--quiet', candidate]) ? candidate : undefined;
+      if (upstream) break;
+    } catch {
+      /* try the next one */
+    }
+  }
+  if (!upstream) {
+    console.warn('  (no upstream to compare against — reference data may be stale)');
+    return;
+  }
+
+  let missing = 0;
+  try {
+    missing = Number(git(['rev-list', '--count', `HEAD..${upstream}`]));
+  } catch {
+    console.warn(`  (could not compare with ${upstream} — reference data may be stale)`);
+    return;
+  }
+
   if (missing > 0) {
     console.error(
       `\nThis checkout is ${missing} commit(s) behind its upstream. The CMS commits\n` +
@@ -282,7 +318,6 @@ function checkFreshness() {
     if (apply) process.exit(1);
     console.error('(continuing — dry run only)\n');
   }
-  void behind;
 }
 
 checkFreshness();
@@ -325,25 +360,38 @@ if (tooYoung.length) {
   console.log(`  ${tooYoung.length} unreferenced but ${boundary} — kept (${mb(total(tooYoung))})`);
 }
 
-if (!orphans.length) {
-  console.log('\nNothing to prune.\n');
-  process.exit(0);
+// The exits below are deliberately `return`s out of a function rather than
+// process.exit(). Calling process.exit() after fetch has opened a connection
+// tears the loop down under undici's still-open keep-alive sockets, which on
+// Windows aborts the process outright:
+//
+//   Assertion failed: !(handle->flags & UV_HANDLE_CLOSING), src\win\async.c
+//
+// The run had succeeded; only the exit code said otherwise, which in CI is a
+// red job on a clean sweep. Letting the process end on its own is the fix.
+async function run() {
+  if (!orphans.length) {
+    console.log('\nNothing to prune.\n');
+    return;
+  }
+
+  console.log('');
+  for (const object of orphans) {
+    console.log(`  ${object.key}  (${mb(object.size)}, uploaded ${object.uploaded ?? 'unknown'})`);
+  }
+
+  if (!apply) {
+    console.log(`\nDry run. Re-run with --apply to delete these ${orphans.length} object(s).\n`);
+    return;
+  }
+
+  let deleted = 0;
+  for (const object of orphans) {
+    await deleteObject(object.key);
+    deleted += 1;
+    process.stdout.write(`\rdeleted ${deleted}/${orphans.length}`);
+  }
+  console.log(`\nFreed ${mb(total(orphans))}.\n`);
 }
 
-console.log('');
-for (const object of orphans) {
-  console.log(`  ${object.key}  (${mb(object.size)}, uploaded ${object.uploaded ?? 'unknown'})`);
-}
-
-if (!apply) {
-  console.log(`\nDry run. Re-run with --apply to delete these ${orphans.length} object(s).\n`);
-  process.exit(0);
-}
-
-let deleted = 0;
-for (const object of orphans) {
-  await deleteObject(object.key);
-  deleted += 1;
-  process.stdout.write(`\rdeleted ${deleted}/${orphans.length}`);
-}
-console.log(`\nFreed ${mb(total(orphans))}.\n`);
+await run();

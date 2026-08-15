@@ -1,0 +1,139 @@
+name: Prune media
+
+# Clearing or replacing an image in the CMS leaves its object in R2 — it has to,
+# because at that moment nothing can tell whether another entry shares the
+# object, whether the editor will save, or whether the edit is on a branch that
+# will be merged (see scripts/prune-media.mjs). Orphans therefore accumulate,
+# and this is what collects them.
+#
+# Weekly rather than per-push: the sweep is only ever tidying, and running it
+# beside every content commit would put deletions in the same minute as uploads
+# — the one window where "unreferenced" is least trustworthy.
+on:
+  schedule:
+    # Mondays, 04:17 UTC. Odd minute on purpose: GitHub queues scheduled jobs
+    # from a shared pool and the top of the hour is the worst time to ask.
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'List orphans without deleting them'
+        type: boolean
+        default: true
+      keep_days:
+        description: 'Never delete objects newer than this many days'
+        type: string
+        default: '7'
+
+# A second sweep while one is running would work from the same reference data
+# and try to delete the same keys. Let the first finish.
+concurrency:
+  group: prune-media
+  cancel-in-progress: false
+
+jobs:
+  prune:
+    name: Sweep unreferenced R2 objects
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # FULL history and every branch. The script counts an image as referenced
+      # if ANY branch tip names it, which is what keeps an unmerged Keystatic
+      # edit's image from looking like an orphan. A shallow or single-branch
+      # clone would silently narrow that to one branch and make the sweep more
+      # aggressive than it looks.
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Fetch every branch
+        run: |
+          git fetch --prune --no-tags origin '+refs/heads/*:refs/remotes/origin/*'
+          echo "branches seen: $(git for-each-ref --format='%(refname)' refs/remotes | wc -l)"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      # Every site carrying an r2_buckets binding, read from the config that
+      # deploys it — so adding a site to this sweep is the same one-time act as
+      # giving it a bucket, not a second edit here.
+      - name: Find sites with a media bucket
+        id: sites
+        run: |
+          SITES=""
+          for dir in sites/*/; do
+            site=$(basename "$dir")
+            [ -f "$dir/wrangler.jsonc" ] || continue
+            if grep -q '"binding"[[:space:]]*:[[:space:]]*"MEDIA"' "$dir/wrangler.jsonc"; then
+              SITES="$SITES $site"
+            fi
+          done
+          SITES=$(echo "$SITES" | xargs || true)
+          echo "sites: ${SITES:-<none>}"
+          echo "list=$SITES" >> "$GITHUB_OUTPUT"
+
+      - name: Prune
+        if: steps.sites.outputs.list != ''
+        env:
+          # The same account credentials the deploy uses. Listing a bucket is
+          # the one R2 operation wrangler cannot do, so the script goes through
+          # Cloudflare's REST API with these — no R2-specific token needed.
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          SITES: ${{ steps.sites.outputs.list }}
+          # A scheduled run sweeps; a manual run defaults to looking only.
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}
+          KEEP_DAYS: ${{ github.event_name == 'workflow_dispatch' && inputs.keep_days || '7' }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::notice::Cloudflare credentials not configured — nothing to do."
+            exit 0
+          fi
+
+          APPLY="--apply"
+          [ "$DRY_RUN" = "true" ] && APPLY=""
+
+          {
+            echo "## Media prune"
+            echo ""
+            [ -n "$APPLY" ] || echo "_Dry run — nothing was deleted._"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          failed=0
+          for site in $SITES; do
+            echo "::group::$site"
+            # Captured so the numbers can go to the run summary as well as the
+            # log: a sweep that deletes things should say what it deleted
+            # somewhere you do not have to open the job to see.
+            if out=$(node scripts/prune-media.mjs --site "$site" --keep-days "$KEEP_DAYS" $APPLY 2>&1); then
+              echo "$out"
+              {
+                echo "### $site"
+                echo ""
+                echo '```'
+                echo "$out" | grep -vE '^\s*$' | head -40
+                echo '```'
+                echo ""
+              } >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "$out"
+              echo "::error::prune failed for $site"
+              {
+                echo "### $site — FAILED"
+                echo ""
+                echo '```'
+                echo "$out" | tail -20
+                echo '```'
+                echo ""
+              } >> "$GITHUB_STEP_SUMMARY"
+              failed=1
+            fi
+            echo "::endgroup::"
+          done
+
+          exit $failed
