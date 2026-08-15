@@ -3,7 +3,12 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**"],
+      // Compiled INTO the Keystatic admin bundle, so two builds of the same
+      // source with different values are different output. Without declaring
+      // it, turbo hashes them the same and can hand back a cached bundle
+      // pointing at another site's GitHub App.
+      "env": ["PUBLIC_KEYSTATIC_GITHUB_APP_SLUG"]
     },
     "dev": {
       "cache": false,
