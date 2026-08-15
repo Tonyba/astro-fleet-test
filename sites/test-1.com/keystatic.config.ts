@@ -1630,15 +1630,29 @@ export default config({
       path: 'src/content/submissions/*',
       format: { data: 'yaml', contentField: 'content' },
       slugField: 'name',
-      columns: ['name', 'form'],
+      columns: ['name', 'form', 'received'],
       schema: {
         name: fields.slug({ name: { label: 'Name' } }),
-        form: strOpt('Form'),
+        form: strOpt('Form', 'Where on the site it was submitted.'),
+        form_id: strOpt('Form Definition', 'Which entry in Forms produced these fields.'),
         email: strOpt('Email'),
         phone: strOpt('Phone'),
-        project_type: strOpt('Project Type'),
-        service: strOpt('Service'),
         received: strOpt('Received', 'ISO timestamp written by the form endpoint.'),
+        // The answers are a LIST, not one frontmatter key per field, because
+        // the fields themselves are editable in Forms. A key per field would
+        // mean every field added there produced entries whose keys this schema
+        // does not declare — and Keystatic refuses to open those at all
+        // ("Key on object value is not allowed"). A list of label/value pairs
+        // is one schema that fits any form, today's and tomorrow's.
+        answers: fields.array(
+          fields.object({
+            name: strOpt('Field Name'),
+            label: strOpt('Label'),
+            type: strOpt('Type'),
+            value: textAreaOpt('Value'),
+          }),
+          { label: 'Answers', itemLabel: (props) => props.fields.label.value || props.fields.name.value }
+        ),
         content: fields.markdoc({ label: 'Message', extension: 'md' }),
       },
     }),

@@ -24,6 +24,12 @@ export async function getForm(id: string): Promise<FormProps> {
 
   // `name` is the CMS-facing label; everything else maps straight onto the
   // component's props.
+  //
+  // `formId` is added rather than read: it travels with the submission as a
+  // hidden input so /api/quote can reload THIS definition and learn what the
+  // fields currently are. Without it the endpoint would be back to a hardcoded
+  // field list, and every field an editor adds in the CMS would be dropped on
+  // submit.
   const { name: _label, ...form } = entry.data;
-  return form;
+  return { ...form, formId: id };
 }

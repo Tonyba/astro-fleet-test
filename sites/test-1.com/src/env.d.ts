@@ -5,6 +5,13 @@
  * production and in a local `.env` for `astro dev`.
  */
 interface Env {
+  /**
+   * D1 — runtime page content (`docs`, `meta`) and form submissions
+   * (`submissions`). See db/schema.sql. Absent during `astro dev`.
+   */
+  CONTENT_DB?: D1Database;
+  /** Shared secret for the /api/content-sync GitHub webhook. */
+  CONTENT_SYNC_SECRET?: string;
   /** Turnstile secret key — spam protection on /api/quote. */
   TURNSTILE_SECRET?: string;
   /** Repo-scoped token used to commit form submissions back to the repo. */

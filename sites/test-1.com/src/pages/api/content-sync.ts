@@ -45,6 +45,19 @@ const env = workerEnv as unknown as Env;
 /** Only files under here are content; everything else in a commit is ignored. */
 const CONTENT_ROOT = 'sites/test-1.com/src/content/';
 
+/**
+ * Form submissions live under CONTENT_ROOT so Keystatic can edit them, but they
+ * are not page content and must never enter `docs`: every request loads that
+ * table whole, so syncing leads would grow the per-request snapshot without
+ * bound and put customer names and phone numbers in the content cache of a
+ * site that renders none of them. The lead's real home is the `submissions`
+ * table, written directly by /api/quote.
+ */
+const isContentPath = (path: string) =>
+  path.startsWith(CONTENT_ROOT) &&
+  !path.startsWith(`${CONTENT_ROOT}submissions/`) &&
+  /\.(json|md)$/.test(path);
+
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
@@ -124,12 +137,7 @@ async function listContentFiles(ref: string): Promise<string[]> {
 
   const tree = (await res.json()) as { tree: { path: string; type: string }[] };
   return tree.tree
-    .filter(
-      (node) =>
-        node.type === 'blob' &&
-        node.path.startsWith(CONTENT_ROOT) &&
-        /\.(json|md)$/.test(node.path)
-    )
+    .filter((node) => node.type === 'blob' && isContentPath(node.path))
     .map((node) => node.path);
 }
 
@@ -277,7 +285,7 @@ export const POST: APIRoute = async ({ request, url }) => {
     const paths = new Set<string>();
     for (const commit of payload.commits ?? []) {
       for (const path of [...(commit.added ?? []), ...(commit.modified ?? []), ...(commit.removed ?? [])]) {
-        if (path.startsWith(CONTENT_ROOT) && /\.(json|md)$/.test(path)) paths.add(path);
+        if (isContentPath(path)) paths.add(path);
       }
     }
 

@@ -53,15 +53,20 @@ export type Doc<T = Record<string, unknown>> = {
 // ---------------------------------------------------------------------------
 // Eager globs so the content is in the bundle rather than fetched — these are
 // the same files Keystatic commits, frozen at the last build.
+//
+// `submissions/` is excluded on purpose. Form submissions are stored under
+// src/content/ so the CMS can list them, but they are not page content: nothing
+// renders them, and bundling them would put every lead's name, email and phone
+// number into the deployed worker, growing without bound as leads arrive.
 const jsonModules = import.meta.glob<{ default: Record<string, unknown> }>(
-  '../content/**/*.json',
+  ['../content/**/*.json', '!../content/submissions/**'],
   { eager: true }
 );
 
 const mdModules = import.meta.glob<{
   frontmatter: Record<string, unknown>;
   compiledContent: () => string;
-}>('../content/**/*.md', { eager: true });
+}>(['../content/**/*.md', '!../content/submissions/**'], { eager: true });
 
 /** `../content/services/tree-removal.md` -> `services/tree-removal` */
 const toId = (globPath: string) =>

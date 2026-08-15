@@ -46,6 +46,14 @@ export interface Props {
   showHeader?: boolean;
   /** Hidden field identifying which form submitted (for the CMS/endpoint). */
   formName?: string;
+  /**
+   * Id of the CMS form definition these fields came from (`forms/<id>`),
+   * submitted as a hidden `form_id`. The endpoint reloads that definition to
+   * decide what to validate and what to store — the fields are editable in the
+   * CMS, so the server cannot carry a hardcoded list of them. Set automatically
+   * by `getForm(id)`; only forms built from literal props lack it.
+   */
+  formId?: string;
   /** Turnstile site key; when set the widget renders. */
   turnstileSiteKey?: string;
 }
@@ -57,6 +65,7 @@ const {
   variant = 'bordered',
   showHeader = true,
   formName = 'hero-quote',
+  formId,
   fields = [
     { name: 'full_name', label: 'Full Name', placeholder: 'Full Name*', type: 'text', required: true },
     { name: 'email', label: 'Email Address', placeholder: 'Email Adress*', type: 'email', required: true },
@@ -112,6 +121,7 @@ const autocompleteFor = (field: FieldDef): string | undefined =>
 <div class:list={['tree-quote', `tree-quote--${variant}`]} id={id}>
   <form class="tree-quote__form" method="post" action={action} novalidate>
     <input type="hidden" name="form_name" value={formName} />
+    {formId && <input type="hidden" name="form_id" value={formId} />}
     {showHeader && (
       <div class="tree-quote__head">
         <h2 class="tree-quote__title">{title}</h2>
