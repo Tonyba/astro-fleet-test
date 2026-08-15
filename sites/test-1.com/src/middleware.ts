@@ -20,8 +20,20 @@
 import type { MiddlewareHandler } from 'astro';
 import { contentVersion, preloadSettings, store } from './lib/runtime-content';
 
-/** How long a worker isolate may reuse the sync generation it last read. */
-const VERSION_TTL_MS = 5_000;
+/**
+ * How long a worker isolate may reuse the sync generation it last read.
+ *
+ * This is the floor on how long an edit can stay invisible: until it expires,
+ * an isolate keeps building cache keys from the previous generation and keeps
+ * serving the page cached under it. At five seconds it was the largest single
+ * component of the ~8s an editor waited, ahead of both the webhook and KV's own
+ * consistency window.
+ *
+ * One second costs at most one extra KV read per request per isolate — a few
+ * thousand a day at this site's traffic, against a free tier of 100,000 — and
+ * an isolate serving a burst still amortises it across the burst.
+ */
+const VERSION_TTL_MS = 1_000;
 
 /**
  * How long the EDGE may keep a rendered page. Generation changes supersede it.
