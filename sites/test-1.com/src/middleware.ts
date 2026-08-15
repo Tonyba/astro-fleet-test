@@ -98,7 +98,17 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     headers.set('x-content-version', version);
 
     const toCache = new Response(response.clone().body, { status: 200, headers });
-    context.locals.runtime?.ctx?.waitUntil?.(cache.put(cacheKey, toCache));
+
+    // `locals.runtime.ctx` was removed in Astro v6 and its getter THROWS, so
+    // optional chaining on it does not degrade — it takes the response down.
+    // v6 exposes the execution context as `locals.cfContext`.
+    const cfContext = (context.locals as { cfContext?: ExecutionContext }).cfContext;
+    if (cfContext?.waitUntil) {
+      cfContext.waitUntil(cache.put(cacheKey, toCache));
+    } else {
+      // No execution context: store before responding rather than not at all.
+      await cache.put(cacheKey, toCache);
+    }
 
     const out = new Headers(headers);
     out.set('x-content-cache', 'MISS');
