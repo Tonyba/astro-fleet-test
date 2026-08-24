@@ -3,7 +3,7 @@
   "title": "Get Your Free Quote",
   "subtitle": "Tell us about your project and we'll get back to you within 24 hours.",
   "submitText": "Get Free Quote Now",
-  "action": "/api/quote",
+  "action": "/thank-you/",
   "fields": [
     {
       "name": "full_name",

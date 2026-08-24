@@ -45,6 +45,9 @@ export interface Props {
   description: string;
   keywords?: string[];
   canonicalUrl?: string;
+  /** Emits noindex, nofollow and suppresses the canonical — for pages with no
+   *  search value of their own, like a form success page. */
+  noindex?: boolean;
   ogImage?: string;
   siteName: string;
   logoSrc: string;
@@ -64,6 +67,7 @@ const {
   description,
   keywords,
   canonicalUrl,
+  noindex,
   ogImage,
   siteName,
   logoSrc,
@@ -126,6 +130,7 @@ const themeCss = colorDecls || fontDecl ? `:root { ${colorDecls} ${fontDecl} }` 
       description={description}
       keywords={keywords}
       canonicalUrl={canonicalUrl}
+      noindex={noindex}
       ogImage={ogImage}
       siteName={siteName}
       logoUrl={logoSrc}

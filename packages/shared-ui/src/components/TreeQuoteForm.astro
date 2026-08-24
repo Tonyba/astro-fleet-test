@@ -63,6 +63,17 @@ export interface Props {
    * submit without a token. Injected for every form by `getForm()`.
    */
   turnstileSiteKey?: string;
+  /**
+   * CloudCannon Inbox key. Setting it switches the form from the JSON fetch
+   * (which expects an endpoint like /api/quote) to a NATIVE post, because a
+   * CloudCannon-hosted site answers a form post with a 303 to `action` and the
+   * browser has to follow it. `action` therefore becomes the success page
+   * rather than an endpoint.
+   *
+   * Leave unset and the form behaves exactly as before — that is what
+   * test-2.com's worker endpoint still uses.
+   */
+  inboxKey?: string;
 }
 
 const {
@@ -97,6 +108,7 @@ const {
   submitText = 'Get Free Quote Now',
   action = '/api/quote',
   turnstileSiteKey,
+  inboxKey,
 } = Astro.props;
 
 // Group consecutive text/email/tel inputs into a single .tree-quote__fields
@@ -126,9 +138,28 @@ const autocompleteFor = (field: FieldDef): string | undefined =>
 ---
 
 <div class:list={['tree-quote', `tree-quote--${variant}`]} id={id}>
-  <form class="tree-quote__form" method="post" action={action} novalidate>
+  <form
+    class="tree-quote__form"
+    method="post"
+    action={action}
+    data-native-submit={inboxKey ? 'true' : undefined}
+    novalidate
+  >
     <input type="hidden" name="form_name" value={formName} />
     {formId && <input type="hidden" name="form_id" value={formId} />}
+    {inboxKey && (
+      <>
+        <input type="hidden" name="inbox_key" value={inboxKey} />
+        {/* Honeypot: CloudCannon discards any submission that fills this in.
+            Hidden from sight and from assistive tech, and never autofilled. */}
+        <div class="tree-quote__gotcha" aria-hidden="true">
+          <label>
+            Leave this field empty
+            <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" />
+          </label>
+        </div>
+      </>
+    )}
     {showHeader && (
       <div class="tree-quote__head">
         <h2 class="tree-quote__title">{title}</h2>
@@ -246,6 +277,15 @@ const autocompleteFor = (field: FieldDef): string | undefined =>
   }
   .tree-quote--inverse .tree-quote__status.is-success { color: var(--color-bg-accent, #c8f08f); }
   .tree-quote__form { display: flex; flex-direction: column; gap: 20px; }
+
+  /* Honeypot — off-screen rather than display:none, which some bots detect. */
+  .tree-quote__gotcha {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
 
   /* Reserve the widget's height before its iframe loads so nothing shifts. */
   .cf-turnstile { min-height: 65px; max-width: 100%; }
@@ -464,6 +504,16 @@ const autocompleteFor = (field: FieldDef): string | undefined =>
           if (submit) { submit.disabled = false; submit.textContent = original; }
           return;
         }
+      }
+
+      // CloudCannon Inbox: the host answers the post with a 303 to `action`, so
+      // the browser has to do the navigating. Everything above still ran —
+      // validation, phone check, Turnstile — we just hand over at the last step.
+      // `form.submit()` (not requestSubmit) skips this listener, so no loop.
+      if (form.dataset.nativeSubmit === 'true') {
+        if (iti && phone) phone.value = iti.getNumber() || phone.value;
+        form.submit();
+        return;
       }
 
       const data = new FormData(form);

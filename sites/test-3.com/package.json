@@ -12,7 +12,6 @@
   "dependencies": {
     "@astro-fleet/config": "workspace:*",
     "@astro-fleet/shared-ui": "workspace:*",
-    "@astrojs/cloudflare": "13.2.0",
     "@cloudcannon/editable-regions": "^0.0.19",
     "astro": "^6.1.7",
     "embla-carousel": "^8.5.2",

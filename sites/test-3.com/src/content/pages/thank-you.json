@@ -1,0 +1,54 @@
+{
+  "permalink": "/thank-you/",
+  "seo": {
+    "title": "Thank You — Erick's Tree Service",
+    "description": "Thanks for getting in touch. Your request has reached our team and we'll get back to you within one business day.",
+    "keywords": [
+      "thank you",
+      "quote request received",
+      "Erick's Tree Service"
+    ]
+  },
+  "hero": {
+    "title": "Thank You",
+    "description": "",
+    "image": "r2:photos/not-found/services-hero-b16c0331.jpg",
+    "imageAlt": "Arborist climbing a tall tree with safety ropes",
+    "imageSplit": "56.98%"
+  },
+  "body": {
+    "heading": "We've got your request",
+    "description": "Thanks for reaching out. Your details are with our team and we'll be in touch within one business day. For a tree emergency, call us now — the emergency line is answered 24/7.",
+    "primaryCta": {
+      "label": "Call the emergency line",
+      "href": "tel:+12036508519"
+    },
+    "secondaryCta": {
+      "label": "Back to home",
+      "href": "/"
+    },
+    "linksHeading": "While you're here",
+    "links": [
+      {
+        "label": "Residential Services",
+        "href": "/services/residential/"
+      },
+      {
+        "label": "Commercial Services",
+        "href": "/services/commercial/"
+      },
+      {
+        "label": "Photo Gallery",
+        "href": "/projects/"
+      },
+      {
+        "label": "Service Areas",
+        "href": "/locations/"
+      },
+      {
+        "label": "Blog",
+        "href": "/blog/"
+      }
+    ]
+  }
+}

@@ -82,11 +82,12 @@
       "timezone": "America/New_York",
       "gtmId": "GTM-N8BQF629",
       "turnstileSiteKey": "0x4AAAAAAEQ6cS4QA_PVA77F",
-      "mediaBaseUrl": "https://pub-7937c5e2849745328b6261f65deeba01.r2.dev",
+      "mediaBaseUrl": "https://pub-d7cd5d926031451e919169ba9cb8e9f0.r2.dev",
       "schemaType": "HomeAndConstructionBusiness",
       "additionalType": "https://en.wikipedia.org/wiki/Arboriculture",
       "priceRange": "$$",
-      "googlePlaceId": "0x89e80fb070d88c7b:0x452871363c9cef50"
+      "googlePlaceId": "0x89e80fb070d88c7b:0x452871363c9cef50",
+      "cloudcannonInboxKey": "contact-cloudcannon-testing"
     }
   },
   "seo": {

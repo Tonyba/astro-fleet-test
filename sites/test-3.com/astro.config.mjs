@@ -1,9 +1,6 @@
-import { fileURLToPath } from 'node:url';
-
 import { defineConfig, fontProviders } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import sitemap from '@astrojs/sitemap';
-import cloudflare from '@astrojs/cloudflare';
 import editableRegions from '@cloudcannon/editable-regions/astro-integration';
 
 // The site URL has exactly one home: `siteUrl` in the CMS site settings. Feeding
@@ -16,14 +13,16 @@ import site from './src/content/settings/site.json';
 // ---------------------------------------------------------------------------
 // Media bucket
 // ---------------------------------------------------------------------------
-// Photographs live in R2, and content files store only `r2:<key>` — so the
+// Photographs live in R2 and are uploaded through the CloudCannon DAM, so the
 // bucket's public origin has to be known at BUILD time, twice over: to turn
-// those keys into URLs, and to authorise Astro to download and re-encode them.
+// stored values into URLs, and to authorise Astro to download and re-encode
+// them.
 //
-// This site is a clone of test-2.com and reads the SAME bucket: the photographs
-// are the same business's, and duplicating them would double the storage for no
-// gain. An env var still wins, which is what lets a preview deploy point at a
-// different bucket without touching content.
+// One home, same rule as `site`: the CMS settings entry, which must match the
+// Base URL of the DAM linked under Site Settings -> Assets. An env var still
+// wins, which is what lets a preview deploy point at a different bucket without
+// touching content. Empty is a valid state — a site with no bucket configured
+// keeps rendering the images that are still in its repo.
 const mediaBaseUrl = (
   process.env.PUBLIC_MEDIA_BASE_URL ||
   site.business?.technical?.mediaBaseUrl ||
@@ -44,26 +43,15 @@ const mediaRemotePattern = mediaBaseUrl
     ]
   : [];
 
-// The Cloudflare adapter is applied to BUILDS ONLY. `astro dev` then runs on
-// Astro's own Node server, where `cloudflare:workers` does not exist — the vite
-// alias below stubs it so /api/quote still imports cleanly in dev.
-const isBuild = process.argv.includes('build');
-
 export default defineConfig({
   site: site.siteUrl,
 
-  // Every page is prerendered to static HTML. The adapter exists for the one
-  // route that cannot be: POST /api/quote, which verifies Turnstile and commits
-  // the submission back to the repo. CloudCannon hosts the prerendered output
-  // (dist/client); the worker in dist/server is what Cloudflare runs.
+  // Fully static — no adapter, no worker. Form posts are handled by
+  // CloudCannon's hosting, which stores them against the Inbox named in
+  // `business.technical.cloudcannonInboxKey`, forwards them to the inbox's
+  // targets, and answers 303 to the form's action (the success page).
+  // That is why this site needs no server route of its own.
   output: 'static',
-  adapter: isBuild
-    ? cloudflare({
-        // Images are optimised at build time with sharp; nothing is resized at
-        // runtime, so the worker needs no image service.
-        imageService: 'compile',
-      })
-    : undefined,
 
   // Photographs come from the bucket, so the build has to be allowed to fetch
   // them. With this in place `<Picture>` treats an R2 original exactly like an
@@ -78,17 +66,6 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
-    // `cloudflare:workers` only exists once the adapter is loaded, so in dev it
-    // resolves to a stub that hands back an empty env.
-    resolve: isBuild
-      ? {}
-      : {
-          alias: {
-            'cloudflare:workers': fileURLToPath(
-              new URL('./src/lib/cloudflare-env-dev.ts', import.meta.url)
-            ),
-          },
-        },
   },
 
   fonts: [

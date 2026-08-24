@@ -9,14 +9,14 @@
 # Mirror these in Site Settings -> Build -> Command line options:
 #   Install command: bun install --frozen-lockfile
 #   Build command:   bun run turbo build --filter=test-3.com
-#   Output path:     sites/test-3.com/dist/client
+#   Output path:     sites/test-3.com/dist
 #   Node version:    22
 # bun is not in CloudCannon's build image; /.cloudcannon/preinstall installs it.
 #
-# OUTPUT PATH IS dist/client, NOT dist. The Cloudflare adapter is loaded for the
-# one on-demand route (POST /api/quote), which splits the build into
-# dist/client (every prerendered page) and dist/server (the worker). CloudCannon
-# serves the former; Cloudflare runs the latter.
+# The site is fully static — no adapter, no worker, so the output is a plain
+# dist/. Form posts are handled by CloudCannon's hosting: they are stored
+# against the Inbox named in business.technical.cloudcannonInboxKey, forwarded
+# to that inbox's targets, and answered with a 303 to /thank-you/.
 #
 # MEDIA: photographs live in the Cloudflare R2 bucket, linked as a DAM under
 # Site Settings -> Assets, so uploads never enter git. SVG icons and the logo
@@ -49,7 +49,6 @@ collection_groups:
   - heading: Forms
     collections:
       - forms
-      - submissions
   - heading: Settings
     collections:
       - settings
@@ -283,35 +282,12 @@ collections_config:
         comment: Label for this list only — never rendered on the page.
       action:
         type: text
-        comment: Endpoint the form posts to. /api/quote stores the lead and emails it.
+        comment: Where the visitor lands after a successful submit. CloudCannon stores the submission in the Inbox and redirects here — this is a page on the site, not an endpoint.
       fields:
         type: array
         label: Form fields
         options:
           structures: _structures.form_fields
-
-  # ---------------------------------------------------------------------------
-  # Form Submissions — written by POST /api/quote, read-only here.
-  # ---------------------------------------------------------------------------
-  submissions:
-    name: Form Submissions
-    path: sites/test-3.com/src/content/submissions
-    glob:
-      - '**/*.md'
-    icon: inbox
-    disable_url: true
-    disable_add: true
-    disable_add_folder: true
-    preview:
-      text:
-        - key: name
-      metadata:
-        - icon: mail
-          text:
-            - key: email
-        - icon: schedule
-          text:
-            - key: received
 
   # ---------------------------------------------------------------------------
   # Settings — business identity, SEO patterns, theme, and the copy shared by
@@ -337,7 +313,10 @@ collections_config:
         comment: Public origin of the R2 media bucket. Must match the Base URL of the linked DAM under Site Settings -> Assets.
       turnstileSiteKey:
         type: text
-        comment: Public Turnstile key for form spam protection. The secret half is a worker secret, not stored here.
+        comment: Public Turnstile key for form spam protection. Pair it with "Require CAPTCHA" on the Inbox.
+      cloudcannonInboxKey:
+        type: text
+        comment: Key of the CloudCannon Inbox that receives form submissions. Clearing it makes the forms post JSON to their action instead.
 
 # -----------------------------------------------------------------------------
 # Inputs that apply wherever a key of that name appears.
