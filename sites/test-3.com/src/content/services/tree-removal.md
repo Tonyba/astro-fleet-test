@@ -1,4 +1,5 @@
 ---
+_schema: default
 title: Tree Removal
 order: 1
 categories:
@@ -10,7 +11,8 @@ card:
   description: >-
     Safe and efficient removal of hazardous, damaged, fallen, or unwanted trees
     for residential and commercial properties.
-  image: /src/assets/photos/tree-removal/card/image.jpg
+  image: >-
+    https://pub-d7cd5d926031451e919169ba9cb8e9f0.r2.dev/photos/services-commercial/services-hero-b16c0331.jpg
   icon: /media/icons/tree-removal/card/icon.png
 seo:
   title: Tree Removal in Connecticut — Erick's Tree Service
