@@ -1,0 +1,9 @@
+paths:
+  static: public
+  uploads: public/uploads
+timezone: America/Caracas
+markdown:
+  engine: commonmark
+  options:
+    gfm: true
+collections_config: {}
