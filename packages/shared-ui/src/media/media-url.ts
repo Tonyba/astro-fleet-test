@@ -8,6 +8,9 @@
  * `r2:` sentinel so it can never be confused with the legacy repo paths:
  *
  *   r2:photos/homepage/hero-3f2a9c1b.jpg     <- R2 object key
+ *   https://<bucket>/photos/hero-3f2a9c1b.jpg <- the same object, written by a
+ *                                               CloudCannon R2 DAM, which can
+ *                                               only store fully qualified URLs
  *   /src/assets/photos/hero-bg.jpg           <- legacy, still resolved by images.ts
  *   /media/icons/faq-chevron.svg             <- public/, untouched
  *
@@ -25,9 +28,44 @@ export function isR2Value(value: unknown): value is string {
   return typeof value === 'string' && value.startsWith(R2_PREFIX);
 }
 
-/** The bare object key behind an `r2:` value, or undefined for anything else. */
-export function r2Key(value: unknown): string | undefined {
-  return isR2Value(value) ? value.slice(R2_PREFIX.length).replace(/^\/+/, '') : undefined;
+/**
+ * True for an absolute URL served by this site's media bucket.
+ *
+ * A CloudCannon R2 DAM cannot write the `r2:` sentinel — it stores fully
+ * qualified URLs — so the bucket origin is what identifies those values.
+ */
+export function isMediaUrl(value: unknown, base = mediaBase()): value is string {
+  if (typeof value !== 'string' || !base) return false;
+  return value === base || value.startsWith(`${base}/`);
+}
+
+/** True for either notation: the `r2:` sentinel or a URL on the bucket. */
+export function isBucketValue(value: unknown, base = mediaBase()): value is string {
+  return isR2Value(value) || isMediaUrl(value, base);
+}
+
+/** Percent-decode one path segment, leaving a malformed escape untouched. */
+function decodeSegment(segment: string): string {
+  try {
+    return decodeURIComponent(segment);
+  } catch {
+    return segment;
+  }
+}
+
+/**
+ * The bare object key behind a bucket value, or undefined for anything else.
+ *
+ * Accepts both notations, so a photo swapped in through the CloudCannon DAM
+ * takes exactly the same build-time optimisation path as one the `r2:` uploader
+ * wrote. The key is returned decoded, which is the form `mediaUrl` re-encodes.
+ */
+export function r2Key(value: unknown, base = mediaBase()): string | undefined {
+  if (isR2Value(value)) return value.slice(R2_PREFIX.length).replace(/^\/+/, '');
+  if (!isMediaUrl(value, base)) return undefined;
+
+  const path = value.slice(base.length).replace(/[?#].*$/, '').replace(/^\/+/, '');
+  return path ? path.split('/').map(decodeSegment).join('/') : undefined;
 }
 
 /** Wrap a key back into the stored form. */
@@ -55,12 +93,12 @@ export function mediaBase(): string {
 /**
  * Absolute URL for a stored image value.
  *
- * Returns undefined for values that are not R2 keys (callers fall through to
- * their existing resolution) and for R2 keys on a site with no configured base
- * — there is no URL to build, and guessing one would emit a broken <img>.
+ * Returns undefined for values that are not bucket-backed (callers fall through
+ * to their existing resolution) and for R2 keys on a site with no configured
+ * base — there is no URL to build, and guessing one would emit a broken <img>.
  */
 export function mediaUrl(value: unknown, base = mediaBase()): string | undefined {
-  const key = r2Key(value);
+  const key = r2Key(value, base);
   if (!key || !base) return undefined;
   // Keys are path-shaped and already safe; encode only what a filename may
   // legitimately contain (spaces, #, ?) so the URL survives an <img src>.
@@ -77,7 +115,7 @@ export function extensionOf(keyOrName: string): string {
 const UNOPTIMISABLE = new Set(['svg', 'gif', 'ico']);
 
 /** Whether a value points at a raster the image pipeline can re-encode. */
-export function isOptimisableR2(value: unknown): boolean {
-  const key = r2Key(value);
+export function isOptimisableR2(value: unknown, base = mediaBase()): boolean {
+  const key = r2Key(value, base);
   return !!key && !UNOPTIMISABLE.has(extensionOf(key));
 }

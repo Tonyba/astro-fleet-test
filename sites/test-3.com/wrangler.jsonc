@@ -1,0 +1,23 @@
+{
+  // Worker configuration for this site.
+  //
+  // The Astro Cloudflare adapter READS this file and writes the merged result
+  // to dist/server/wrangler.json — the one `wrangler deploy` is pointed at. It
+  // fills in `main`, the ASSETS binding and the SESSION KV namespace itself, so
+  // only what the adapter cannot know belongs here.
+  //
+  // Unlike test-2.com there is no R2 binding: photo uploads go through
+  // CloudCannon into the repo, not through a worker endpoint into a bucket.
+  // Reading the bucket is a build-time fetch over its public URL and needs no
+  // binding at all.
+  //
+  // Anything the adapter would otherwise supply by default has to be stated
+  // once a user config exists — `observability` in particular is silently
+  // dropped. The SESSION namespace is deliberately absent: it is
+  // auto-provisioned on deploy and must not be pinned.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "test-3-com",
+  "compatibility_date": "2026-08-13",
+
+  "observability": { "enabled": true }
+}

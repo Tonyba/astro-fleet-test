@@ -2,6 +2,8 @@
 title: New post
 date: 2026-01-01
 description: ''
+image: ''
+imageAlt: ''
 draft: true
 ---
 

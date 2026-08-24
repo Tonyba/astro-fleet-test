@@ -1,15 +1,12 @@
 /**
  * site-config.ts
  * ---------------
- * Central configuration for the Test-3 site.
+ * Central configuration for the Starter site.
+ * Edit this file to customise your site's identity, navigation,
+ * footer, contact details, and social links.
  *
- * The VALUES no longer live here — they live in `src/data/site.json`, which is
- * what CloudCannon edits (see the `site` collection in the repo-root
- * cloudcannon.config.yml). This file is the typed adapter between that JSON and
- * the shared-ui component props, so every page keeps importing the same names.
- *
- * Change site identity, navigation, footer, contact details or social links in
- * the CMS — or by editing site.json directly. Do not hardcode them here again.
+ * All values here are passed into shared-ui components (BaseLayout,
+ * Header, Footer) so a single change propagates site-wide.
  */
 
 import type { MenuItem } from '@astro-fleet/shared-ui/src/components/Header.astro';
@@ -18,46 +15,124 @@ import type {
   ContactInfo,
   SocialLink,
 } from '@astro-fleet/shared-ui/src/components/Footer.astro';
-import site from '../data/site.json';
+import settings from '../content/settings/site.json';
 
 // ---------------------------------------------------------------------------
 // Site identity
 // ---------------------------------------------------------------------------
 
+/**
+ * Canonical origin for the site — the single source of truth for every absolute
+ * URL we emit (canonical, og:url, sitemap, robots.txt).
+ *
+ * It is defined once in the CMS settings (`src/content/settings/site.json`) and
+ * re-exported here so pages and `astro.config.mjs` read the same value. Prefer
+ * `Astro.site` inside components; reach for this only where `Astro` is absent.
+ */
+export const SITE_URL = settings.siteUrl;
+
 /** The human-readable name of your site, used in the <title>, header, and footer. */
-export const SITE_NAME: string = site.site_name;
+export const SITE_NAME = 'Test-2';
 
 /** A short tagline displayed in the footer beneath the site name. */
-export const TAGLINE: string = site.tagline;
+export const TAGLINE = 'Powered by Test-2';
 
-/** Path to the logo image rendered in the header. Blank falls back to a text logo. */
-export const LOGO_SRC: string | undefined = site.logo || undefined;
-
-/** Alt text for the header logo. */
-export const LOGO_ALT: string = site.logo_alt;
-
-// ---------------------------------------------------------------------------
-// Header CTA
-// ---------------------------------------------------------------------------
-
-/** Label of the button at the right-hand end of the header. */
-export const CTA_TEXT: string = site.header_cta.text;
-
-/** Where that button points. */
-export const CTA_HREF: string = site.header_cta.href;
+/** Absolute URL path to the logo image rendered in the header.
+ *  Use '/favicon.svg' to fall back to the SVG favicon, or swap in
+ *  a PNG/WebP logo at any time. Set to undefined to show a text logo. */
+export const LOGO_SRC = '/favicon.svg';
 
 // ---------------------------------------------------------------------------
-// Navigation, footer, contact, social
+// Header navigation
 // ---------------------------------------------------------------------------
 
-/** Top-level header navigation. Items may carry a `children` array for dropdowns. */
-export const navigation: MenuItem[] = site.navigation;
+/**
+ * Top-level navigation items shown in the header.
+ * Each item requires a `label` (link text) and `href` (URL path).
+ * Add optional `children` arrays to create dropdown sub-menus.
+ *
+ * Example with dropdown:
+ *   { label: 'Products', href: '/products/', children: [
+ *     { label: 'Widget A', href: '/products/widget-a/' },
+ *   ]}
+ */
+export const navigation: MenuItem[] = [
+  { label: 'Home',     href: '/'          },
+  { label: 'About',    href: '/about/'    },
+  { label: 'Services', href: '/services/' },
+  { label: 'Contact',  href: '/contact/'  },
+];
 
-/** Link columns rendered in the footer grid. */
-export const footerColumns: FooterColumn[] = site.footer_columns;
+// ---------------------------------------------------------------------------
+// Footer columns
+// ---------------------------------------------------------------------------
 
-/** Contact details rendered in the footer's contact section. */
-export const contactInfo: ContactInfo = site.contact;
+/**
+ * Three link columns rendered in the footer grid.
+ * Each column has a `title` heading and an array of `{ label, href }` links.
+ * Remove a column object to reduce to two columns, or add a fourth as needed.
+ */
+export const footerColumns: FooterColumn[] = [
+  {
+    title: 'Company',
+    links: [
+      { label: 'About Us',  href: '/about/'   },
+      { label: 'Services',  href: '/services/' },
+      { label: 'Contact',   href: '/contact/'  },
+    ],
+  },
+  {
+    title: 'Services',
+    links: [
+      { label: 'Web Development',   href: '/services/' },
+      { label: 'Cloud Hosting',     href: '/services/' },
+      { label: 'SEO Optimization',  href: '/services/' },
+      { label: 'Analytics',         href: '/services/' },
+    ],
+  },
+  {
+    title: 'Resources',
+    links: [
+      { label: 'Documentation', href: '#' },
+      { label: 'Blog',          href: '#' },
+      { label: 'Changelog',     href: '#' },
+      { label: 'Support',       href: '#' },
+    ],
+  },
+];
 
-/** Social media links rendered as icon buttons in the footer. */
-export const socialLinks: SocialLink[] = site.social;
+// ---------------------------------------------------------------------------
+// Contact information
+// ---------------------------------------------------------------------------
+
+/**
+ * Contact details rendered in the footer's contact section.
+ * All fields are optional — omit any you don't want displayed.
+ */
+export const contactInfo: ContactInfo = {
+  /** Primary email address shown in the footer. */
+  email: 'hello@example.com',
+
+  /** Phone number shown in the footer (include country code for clarity). */
+  phone: '+1 (555) 123-4567',
+
+  /** Physical or mailing address displayed in the footer. */
+  address: '123 Main Street, Anytown',
+};
+
+// ---------------------------------------------------------------------------
+// Social media links
+// ---------------------------------------------------------------------------
+
+/**
+ * Social media links rendered as icon buttons in the footer.
+ * Supported `platform` values (matched to built-in SVG icons in Footer.astro):
+ *   'linkedin' | 'twitter' | 'facebook' | 'instagram' | 'youtube' | 'whatsapp'
+ *
+ * Set `url` to your actual profile URL.
+ * Remove any entries you don't need.
+ */
+export const socialLinks: SocialLink[] = [
+  { platform: 'twitter',  url: 'https://twitter.com/example'  },
+  { platform: 'linkedin', url: 'https://linkedin.com/company/example' },
+];
