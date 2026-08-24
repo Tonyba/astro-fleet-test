@@ -1,6 +1,8 @@
 ---
 title: About Us — Test-3
-description: Learn about our team, our mission, and why we built this platform. We're a small team passionate about great software and developer experience.
+description: >-
+  Learn about our team, our mission, and why we built this platform. We're a
+  small team passionate about great software and developer experience.
 keywords:
   - about
   - team
@@ -11,11 +13,12 @@ breadcrumb:
   - label: Home
     href: /
   - label: About
+    href: /
 hero:
   title: About Us
   subtitle: >-
     We're a small, distributed team that believes great tools should be simple,
-    open, and fast to deploy.
+    open, and fast to deploys.
 team:
   heading: The Team
   note: >-
@@ -29,7 +32,6 @@ team:
     - name: Alex Chen
       role: Design Lead
 ---
-
 ## Our Story
 
 This starter began as an internal template we used every time a new client needed a fresh website. After rebuilding the same header, footer, and design-token system for the fifth time, we packaged everything into Astro Fleet — a monorepo starter that ships with shared components, typed design tokens, and a Turborepo build pipeline ready to go.
