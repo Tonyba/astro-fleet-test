@@ -1,4 +1,5 @@
 ---
+_schema: default
 title: Bridgeport
 stateAbbr: CT
 state: Connecticut
@@ -23,7 +24,8 @@ hero:
     Erick's Tree Service is based on Guilford Drive in Bridgeport and has cared
     for trees across the city since 1991 — from Black Rock to the North End.
     Licensed, insured, and answering storm calls 24/7.
-  image: ''
+  image: >-
+    https://pub-d7cd5d926031451e919169ba9cb8e9f0.r2.dev/photos/about/hero-image-27ed4e7a.jpg
   imageAlt: ''
   imageSplit: 53.75%
 intro:
@@ -81,7 +83,6 @@ faq:
   subtitle: ''
   items: []
 ---
-
 ## Do You Need A Permit For Tree Work In Bridgeport?
 
 Work on trees standing entirely on your own property is generally your decision, whatever the service. Street trees and trees on public land fall under the Bridgeport tree warden, as Connecticut law requires, and any tree on a boundary line needs your neighbor's agreement. We confirm ownership and handle city paperwork before the crew arrives — removal, trimming, or clearing alike.
