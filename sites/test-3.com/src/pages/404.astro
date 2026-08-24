@@ -1,20 +1,29 @@
 ---
 import BaseLayout from '@astro-fleet/shared-ui/src/layouts/BaseLayout.astro';
 import { CORPORATE } from '@astro-fleet/config/tokens';
+import { getEntry } from 'astro:content';
 import {
   SITE_NAME,
   TAGLINE,
   LOGO_SRC,
+  LOGO_ALT,
+  CTA_TEXT,
+  CTA_HREF,
   navigation,
   footerColumns,
   contactInfo,
   socialLinks,
 } from '../lib/site-config';
+
+// Copy lives in src/content/pages/not-found.md so CloudCannon can edit it.
+const page = await getEntry('pages', 'not-found');
+if (!page) throw new Error('Missing src/content/pages/not-found.md');
+const { hero, back_link } = page.data;
 ---
 
 <BaseLayout
-  title={`Page Not Found — ${SITE_NAME}`}
-  description="The page you were looking for could not be found."
+  title={page.data.title}
+  description={page.data.description}
   {navigation}
   footerColumns={footerColumns}
   {contactInfo}
@@ -22,18 +31,23 @@ import {
   siteName={SITE_NAME}
   tagline={TAGLINE}
   logoSrc={LOGO_SRC}
-  ctaText="Get Started"
-  ctaHref="/contact/"
+  logoAlt={LOGO_ALT}
+  ctaText={CTA_TEXT}
+  ctaHref={CTA_HREF}
   designTokens={CORPORATE}
 >
   <section class="not-found">
     <div class="not-found__container">
-      <p class="not-found__code">404</p>
-      <h1 class="not-found__title">Page Not Found</h1>
-      <p class="not-found__message">
-        The page you were looking for doesn't exist or has been moved.
+      <p class="not-found__code" data-editable="text" data-prop="hero.eyebrow">{hero.eyebrow}</p>
+      <h1 class="not-found__title" data-editable="text" data-prop="hero.title">{hero.title}</h1>
+      <p class="not-found__message" data-editable="text" data-prop="hero.subtitle">
+        {hero.subtitle}
       </p>
-      <a href="/" class="not-found__link">Go back home</a>
+      <a
+        href={back_link.href}
+        class="not-found__link"
+        data-editable="text"
+        data-prop="back_link.text">{back_link.text}</a>
     </div>
   </section>
 </BaseLayout>

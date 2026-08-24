@@ -10,6 +10,7 @@
     "lint": "astro check"
   },
   "dependencies": {
+    "@cloudcannon/editable-regions": "^0.0.19",
     "astro": "^6.1.7",
     "@astro-fleet/shared-ui": "workspace:*",
     "@astro-fleet/config": "workspace:*"

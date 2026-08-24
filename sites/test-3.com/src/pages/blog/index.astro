@@ -2,18 +2,26 @@
 import BaseLayout from '@astro-fleet/shared-ui/src/layouts/BaseLayout.astro';
 import Breadcrumb from '@astro-fleet/shared-ui/src/components/Breadcrumb.astro';
 import { CORPORATE } from '@astro-fleet/config/tokens';
-import { getCollection } from 'astro:content';
+import { getCollection, getEntry } from 'astro:content';
 import {
   SITE_NAME,
   TAGLINE,
   LOGO_SRC,
+  LOGO_ALT,
+  CTA_TEXT,
+  CTA_HREF,
   navigation,
   footerColumns,
   contactInfo,
   socialLinks,
 } from '../../lib/site-config';
 
-// Published posts only, newest first. Sveltia writes these to src/content/posts/.
+// Copy lives in src/content/pages/blog.md so CloudCannon can edit it.
+const page = await getEntry('pages', 'blog');
+if (!page) throw new Error('Missing src/content/pages/blog.md');
+const { hero } = page.data;
+
+// Published posts only, newest first. CloudCannon writes these to src/content/posts/.
 const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime(),
 );
@@ -26,9 +34,9 @@ const dateFmt = new Intl.DateTimeFormat('en-US', {
 ---
 
 <BaseLayout
-  title={`Blog — ${SITE_NAME}`}
-  description={`News, updates, and articles from ${SITE_NAME}.`}
-  keywords={['blog', 'news', 'articles']}
+  title={page.data.title}
+  description={page.data.description}
+  keywords={page.data.keywords}
   {navigation}
   footerColumns={footerColumns}
   {contactInfo}
@@ -36,32 +44,26 @@ const dateFmt = new Intl.DateTimeFormat('en-US', {
   siteName={SITE_NAME}
   tagline={TAGLINE}
   logoSrc={LOGO_SRC}
-  ctaText="Get Started"
-  ctaHref="/contact/"
+  logoAlt={LOGO_ALT}
+  ctaText={CTA_TEXT}
+  ctaHref={CTA_HREF}
   designTokens={CORPORATE}
 >
   <div class="container">
-    <Breadcrumb
-      items={[
-        { label: 'Home', href: '/' },
-        { label: 'Blog' },
-      ]}
-    />
+    <Breadcrumb items={page.data.breadcrumb} />
   </div>
 
   <section class="blog-hero section">
     <div class="container">
-      <h1 class="blog-hero__title">Blog</h1>
-      <p class="blog-hero__sub">News, updates, and articles from {SITE_NAME}.</p>
+      <h1 class="blog-hero__title" data-editable="text" data-prop="hero.title">{hero.title}</h1>
+      <p class="blog-hero__sub" data-editable="text" data-prop="hero.subtitle">{hero.subtitle}</p>
     </div>
   </section>
 
   <section class="section">
     <div class="container">
       {posts.length === 0 ? (
-        <p class="blog-empty">
-          No posts yet. Add one in the <a href="/admin/">CMS</a> and it will appear here.
-        </p>
+        <p class="blog-empty" data-editable="text" data-prop="empty_state">{page.data.empty_state}</p>
       ) : (
         <ul class="blog-list">
           {posts.map((post) => (

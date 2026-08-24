@@ -1,0 +1,53 @@
+{
+  "site_name": "Test-3",
+  "tagline": "Powered by Test-3",
+  "logo": "/favicon.svg",
+  "logo_alt": "Test-3 logo",
+  "header_cta": {
+    "text": "Get Started",
+    "href": "/contact/"
+  },
+  "navigation": [
+    { "label": "Home", "href": "/" },
+    { "label": "About", "href": "/about/" },
+    { "label": "Services", "href": "/services/" },
+    { "label": "Contact", "href": "/contact/" }
+  ],
+  "footer_columns": [
+    {
+      "title": "Company",
+      "links": [
+        { "label": "About Us", "href": "/about/" },
+        { "label": "Services", "href": "/services/" },
+        { "label": "Contact", "href": "/contact/" }
+      ]
+    },
+    {
+      "title": "Services",
+      "links": [
+        { "label": "Web Development", "href": "/services/" },
+        { "label": "Cloud Hosting", "href": "/services/" },
+        { "label": "SEO Optimization", "href": "/services/" },
+        { "label": "Analytics", "href": "/services/" }
+      ]
+    },
+    {
+      "title": "Resources",
+      "links": [
+        { "label": "Documentation", "href": "#" },
+        { "label": "Blog", "href": "#" },
+        { "label": "Changelog", "href": "#" },
+        { "label": "Support", "href": "#" }
+      ]
+    }
+  ],
+  "contact": {
+    "email": "hello@example.com",
+    "phone": "+1 (555) 123-4567",
+    "address": "123 Main Street, Anytown"
+  },
+  "social": [
+    { "platform": "twitter", "url": "https://twitter.com/example" },
+    { "platform": "linkedin", "url": "https://linkedin.com/company/example" }
+  ]
+}

@@ -2,21 +2,32 @@
 import BaseLayout from '@astro-fleet/shared-ui/src/layouts/BaseLayout.astro';
 import Breadcrumb from '@astro-fleet/shared-ui/src/components/Breadcrumb.astro';
 import { CORPORATE } from '@astro-fleet/config/tokens';
+import { getEntry, render } from 'astro:content';
 import {
   SITE_NAME,
   TAGLINE,
   LOGO_SRC,
+  LOGO_ALT,
+  CTA_TEXT,
+  CTA_HREF,
   navigation,
   footerColumns,
   contactInfo,
   socialLinks,
 } from '../lib/site-config';
+
+// Copy lives in src/content/pages/about.md so CloudCannon can edit it.
+// The story prose is the markdown body of that file.
+const page = await getEntry('pages', 'about');
+if (!page) throw new Error('Missing src/content/pages/about.md');
+const { hero, team } = page.data;
+const { Content } = await render(page);
 ---
 
 <BaseLayout
-  title={`About Us — ${SITE_NAME}`}
-  description="Learn about our team, our mission, and why we built this platform. We're a small team passionate about great software and developer experience."
-  keywords={['about', 'team', 'mission', 'company']}
+  title={page.data.title}
+  description={page.data.description}
+  keywords={page.data.keywords}
   {navigation}
   footerColumns={footerColumns}
   {contactInfo}
@@ -24,26 +35,21 @@ import {
   siteName={SITE_NAME}
   tagline={TAGLINE}
   logoSrc={LOGO_SRC}
-  ctaText="Get Started"
-  ctaHref="/contact/"
+  logoAlt={LOGO_ALT}
+  ctaText={CTA_TEXT}
+  ctaHref={CTA_HREF}
   designTokens={CORPORATE}
 >
   <div class="container">
-    <Breadcrumb
-      items={[
-        { label: 'Home', href: '/' },
-        { label: 'About' },
-      ]}
-    />
+    <Breadcrumb items={page.data.breadcrumb} />
   </div>
 
   <!-- Page hero -->
   <section class="about-hero section">
     <div class="container">
-      <h1 class="about-hero__title">About Us</h1>
-      <p class="about-hero__sub">
-        We're a small, distributed team that believes great tools should be simple,
-        open, and fast to deploy.
+      <h1 class="about-hero__title" data-editable="text" data-prop="hero.title">{hero.title}</h1>
+      <p class="about-hero__sub" data-editable="text" data-prop="hero.subtitle">
+        {hero.subtitle}
       </p>
     </div>
   </section>
@@ -51,55 +57,24 @@ import {
   <!-- Story -->
   <section class="section about-body">
     <div class="container about-body__inner">
-      <div class="about-body__prose">
-        <h2>Our Story</h2>
-        <p>
-          This starter began as an internal template we used every time a new
-          client needed a fresh website. After rebuilding the same header, footer,
-          and design-token system for the fifth time, we packaged everything into
-          Astro Fleet — a monorepo starter that ships with shared components,
-          typed design tokens, and a Turborepo build pipeline ready to go.
-        </p>
-
-        <h2>What We Believe</h2>
-        <p>
-          Good infrastructure should be invisible. Your team should spend time
-          crafting content and conversion flows, not wiring up CSS variables or
-          debugging shared dependency versions. Astro Fleet handles the plumbing
-          so you can focus on what matters.
-        </p>
-
-        <h2>Open Source First</h2>
-        <p>
-          Everything in this repository is MIT-licensed. Fork it, extend it,
-          and make it your own. If you build something useful on top of it, we'd
-          love to hear about it.
-        </p>
+      <div class="about-body__prose" data-editable="text" data-prop="@content" data-type="block">
+        <Content />
       </div>
 
-      <!-- Team placeholder -->
+      <!-- Team -->
       <aside class="about-body__team">
-        <h2>The Team</h2>
-        <p class="about-body__team-note">
-          Replace this section with your actual team members. A simple grid of
-          name + role cards works well here — or link to a dedicated team page.
+        <h2 data-editable="text" data-prop="team.heading">{team.heading}</h2>
+        <p class="about-body__team-note" data-editable="text" data-prop="team.note">
+          {team.note}
         </p>
-        <div class="team-placeholder">
-          <div class="team-placeholder__card">
-            <div class="team-placeholder__avatar"></div>
-            <span class="team-placeholder__name">Jane Doe</span>
-            <span class="team-placeholder__role">Founder &amp; CEO</span>
-          </div>
-          <div class="team-placeholder__card">
-            <div class="team-placeholder__avatar"></div>
-            <span class="team-placeholder__name">John Smith</span>
-            <span class="team-placeholder__role">Lead Engineer</span>
-          </div>
-          <div class="team-placeholder__card">
-            <div class="team-placeholder__avatar"></div>
-            <span class="team-placeholder__name">Alex Chen</span>
-            <span class="team-placeholder__role">Design Lead</span>
-          </div>
+        <div class="team-placeholder" data-editable="array" data-prop="team.members">
+          {team.members.map((member) => (
+            <div class="team-placeholder__card" data-editable="array-item">
+              <div class="team-placeholder__avatar"></div>
+              <span class="team-placeholder__name">{member.name}</span>
+              <span class="team-placeholder__role">{member.role}</span>
+            </div>
+          ))}
         </div>
       </aside>
     </div>
@@ -141,18 +116,19 @@ import {
     }
   }
 
-  .about-body__prose h2 {
+  /* The prose is rendered from markdown, so these need :global to reach it. */
+  .about-body__prose :global(h2) {
     font-size: 1.375rem;
     font-weight: 700;
     color: var(--color-primary, #1e3a5f);
     margin: 2rem 0 0.75rem;
   }
 
-  .about-body__prose h2:first-child {
+  .about-body__prose :global(h2:first-child) {
     margin-top: 0;
   }
 
-  .about-body__prose p {
+  .about-body__prose :global(p) {
     color: #475569;
     line-height: 1.75;
     margin-bottom: 1rem;

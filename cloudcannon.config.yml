@@ -1,0 +1,328 @@
+# =============================================================================
+# CloudCannon configuration — sites/test-3.com
+# =============================================================================
+# This is a bun + Turborepo monorepo, so the CloudCannon Site is connected with
+# its Source left at the REPOSITORY ROOT: `bun install` has to run from here for
+# the `workspace:*` dependencies on @astro-fleet/shared-ui and @astro-fleet/config
+# to resolve. Every path below therefore carries the sites/test-3.com/ prefix.
+#
+# Mirror these in Site Settings -> Build -> Command line options:
+#   Install command: bun install --frozen-lockfile
+#   Build command:   bun run turbo build --filter=test-3.com
+#   Output path:     sites/test-3.com/dist
+#   Node version:    22
+# bun itself is not in CloudCannon's build image; /.cloudcannon/preinstall
+# installs it before the install command runs.
+#
+# Adding a second CloudCannon Site for another domain in sites/ means either
+# giving that Site a custom Source of sites/<domain> with its own config file,
+# or extending collections_config here — one config file describes one Site.
+# =============================================================================
+
+timezone: Etc/UTC
+
+paths:
+  static: sites/test-3.com/public
+  uploads: sites/test-3.com/public/media
+
+collection_groups:
+  - heading: Content
+    collections:
+      - pages
+      - posts
+  - heading: Header & Footer
+    collections:
+      - site
+
+collections_config:
+  # ---------------------------------------------------------------------------
+  # Pages — one markdown file per hand-built route in src/pages/.
+  # Adding a file here does NOT create a route, so creation is disabled.
+  # ---------------------------------------------------------------------------
+  pages:
+    name: Pages
+    path: sites/test-3.com/src/content/pages
+    glob:
+      - '**/*.md'
+    url: '{permalink}'
+    icon: web
+    disable_add: true
+    disable_add_folder: true
+    disable_file_actions: true
+    _enabled_editors:
+      - visual
+      - data
+    preview:
+      text:
+        - key: title
+    _inputs:
+      title:
+        type: text
+        label: SEO title
+        comment: Shown in the browser tab and in search results. Aim for 60 characters or fewer.
+      description:
+        type: textarea
+        label: SEO description
+        comment: The snippet search engines show. Aim for 155 characters or fewer.
+      keywords:
+        type: array
+        label: SEO keywords
+      permalink:
+        type: text
+        label: Output URL
+        comment: The live URL of this page. Changing it will not move the route — edit src/pages/ for that.
+        disabled: true
+      breadcrumb:
+        type: array
+        label: Breadcrumb trail
+        options:
+          structures: _structures.breadcrumb_items
+      hero:
+        type: object
+        label: Hero
+      trust_items:
+        type: array
+        label: Trust bar items
+        options:
+          structures: _structures.trust_items
+      features:
+        type: array
+        label: Feature cards
+        options:
+          structures: _structures.cards
+      services:
+        type: array
+        label: Service cards
+        options:
+          structures: _structures.cards
+      link_text:
+        type: text
+        label: Link text
+      team:
+        type: object
+        label: Team panel
+      members:
+        type: array
+        label: Team members
+        options:
+          structures: _structures.team_members
+      form:
+        type: object
+        label: Contact form
+      action:
+        type: text
+        label: Form action URL
+      cta:
+        type: object
+        label: Closing call to action
+      variant:
+        type: select
+        label: Colour scheme
+        options:
+          values:
+            - dark
+            - light
+      empty_state:
+        type: text
+        label: Empty blog message
+      back_link:
+        type: object
+        label: Back link
+
+  # ---------------------------------------------------------------------------
+  # Blog posts — the one collection editors can add to.
+  # Keep the fields in sync with src/content.config.ts.
+  # ---------------------------------------------------------------------------
+  posts:
+    name: Blog Posts
+    path: sites/test-3.com/src/content/posts
+    glob:
+      - '**/*.md'
+    url: '/blog/[full_slug]/'
+    icon: newspaper
+    _enabled_editors:
+      - content
+      - visual
+    add_options:
+      - name: Add New Post
+        schema: default
+        icon: post_add
+        editor: content
+    schemas:
+      default:
+        name: New Post
+        path: .cloudcannon/schemas/test-3-post.md
+    create:
+      path: '[relative_base_path]/{title|slugify|lowercase}.md'
+    preview:
+      text:
+        - key: title
+      metadata:
+        - icon: calendar_month
+          text:
+            - template: '{date|date_long}'
+            - No date
+    _inputs:
+      title:
+        type: text
+        comment: Also used as the page title and the link text elsewhere on the site.
+      date:
+        type: date
+      description:
+        type: textarea
+        comment: Shown on the blog index card and as the SEO description.
+      draft:
+        type: switch
+        comment: Drafts are excluded from the build.
+
+  # ---------------------------------------------------------------------------
+  # Site identity, menus, contact details, social links.
+  # ---------------------------------------------------------------------------
+  site:
+    name: Site Settings
+    path: sites/test-3.com/src/data
+    glob:
+      - '**/*.json'
+    icon: settings
+    disable_url: true
+    disable_add: true
+    disable_add_folder: true
+    disable_file_actions: true
+    _inputs:
+      site_name:
+        type: text
+        label: Site name
+        comment: Used in the header, the footer and the copyright line.
+      tagline:
+        type: text
+        label: Tagline
+        comment: Sits under the site name in the footer.
+      logo:
+        type: image
+        label: Header logo
+        comment: SVG or PNG. Leave blank to show the site name as text instead.
+      logo_alt:
+        type: text
+        label: Logo alt text
+        comment: Describes the logo for screen readers.
+      header_cta:
+        type: object
+        label: Header button
+      navigation:
+        type: array
+        label: Header menu
+        options:
+          structures: _structures.nav_items
+      children:
+        type: array
+        label: Submenu
+        options:
+          structures: _structures.nav_items
+      footer_columns:
+        type: array
+        label: Footer columns
+        options:
+          structures: _structures.footer_columns
+      links:
+        type: array
+        label: Links
+        options:
+          structures: _structures.menu_links
+      contact:
+        type: object
+        label: Contact details
+      email:
+        type: email
+      phone:
+        type: text
+      address:
+        type: text
+      social:
+        type: array
+        label: Social links
+        options:
+          structures: _structures.social_links
+      url:
+        type: url
+      href:
+        type: text
+        comment: A path like /about/ or a full https:// URL.
+
+# -----------------------------------------------------------------------------
+# Reusable shapes for the "+ Add" button on every array above.
+# -----------------------------------------------------------------------------
+_structures:
+  nav_items:
+    values:
+      - label: Link
+        icon: link
+        value:
+          label: New link
+          href: /
+      - label: Dropdown
+        icon: expand_more
+        value:
+          label: New menu
+          href: /
+          children:
+            - label: New link
+              href: /
+
+  menu_links:
+    values:
+      - label: Link
+        icon: link
+        value:
+          label: New link
+          href: /
+
+  footer_columns:
+    values:
+      - label: Column
+        icon: view_column
+        value:
+          title: New column
+          links:
+            - label: New link
+              href: /
+
+  breadcrumb_items:
+    values:
+      - label: Crumb
+        icon: chevron_right
+        value:
+          label: New crumb
+          href: /
+
+  trust_items:
+    values:
+      - label: Trust item
+        icon: verified
+        value:
+          text: New trust item
+
+  cards:
+    values:
+      - label: Card
+        icon: crop_square
+        value:
+          title: New card
+          description: ''
+          href: /contact/
+          link_text: Learn More
+
+  team_members:
+    values:
+      - label: Team member
+        icon: person
+        value:
+          name: New member
+          role: Role
+
+  social_links:
+    values:
+      - label: Social link
+        icon: share
+        value:
+          platform: twitter
+          url: https://

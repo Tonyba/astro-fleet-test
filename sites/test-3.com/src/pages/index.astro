@@ -4,52 +4,30 @@ import ServiceCard from '@astro-fleet/shared-ui/src/components/ServiceCard.astro
 import TrustBar from '@astro-fleet/shared-ui/src/components/TrustBar.astro';
 import CTABlock from '@astro-fleet/shared-ui/src/components/CTABlock.astro';
 import { CORPORATE } from '@astro-fleet/config/tokens';
+import { getEntry } from 'astro:content';
 import {
   SITE_NAME,
   TAGLINE,
   LOGO_SRC,
+  LOGO_ALT,
+  CTA_TEXT,
+  CTA_HREF,
   navigation,
   footerColumns,
   contactInfo,
   socialLinks,
 } from '../lib/site-config';
 
-const trustItems = [
-  { text: 'Open Source & MIT Licensed' },
-  { text: 'Zero JS by Default' },
-  { text: 'Tailwind CSS v4' },
-  { text: 'Type-Safe Config' },
-];
-
-const features = [
-  {
-    title: 'Shared Components',
-    description:
-      'A battle-tested library of Astro components — Header, Footer, ServiceCard, CTABlock and more — shared across every site in your fleet.',
-    href: '/services/',
-    linkText: 'See all components',
-  },
-  {
-    title: 'Design Tokens',
-    description:
-      'Three ready-made presets (Corporate, SaaS, Warm) powered by a typed DesignTokens interface. Reskin any site by changing a single config value.',
-    href: '/services/',
-    linkText: 'Explore tokens',
-  },
-  {
-    title: 'One-Command Deploy',
-    description:
-      'Each site builds independently via Turborepo. Deploy to Cloudflare Pages, Netlify, or any static host with a single wrangler command.',
-    href: '/services/',
-    linkText: 'Deployment guide',
-  },
-];
+// Copy lives in src/content/pages/home.md so CloudCannon can edit it.
+const page = await getEntry('pages', 'home');
+if (!page) throw new Error('Missing src/content/pages/home.md');
+const { hero, cta, features, trust_items } = page.data;
 ---
 
 <BaseLayout
-  title={`${SITE_NAME} — Build Multiple Sites, One Codebase`}
-  description="Astro Fleet is an open-source multi-site monorepo starter. Shared components, design tokens, and one-command deploys for agencies and multi-brand teams."
-  keywords={['astro', 'monorepo', 'multi-site', 'starter', 'design tokens', 'tailwind']}
+  title={page.data.title}
+  description={page.data.description}
+  keywords={page.data.keywords}
   {navigation}
   footerColumns={footerColumns}
   {contactInfo}
@@ -57,8 +35,9 @@ const features = [
   siteName={SITE_NAME}
   tagline={TAGLINE}
   logoSrc={LOGO_SRC}
-  ctaText="Get Started"
-  ctaHref="/contact/"
+  logoAlt={LOGO_ALT}
+  ctaText={CTA_TEXT}
+  ctaHref={CTA_HREF}
   designTokens={CORPORATE}
 >
   <!-- Hero -->
@@ -71,42 +50,50 @@ const features = [
     <div class="hero__container">
       <div class="hero__badge">
         <span class="hero__badge-dot"></span>
-        Open Source Monorepo Starter
+        <span data-editable="text" data-prop="hero.badge">{hero.badge}</span>
       </div>
       <h1 class="hero__headline">
-        Build Multiple Sites,<br />
-        <span class="hero__headline--accent">One Codebase</span>
+        <span data-editable="text" data-prop="hero.headline">{hero.headline}</span><br />
+        <span
+          class="hero__headline--accent"
+          data-editable="text"
+          data-prop="hero.headline_accent">{hero.headline_accent}</span>
       </h1>
-      <p class="hero__sub">
-        Astro Fleet gives your team a shared component library, typed design tokens,
-        and a Turborepo pipeline — so spinning up a new brand site takes minutes,
-        not weeks.
+      <p class="hero__sub" data-editable="text" data-prop="hero.subtitle">
+        {hero.subtitle}
       </p>
       <div class="hero__actions">
-        <a href="/contact/" class="hero__cta-primary">
-          Get Started
+        <a href={hero.primary_cta.href} class="hero__cta-primary">
+          <span data-editable="text" data-prop="hero.primary_cta.text">{hero.primary_cta.text}</span>
           <svg class="hero__cta-arrow" viewBox="0 0 20 20" fill="none" aria-hidden="true">
             <path d="M4 10h12m0 0-5-5m5 5-5 5" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </a>
-        <a href="/about/" class="hero__cta-secondary">Learn More</a>
+        <a
+          href={hero.secondary_cta.href}
+          class="hero__cta-secondary"
+          data-editable="text"
+          data-prop="hero.secondary_cta.text">{hero.secondary_cta.text}</a>
       </div>
     </div>
   </section>
 
   <!-- Trust bar -->
-  <TrustBar items={trustItems} />
+  <TrustBar items={trust_items} />
 
   <!-- Features -->
   <section class="section features">
     <div class="container">
       <div class="section-header">
-        <h2 class="section-header__title">Everything You Need Out of the Box</h2>
-        <p class="section-header__description">
-          Astro Fleet bundles the patterns that every multi-site project needs —
-          so you can focus on content and conversion, not boilerplate.
-        </p>
+        <h2
+          class="section-header__title"
+          data-editable="text"
+          data-prop="features_heading">{page.data.features_heading}</h2>
+        <p
+          class="section-header__description"
+          data-editable="text"
+          data-prop="features_description">{page.data.features_description}</p>
       </div>
       <div class="features__grid">
         {features.map((f) => (
@@ -114,7 +101,7 @@ const features = [
             title={f.title}
             description={f.description}
             href={f.href}
-            linkText={f.linkText}
+            linkText={f.link_text}
           />
         ))}
       </div>
@@ -123,10 +110,13 @@ const features = [
 
   <!-- CTA -->
   <CTABlock
-    heading="Ready to Launch Your Fleet?"
-    description="Clone the repo, run bun install, and have your first site live in under 10 minutes."
-    primaryButton={{ text: 'Get Started', href: '/contact/' }}
-    secondaryButton={{ text: 'View Services', href: '/services/' }}
+    heading={cta.heading}
+    description={cta.description}
+    primaryButton={{ text: cta.primary_button.text, href: cta.primary_button.href }}
+    secondaryButton={cta.secondary_button.text
+      ? { text: cta.secondary_button.text, href: cta.secondary_button.href }
+      : undefined}
+    variant={cta.variant as 'light' | 'dark'}
   />
 </BaseLayout>
 

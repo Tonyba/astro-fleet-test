@@ -1,12 +1,15 @@
 /**
  * site-config.ts
  * ---------------
- * Central configuration for the Starter site.
- * Edit this file to customise your site's identity, navigation,
- * footer, contact details, and social links.
+ * Central configuration for the Test-3 site.
  *
- * All values here are passed into shared-ui components (BaseLayout,
- * Header, Footer) so a single change propagates site-wide.
+ * The VALUES no longer live here — they live in `src/data/site.json`, which is
+ * what CloudCannon edits (see the `site` collection in the repo-root
+ * cloudcannon.config.yml). This file is the typed adapter between that JSON and
+ * the shared-ui component props, so every page keeps importing the same names.
+ *
+ * Change site identity, navigation, footer, contact details or social links in
+ * the CMS — or by editing site.json directly. Do not hardcode them here again.
  */
 
 import type { MenuItem } from '@astro-fleet/shared-ui/src/components/Header.astro';
@@ -15,113 +18,46 @@ import type {
   ContactInfo,
   SocialLink,
 } from '@astro-fleet/shared-ui/src/components/Footer.astro';
+import site from '../data/site.json';
 
 // ---------------------------------------------------------------------------
 // Site identity
 // ---------------------------------------------------------------------------
 
 /** The human-readable name of your site, used in the <title>, header, and footer. */
-export const SITE_NAME = 'Test-3';
+export const SITE_NAME: string = site.site_name;
 
 /** A short tagline displayed in the footer beneath the site name. */
-export const TAGLINE = 'Powered by Test-3';
+export const TAGLINE: string = site.tagline;
 
-/** Absolute URL path to the logo image rendered in the header.
- *  Use '/favicon.svg' to fall back to the SVG favicon, or swap in
- *  a PNG/WebP logo at any time. Set to undefined to show a text logo. */
-export const LOGO_SRC = '/favicon.svg';
+/** Path to the logo image rendered in the header. Blank falls back to a text logo. */
+export const LOGO_SRC: string | undefined = site.logo || undefined;
 
-// ---------------------------------------------------------------------------
-// Header navigation
-// ---------------------------------------------------------------------------
-
-/**
- * Top-level navigation items shown in the header.
- * Each item requires a `label` (link text) and `href` (URL path).
- * Add optional `children` arrays to create dropdown sub-menus.
- *
- * Example with dropdown:
- *   { label: 'Products', href: '/products/', children: [
- *     { label: 'Widget A', href: '/products/widget-a/' },
- *   ]}
- */
-export const navigation: MenuItem[] = [
-  { label: 'Home',     href: '/'          },
-  { label: 'About',    href: '/about/'    },
-  { label: 'Services', href: '/services/' },
-  { label: 'Contact',  href: '/contact/'  },
-];
+/** Alt text for the header logo. */
+export const LOGO_ALT: string = site.logo_alt;
 
 // ---------------------------------------------------------------------------
-// Footer columns
+// Header CTA
 // ---------------------------------------------------------------------------
 
-/**
- * Three link columns rendered in the footer grid.
- * Each column has a `title` heading and an array of `{ label, href }` links.
- * Remove a column object to reduce to two columns, or add a fourth as needed.
- */
-export const footerColumns: FooterColumn[] = [
-  {
-    title: 'Company',
-    links: [
-      { label: 'About Us',  href: '/about/'   },
-      { label: 'Services',  href: '/services/' },
-      { label: 'Contact',   href: '/contact/'  },
-    ],
-  },
-  {
-    title: 'Services',
-    links: [
-      { label: 'Web Development',   href: '/services/' },
-      { label: 'Cloud Hosting',     href: '/services/' },
-      { label: 'SEO Optimization',  href: '/services/' },
-      { label: 'Analytics',         href: '/services/' },
-    ],
-  },
-  {
-    title: 'Resources',
-    links: [
-      { label: 'Documentation', href: '#' },
-      { label: 'Blog',          href: '#' },
-      { label: 'Changelog',     href: '#' },
-      { label: 'Support',       href: '#' },
-    ],
-  },
-];
+/** Label of the button at the right-hand end of the header. */
+export const CTA_TEXT: string = site.header_cta.text;
+
+/** Where that button points. */
+export const CTA_HREF: string = site.header_cta.href;
 
 // ---------------------------------------------------------------------------
-// Contact information
+// Navigation, footer, contact, social
 // ---------------------------------------------------------------------------
 
-/**
- * Contact details rendered in the footer's contact section.
- * All fields are optional — omit any you don't want displayed.
- */
-export const contactInfo: ContactInfo = {
-  /** Primary email address shown in the footer. */
-  email: 'hello@example.com',
+/** Top-level header navigation. Items may carry a `children` array for dropdowns. */
+export const navigation: MenuItem[] = site.navigation;
 
-  /** Phone number shown in the footer (include country code for clarity). */
-  phone: '+1 (555) 123-4567',
+/** Link columns rendered in the footer grid. */
+export const footerColumns: FooterColumn[] = site.footer_columns;
 
-  /** Physical or mailing address displayed in the footer. */
-  address: '123 Main Street, Anytown',
-};
+/** Contact details rendered in the footer's contact section. */
+export const contactInfo: ContactInfo = site.contact;
 
-// ---------------------------------------------------------------------------
-// Social media links
-// ---------------------------------------------------------------------------
-
-/**
- * Social media links rendered as icon buttons in the footer.
- * Supported `platform` values (matched to built-in SVG icons in Footer.astro):
- *   'linkedin' | 'twitter' | 'facebook' | 'instagram' | 'youtube' | 'whatsapp'
- *
- * Set `url` to your actual profile URL.
- * Remove any entries you don't need.
- */
-export const socialLinks: SocialLink[] = [
-  { platform: 'twitter',  url: 'https://twitter.com/example'  },
-  { platform: 'linkedin', url: 'https://linkedin.com/company/example' },
-];
+/** Social media links rendered as icon buttons in the footer. */
+export const socialLinks: SocialLink[] = site.social;

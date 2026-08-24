@@ -1,0 +1,8 @@
+# Shell scripts must keep LF endings: git's autocrlf would otherwise hand
+# Linux a `#!/bin/bash\r` shebang, which fails with "no such file or directory".
+# .githooks/pre-commit runs locally; .cloudcannon/* runs in CloudCannon's build.
+*.sh text eol=lf
+.githooks/* text eol=lf
+.cloudcannon/preinstall text eol=lf
+.cloudcannon/prebuild text eol=lf
+.cloudcannon/postbuild text eol=lf

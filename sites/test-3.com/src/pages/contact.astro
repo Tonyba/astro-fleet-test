@@ -3,21 +3,30 @@ import BaseLayout from '@astro-fleet/shared-ui/src/layouts/BaseLayout.astro';
 import Breadcrumb from '@astro-fleet/shared-ui/src/components/Breadcrumb.astro';
 import ContactForm from '@astro-fleet/shared-ui/src/components/ContactForm.astro';
 import { CORPORATE } from '@astro-fleet/config/tokens';
+import { getEntry } from 'astro:content';
 import {
   SITE_NAME,
   TAGLINE,
   LOGO_SRC,
+  LOGO_ALT,
+  CTA_TEXT,
+  CTA_HREF,
   navigation,
   footerColumns,
   contactInfo,
   socialLinks,
 } from '../lib/site-config';
+
+// Copy lives in src/content/pages/contact.md so CloudCannon can edit it.
+const page = await getEntry('pages', 'contact');
+if (!page) throw new Error('Missing src/content/pages/contact.md');
+const { hero, form } = page.data;
 ---
 
 <BaseLayout
-  title={`Contact Us — ${SITE_NAME}`}
-  description="Get in touch with our team. Fill in the form and we'll get back to you within 24 hours."
-  keywords={['contact', 'enquiry', 'get in touch', 'support']}
+  title={page.data.title}
+  description={page.data.description}
+  keywords={page.data.keywords}
   {navigation}
   footerColumns={footerColumns}
   {contactInfo}
@@ -25,35 +34,30 @@ import {
   siteName={SITE_NAME}
   tagline={TAGLINE}
   logoSrc={LOGO_SRC}
-  ctaText="Get Started"
-  ctaHref="/contact/"
+  logoAlt={LOGO_ALT}
+  ctaText={CTA_TEXT}
+  ctaHref={CTA_HREF}
   designTokens={CORPORATE}
 >
   <div class="container">
-    <Breadcrumb
-      items={[
-        { label: 'Home', href: '/' },
-        { label: 'Contact' },
-      ]}
-    />
+    <Breadcrumb items={page.data.breadcrumb} />
   </div>
 
   <!-- Page hero -->
   <section class="contact-hero section">
     <div class="container">
-      <h1 class="contact-hero__title">Get in Touch</h1>
-      <p class="contact-hero__sub">
-        Have a question or ready to start a project? Fill in the form below and
-        we'll get back to you within one business day.
+      <h1 class="contact-hero__title" data-editable="text" data-prop="hero.title">{hero.title}</h1>
+      <p class="contact-hero__sub" data-editable="text" data-prop="hero.subtitle">
+        {hero.subtitle}
       </p>
     </div>
   </section>
 
   <!-- Contact form -->
   <ContactForm
-    formAction="#"
-    heading="Send Us a Message"
-    description="Tell us about your project and we'll get back to you within 24 hours."
+    formAction={form.action}
+    heading={form.heading}
+    description={form.description}
   />
 </BaseLayout>
 
