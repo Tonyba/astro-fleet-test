@@ -154,14 +154,50 @@ const canBuildRemote = (url: string) => !usesLadder() && !RAW_FORMATS.has(extens
  * that calls it cannot run at request time (see `canBuildRemote`).
  */
 const remoteSizes = new Map<string, { width: number; height: number } | null>();
+
+/**
+ * The probe is retried, because the bucket in front of it may be throttling.
+ *
+ * Cloudflare's `pub-<hash>.r2.dev` origin is documented as rate limited and for
+ * development only, and a build measures then downloads every photograph on the
+ * site in a burst — exactly the shape of traffic it sheds. One shed request used
+ * to fail the whole build: the probe returned null, the ladder fell back to
+ * `inferSize: true`, and Astro's own probe threw
+ * FailedToFetchRemoteImageDimensions with no retry behind it.
+ *
+ * Succeeding here also means `getImage` is handed explicit dimensions and never
+ * needs to infer them, so the fragile path is not reached at all. A genuinely
+ * missing object still fails the build after the last attempt, which is correct
+ * — a 404 photograph should never ship.
+ *
+ * Retries are per URL and the result is cached, so a page rendering the same
+ * photo twice costs one probe.
+ */
+const PROBE_ATTEMPTS = 5;
 const probeRemote = async (url: string) => {
   if (!remoteSizes.has(url)) {
-    remoteSizes.set(
-      url,
-      await import('astro/assets/utils')
-        .then((utils) => utils.inferRemoteSize(url))
-        .catch(() => null)
-    );
+    const { inferRemoteSize } = await import('astro/assets/utils');
+    let size: { width: number; height: number } | null = null;
+
+    for (let attempt = 0; attempt < PROBE_ATTEMPTS; attempt += 1) {
+      try {
+        size = await inferRemoteSize(url);
+        break;
+      } catch (error) {
+        if (attempt === PROBE_ATTEMPTS - 1) {
+          console.warn(
+            `[TreePicture] could not measure ${url} after ${PROBE_ATTEMPTS} attempts: ` +
+              `${error instanceof Error ? error.message : String(error)}`
+          );
+          break;
+        }
+        // 250ms, 500ms, 1s, 2s — long enough for a rate-limit window to reopen
+        // without stalling a build that is genuinely pointed at a missing file.
+        await new Promise((resolve) => setTimeout(resolve, 250 * 2 ** attempt));
+      }
+    }
+
+    remoteSizes.set(url, size);
   }
   return remoteSizes.get(url) ?? null;
 };

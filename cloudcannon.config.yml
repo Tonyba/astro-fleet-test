@@ -27,8 +27,22 @@
 timezone: America/New_York
 
 paths:
+  # Repository destinations, used when an editor picks "Site files".
   static: sites/test-3.com/public
   uploads: sites/test-3.com/public/media
+
+  # DAM destination, used when an editor picks the R2 bucket. Without this a
+  # DAM upload has no prefix to land under. `photos` matches the layout the
+  # existing objects already use (photos/…, badges/…), so new uploads sit
+  # beside them rather than at the bucket root.
+  dam_uploads: photos
+
+  # `dam_static` is deliberately NOT set. Leaving it unset keeps CloudCannon
+  # writing fully qualified bucket URLs, which shared-ui recognises by origin
+  # (see isMediaUrl in packages/shared-ui/src/media/media-url.ts). Setting it
+  # would make CloudCannon write root-relative paths like /photos/x.jpg, which
+  # are indistinguishable from a file in public/ and would stop being
+  # optimised at build time.
 
 collection_groups:
   - heading: Pages
