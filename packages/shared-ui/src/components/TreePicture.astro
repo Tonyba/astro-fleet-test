@@ -171,7 +171,20 @@ const canBuildRemote = (url: string) => !usesLadder() && !RAW_FORMATS.has(extens
  * Imported dynamically so the probe never lands in a worker bundle: the branch
  * that calls it cannot run at request time (see `canBuildRemote`).
  */
-const remoteSizes = new Map<string, { width: number; height: number } | null>();
+/**
+ * PROCESS scope, not module scope.
+ *
+ * Astro re-instantiates a component's module per page render, so a plain
+ * module-level Map is empty every time and caches nothing — measured at a 0%
+ * hit rate over 768 lookups. Hanging the cache off globalThis is what makes it
+ * span the build, which is the whole point of measuring an image once.
+ */
+const globalCaches = globalThis as unknown as {
+  __treeRemoteSizes?: Map<string, { width: number; height: number } | null>;
+  __treeRemoteLadders?: Map<string, Promise<unknown>>;
+};
+
+const remoteSizes = (globalCaches.__treeRemoteSizes ??= new Map());
 
 /**
  * The probe is retried, because the bucket in front of it may be throttling.
@@ -275,7 +288,10 @@ const remoteLadder = async (url: string, w: number, h: number, v: PictureVariant
  * scope means the cache spans the whole build — the same reason `remoteSizes`
  * above is shaped this way.
  */
-const remoteLadders = new Map<string, ReturnType<typeof remoteLadder>>();
+const remoteLadders = (globalCaches.__treeRemoteLadders ??= new Map()) as Map<
+  string,
+  ReturnType<typeof remoteLadder>
+>;
 
 const remoteLadderOnce = (url: string, w: number, h: number, v: PictureVariant) => {
   const key = `${url}|${w}x${h}|${v}`;
