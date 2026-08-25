@@ -32,17 +32,22 @@ intro:
   imageAlt: ''
 whyChooseHeading: just because
 capabilities:
-  heading: ''
-  intro: ''
-  bullets: []
+  heading: ewfewfew
+  intro: ewfewfewf
+  bullets:
+    - dqwdwqdqw
   ctaLabel: Get a Free Estimate
   ctaHref: /contact/
-  chips: []
+  chips:
+    - icon: ''
+      label: ewfewfewf
 checklist:
-  heading: ''
-  intro: ''
-  items: []
-bodyImage: ''
+  heading: qwd
+  intro: qwdqwdwqd
+  items:
+    - qwdwqdqw
+bodyImage: >-
+  https://pub-d7cd5d926031451e919169ba9cb8e9f0.r2.dev/photos/gallery/items/3/image-907c91ff.jpg
 bodyImageAlt: ''
 bodyCtaLabel: Get a Free Estimate
 bodyCtaHref: /contact/

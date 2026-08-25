@@ -53,7 +53,7 @@ capabilities:
   heading: WHAT WE CAN DO FOR YOU
   intro: >-
     When you choose Erick's Tree Services for your tree removal, we provide you
-    a complete done for you tree service:
+    a complete done for you tree service
   bullets:
     - >-
       Safe Tree Removal – We remove trees of all sizes, from small backyard
