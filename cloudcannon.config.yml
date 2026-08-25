@@ -302,6 +302,10 @@ collections_config:
         label: Form fields
         options:
           structures: _structures.form_fields
+      options:
+        type: array
+        label: Choices
+        comment: Dropdown and Radio fields only — the other field types ignore it.
 
   # ---------------------------------------------------------------------------
   # Settings — business identity, SEO patterns, theme, and the copy shared by
@@ -427,6 +431,21 @@ _inputs:
     type: image
   verifiedSrc:
     type: image
+
+  # --- phone numbers are TEXT ---
+  # CloudCannon reads the input type from the key name when nothing says
+  # otherwise, so a key called `number` is taken for a numeric field. None of
+  # these hold numbers: "(203) 367-8219" is punctuation, and the process step
+  # numbers are "01".."04" — zero-padded strings that a number input would
+  # silently turn into 1..4. Both surface in the CMS as a misconfigured input.
+  number:
+    type: text
+  phoneNumber:
+    type: text
+  phoneLabel:
+    type: text
+  emergencyPhone:
+    type: text
 
   # --- alt text sits next to every image ---
   imageAlt:

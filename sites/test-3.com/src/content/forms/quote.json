@@ -10,24 +10,21 @@
       "type": "text",
       "label": "Full Name",
       "placeholder": "Full Name*",
-      "required": true,
-      "options": []
+      "required": true
     },
     {
       "name": "email",
       "type": "email",
       "label": "Email Address",
       "placeholder": "Email Adress*",
-      "required": true,
-      "options": []
+      "required": true
     },
     {
       "name": "phone",
       "type": "tel",
       "label": "Phone Number",
       "placeholder": "Phone Number*",
-      "required": true,
-      "options": []
+      "required": true
     },
     {
       "name": "project_type",
@@ -58,8 +55,7 @@
       "type": "textarea",
       "label": "Project details",
       "placeholder": "Tell us about your project...",
-      "required": false,
-      "options": []
+      "required": false
     }
   ]
 }
