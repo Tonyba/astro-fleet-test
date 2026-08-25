@@ -31,7 +31,7 @@
       "label": "Call US",
       "number": "(203) 367-8219"
     },
-    "backgroundImage": "r2:photos/homepage/hero/backgroundimage-0327e6fb.jpg",
+    "backgroundImage": "https://pub-d7cd5d926031451e919169ba9cb8e9f0.r2.dev/photos/homepage/hero/backgroundimage-0327e6fb.jpg",
     "backgroundImageMobile": "r2:photos/homepage/hero/backgroundimagemobile-897eb243.jpg",
     "badges": [
       {
