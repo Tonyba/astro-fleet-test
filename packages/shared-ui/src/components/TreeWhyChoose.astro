@@ -9,7 +9,7 @@
  * Everything is prop-driven so it can be fed from the CMS.
  */
 import TreePicture from './TreePicture.astro';
-import { editable, editableArrayItem } from '../utils/editable';
+import { editable, editableArrayItem, editableItemField } from '../utils/editable';
 
 export interface TreeWhyChooseItem {
   /** Icon asset in /media/icons (rendered as a brand-tinted CSS mask). */
@@ -80,8 +80,8 @@ const {
             <span class="tree-why__icon" aria-hidden="true">
               <span class="tree-why__icon-glyph" style={`--tree-why-mask:url(${item.icon})`}></span>
             </span>
-            <h3 class="tree-why__card-title" {...editable(editablePrefix, `items.${i}.title`)}>{item.title}</h3>
-            <p class="tree-why__card-text" {...editable(editablePrefix, `items.${i}.description`)}>{item.description}</p>
+            <h3 class="tree-why__card-title" {...editableItemField(editablePrefix, 'title')}>{item.title}</h3>
+            <p class="tree-why__card-text" {...editableItemField(editablePrefix, 'description')}>{item.description}</p>
           </li>
         ))}
       </ul>

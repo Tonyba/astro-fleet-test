@@ -11,7 +11,7 @@
  * All content is prop-driven so it can be fed from the CMS.
  */
 import TreePicture from './TreePicture.astro';
-import { editable, editableArrayItem } from '../utils/editable';
+import { editable, editableArrayItem, editableItemField } from '../utils/editable';
 
 export interface TreeProcessStep {
   /** Two-digit step label shown in the badge, e.g. "01". */
@@ -108,8 +108,8 @@ const {
             <span class="tree-process__badge">{step.number}</span>
           </div>
           <div class="tree-process__step-text">
-            <h3 class="tree-process__step-title" {...editable(editablePrefix, `steps.${i}.title`)}>{step.title}</h3>
-            <p class="tree-process__step-desc" {...editable(editablePrefix, `steps.${i}.description`)}>{step.description}</p>
+            <h3 class="tree-process__step-title" {...editableItemField(editablePrefix, 'title')}>{step.title}</h3>
+            <p class="tree-process__step-desc" {...editableItemField(editablePrefix, 'description')}>{step.description}</p>
           </div>
         </li>
       ))}

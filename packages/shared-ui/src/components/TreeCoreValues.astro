@@ -1,5 +1,5 @@
 ---
-import { editable, editableArrayItem } from '../utils/editable';
+import { editable, editableArrayItem, editableItemField } from '../utils/editable';
 /**
  * TreeCoreValues.astro
  * --------------------
@@ -44,8 +44,8 @@ const { editablePrefix, eyebrow, heading, values = [] } = Astro.props;
             <img src={v.icon} alt="" width="54" height="54" loading="lazy" decoding="async" />
           </span>
           <div class="tree-values__body">
-            <h3 class="tree-values__title" {...editable(editablePrefix, `items.${i}.title`)}>{v.title}</h3>
-            <p class="tree-values__desc" {...editable(editablePrefix, `items.${i}.description`)}>{v.description}</p>
+            <h3 class="tree-values__title" {...editableItemField(editablePrefix, 'title')}>{v.title}</h3>
+            <p class="tree-values__desc" {...editableItemField(editablePrefix, 'description')}>{v.description}</p>
           </div>
         </li>
       ))}

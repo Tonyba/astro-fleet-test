@@ -36,7 +36,7 @@ const { editablePrefix, heading, intro, items = [], iconSrc = '/media/icons/chec
         {items.map((item, i) => (
           <li class="tree-checklist__item" {...editableArrayItem(editablePrefix)}>
             <img class="tree-checklist__tick" src={iconSrc} alt="" width="20" height="20" aria-hidden="true" loading="lazy" />
-            <span {...editable(editablePrefix, `items.${i}`)}>{item}</span>
+            <span>{item}</span>
           </li>
         ))}
       </ul>

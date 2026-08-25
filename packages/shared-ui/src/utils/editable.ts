@@ -79,6 +79,19 @@ export function editableArrayItem(prefix: string | undefined): Record<string, st
 }
 
 /**
+ * A field INSIDE an array item.
+ *
+ * CloudCannon resolves a nested `data-prop` relative to the enclosing
+ * array-item, not to the file root, so an absolute path gets the item's own
+ * path prepended a second time — `whyChoose.items.0.whyChoose.items.0.title`,
+ * which is what "Failed to render text editable region" reports. Passing the
+ * empty prefix emits the bare key and lets the item supply the rest.
+ */
+export function editableItemField(prefix: string | undefined, path: string): Record<string, string> {
+  return editable(prefix === undefined ? undefined : '', path);
+}
+
+/**
  * Join a prefix with a sub-path, for handing a nested prefix to a child
  * component: `child(editablePrefix, 'items')` then indexes as `items.0.title`.
  */
