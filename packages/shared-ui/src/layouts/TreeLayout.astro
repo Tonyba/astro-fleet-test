@@ -48,6 +48,13 @@ export interface Props {
   /** Emits noindex, nofollow and suppresses the canonical — for pages with no
    *  search value of their own, like a form success page. */
   noindex?: boolean;
+  /**
+   * Loads the CloudCannon component registration so this page's
+   * <editable-component> regions can re-render live in the Visual Editor.
+   * Opt-in per page: only pages that actually carry one need it, and a site
+   * not edited in CloudCannon emits nothing at all.
+   */
+  editableComponents?: boolean;
   ogImage?: string;
   siteName: string;
   logoSrc: string;
@@ -68,6 +75,7 @@ const {
   keywords,
   canonicalUrl,
   noindex,
+  editableComponents = false,
   ogImage,
   siteName,
   logoSrc,
@@ -244,5 +252,18 @@ const themeCss = colorDecls || fontDecl ? `:root { ${colorDecls} ${fontDecl} }` 
     </main>
     <TreeFooter {...footer} logoSrc={logoSrc} logoAlt={logoAlt} />
     <slot name="footer-scripts" />
-  </body>
+    {
+    editableComponents && (
+      <script>
+        {/* window.inEditorMode is set by CloudCannon's Visual Editor only, so
+            a visitor never fetches the registration bundle. */}
+        if (window.inEditorMode) {
+          import('../scripts/register-components.ts').catch((error) => {
+            console.warn('Failed to load CloudCannon component registration:', error);
+          });
+        }
+      </script>
+    )
+  }
+</body>
 </html>

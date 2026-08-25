@@ -48,6 +48,7 @@ const header = await getHeader();
   footer={chrome.footer}
   colors={site.theme.colors}
   fonts={site.theme.fonts}
+  editableComponents
 >
   <TreePageHero {...page.hero} editablePrefix="hero" />
 
@@ -56,6 +57,7 @@ const header = await getHeader();
 
   {/* Standalone here — the pill's homepage overlap would eat the 72px gap
       the design leaves above "Our Approach". */}
+  <editable-component data-prop="stats" data-component="TreeStatsBar">
   <TreeStatsBar
     eyebrow={page.stats.eyebrow}
     heading={page.stats.heading}
@@ -63,15 +65,18 @@ const header = await getHeader();
     editablePrefix="stats"
     overlap={false}
   />
+  </editable-component>
 
   <TreeApproach {...page.approach} editablePrefix="approach" />
   <TreeMission {...page.mission} editablePrefix="mission" />
+  <editable-component data-prop="coreValues" data-component="TreeCoreValues">
   <TreeCoreValues
     eyebrow={page.coreValues.eyebrow}
     heading={page.coreValues.heading}
     values={page.coreValues.items}
     editablePrefix="coreValues"
   />
+  </editable-component>
 
   <TreeCtaBanner {...home.ctaBanner} />
   <TreeWhyChoose

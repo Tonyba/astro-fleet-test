@@ -76,6 +76,7 @@ const header = await getHeader();
   footer={chrome.footer}
   colors={site.theme.colors}
   fonts={site.theme.fonts}
+  editableComponents
 >
   <TreeHero {...home.hero} quote={quoteForm} editablePrefix="hero" />
   <TreeTrustBar {...globals.trustBar} />
@@ -83,7 +84,9 @@ const header = await getHeader();
   <TreeWhyChoose eyebrow={home.whyChoose.eyebrow} heading={home.whyChoose.heading} items={home.whyChoose.items} editablePrefix="whyChoose" />
   <TreeCtaBanner {...home.ctaBanner} editablePrefix="ctaBanner" />
   <TreeAbout {...home.about} editablePrefix="about" />
-  <TreeStatsBar eyebrow={home.stats.eyebrow} heading={home.stats.heading} stats={home.stats.items} editablePrefix="stats" />
+  <editable-component data-prop="stats" data-component="TreeStatsBar">
+    <TreeStatsBar eyebrow={home.stats.eyebrow} heading={home.stats.heading} stats={home.stats.items} editablePrefix="stats" />
+  </editable-component>
   <TreeCommercial {...home.commercial} editablePrefix="commercial" />
   <TreeProjects eyebrow={globals.projects.eyebrow} heading={globals.projects.heading} description={globals.projects.description} projects={globals.projects.items} />
   <TreeEmergencyBanner {...globals.emergency} />
