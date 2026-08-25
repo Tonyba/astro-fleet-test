@@ -262,6 +262,32 @@ const remoteLadder = async (url: string, w: number, h: number, v: PictureVariant
   };
 };
 
+/**
+ * One ladder per distinct image, not per render.
+ *
+ * The global sections — projects carousel, testimonials, service areas — are on
+ * 51 of the 63 pages, so a build renders ~2,900 <img> tags for ~57 distinct
+ * photographs. Without this, each render rebuilt the same ladder: three
+ * `getImage()` calls apiece, ~8,700 for a site that only needs ~170.
+ *
+ * The PROMISE is cached, not the result, so pages rendering concurrently share
+ * one in-flight computation instead of racing to do identical work. Module
+ * scope means the cache spans the whole build — the same reason `remoteSizes`
+ * above is shaped this way.
+ */
+const remoteLadders = new Map<string, ReturnType<typeof remoteLadder>>();
+
+const remoteLadderOnce = (url: string, w: number, h: number, v: PictureVariant) => {
+  const key = `${url}|${w}x${h}|${v}`;
+  let entry = remoteLadders.get(key);
+  if (!entry) {
+    entry = remoteLadder(url, w, h, v);
+    remoteLadders.set(key, entry);
+  }
+  return entry;
+};
+
+
 // ---- pre-built ladder -----------------------------------------------------
 // Either produced by the site's prerendered manifest endpoint (an on-demand
 // site, see setImageLadder) or, for an R2 image on a prerendered site, encoded
@@ -270,13 +296,13 @@ const remoteLadder = async (url: string, w: number, h: number, v: PictureVariant
 const built =
   ladderFor(src) ??
   (remoteUrl && canBuildRemote(remoteUrl)
-    ? await remoteLadder(remoteUrl, width, height, variant)
+    ? await remoteLadderOnce(remoteUrl, width, height, variant)
     : undefined);
 
 const mobileBuilt = mobileSrc
   ? (ladderFor(mobileSrc) ??
     (mobileRemoteUrl && canBuildRemote(mobileRemoteUrl)
-      ? await remoteLadder(mobileRemoteUrl, mWidth, mHeight, mVariant)
+      ? await remoteLadderOnce(mobileRemoteUrl, mWidth, mHeight, mVariant)
       : undefined))
   : undefined;
 
