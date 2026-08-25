@@ -37,8 +37,12 @@ intro:
   image: ''
   imageAlt: ''
 
-# Service-specific heading for the shared Why Choose Us block.
-whyChooseHeading: ''
+# Why Choose Us, shown on this service's page. Leave the cards empty to fall
+# back to the homepage block.
+whyChoose:
+  eyebrow: Why choose us
+  heading: ''
+  cards: []
 
 # Bullets on the left, icon chips on the right.
 capabilities:

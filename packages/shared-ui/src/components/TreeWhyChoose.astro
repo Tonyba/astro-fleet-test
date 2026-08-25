@@ -25,6 +25,12 @@ export interface Props {
    * attributes are emitted.
    */
   editablePrefix?: string;
+  /**
+   * Key holding the cards, relative to `editablePrefix`. The homepage stores
+   * them under `items`; a service stores them under `cards`, because `items` is
+   * already plain strings in that collection's checklist.
+   */
+  editableItemsKey?: string;
   eyebrow?: string;
   heading?: string;
   items?: TreeWhyChooseItem[];
@@ -34,6 +40,7 @@ export interface Props {
 
 const {
   editablePrefix,
+  editableItemsKey = 'items',
   eyebrow = 'Why choose us',
   heading = 'Professional Tree Services With Care & Precision',
   items = [
@@ -74,7 +81,7 @@ const {
         <h2 id="tree-why-heading" class="tree-why__heading" {...editable(editablePrefix, 'heading')}>{heading}</h2>
       </div>
 
-      <ul class="tree-why__grid" {...editable(editablePrefix, 'items', 'array')}>
+      <ul class="tree-why__grid" {...editable(editablePrefix, editableItemsKey, 'array')}>
         {items.map((item, i) => (
           <li {...editableArrayItem(editablePrefix)} class="tree-why__card">
             <span class="tree-why__icon" aria-hidden="true">

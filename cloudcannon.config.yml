@@ -166,6 +166,11 @@ collections_config:
         label: Checklist items
         options:
           structures: _structures.text_items
+      cards:
+        type: array
+        label: Why-choose cards
+        options:
+          structures: _structures.why_choose_cards
 
   # ---------------------------------------------------------------------------
   # Service Areas — one file per CITY. The state and county pages above it are
@@ -525,6 +530,15 @@ _structures:
       - label: Item
         icon: notes
         value: ''
+
+  why_choose_cards:
+    values:
+      - label: Card
+        icon: verified
+        value:
+          icon: ''
+          title: ''
+          description: ''
 
   capability_chips:
     values:
