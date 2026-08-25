@@ -18,9 +18,10 @@ seo:
   description: ''
   keywords: []
 hero:
-  title: ''
-  description: ''
-  image: ''
+  title: testing
+  description: stuff
+  image: >-
+    https://pub-d7cd5d926031451e919169ba9cb8e9f0.r2.dev/photos/services-commercial/services-hero-b16c0331.jpg
   imageAlt: ''
   imageSplit: 56.72%
 intro:

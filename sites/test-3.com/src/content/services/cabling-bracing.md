@@ -22,7 +22,8 @@ seo:
 hero:
   title: testing
   description: dqwdqwdwq
-  image: /src/assets/photos/cabling-bracing/hero/image.jpg
+  image: >-
+    https://pub-d7cd5d926031451e919169ba9cb8e9f0.r2.dev/photos/service-areas/services-hero-b16c0331.jpg
   imageAlt: qwdqwdqwdqw
   imageSplit: ''
 intro:
