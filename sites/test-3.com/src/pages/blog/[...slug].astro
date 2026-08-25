@@ -59,9 +59,12 @@ const header = await getHeader();
   <article class="post">
     <div class="tree-container post__inner">
       <nav class="post__crumbs" aria-label="Breadcrumb">
-        <a href="/">Home</a>
+        {/* Source regions: this copy is hardcoded in the template rather than
+            in the post's front matter, so CloudCannon edits the .astro file
+            itself. data-key just has to be unique within that file. */}
+        <a href="/" data-editable="source" data-path="sites/test-3.com/src/pages/blog/[...slug].astro" data-key="crumb-home">Home</a>
         <span aria-hidden="true">/</span>
-        <a href="/blog/">Blog</a>
+        <a href="/blog/" data-editable="source" data-path="sites/test-3.com/src/pages/blog/[...slug].astro" data-key="crumb-blog">Blog</a>
       </nav>
 
       <header class="post__header">
@@ -94,7 +97,7 @@ const header = await getHeader();
       </div>
 
       <footer class="post__footer">
-        <a class="post__back" href="/blog/">← Back to blog</a>
+        <a class="post__back" href="/blog/" data-editable="source" data-path="sites/test-3.com/src/pages/blog/[...slug].astro" data-key="back-link">← Back to blog</a>
       </footer>
     </div>
   </article>

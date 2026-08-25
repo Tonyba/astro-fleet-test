@@ -1,5 +1,5 @@
 ---
-import { editable } from '../utils/editable';
+import { editable, editableArrayItem } from '../utils/editable';
 /**
  * TreeServiceChecklist.astro
  * --------------------------
@@ -32,9 +32,9 @@ const { editablePrefix, heading, intro, items = [], iconSrc = '/media/icons/chec
     </div>
 
     {items.length > 0 && (
-      <ul class="tree-checklist__list">
+      <ul class="tree-checklist__list" {...editable(editablePrefix, 'items', 'array')}>
         {items.map((item, i) => (
-          <li class="tree-checklist__item">
+          <li class="tree-checklist__item" {...editableArrayItem(editablePrefix)}>
             <img class="tree-checklist__tick" src={iconSrc} alt="" width="20" height="20" aria-hidden="true" loading="lazy" />
             <span {...editable(editablePrefix, `items.${i}`)}>{item}</span>
           </li>

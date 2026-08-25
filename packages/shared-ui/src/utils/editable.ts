@@ -71,6 +71,14 @@ export function editableImage(
 }
 
 /**
+ * Marks one entry of an array region. It carries no `data-prop`: the container
+ * names the array, and position in the DOM identifies the item.
+ */
+export function editableArrayItem(prefix: string | undefined): Record<string, string> {
+  return prefix === undefined ? {} : { 'data-editable': 'array-item' };
+}
+
+/**
  * Join a prefix with a sub-path, for handing a nested prefix to a child
  * component: `child(editablePrefix, 'items')` then indexes as `items.0.title`.
  */

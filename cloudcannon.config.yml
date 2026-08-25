@@ -161,6 +161,11 @@ collections_config:
           values:
             - tree-care
             - outdoor-solutions
+      items:
+        type: array
+        label: Checklist items
+        options:
+          structures: _structures.text_items
 
   # ---------------------------------------------------------------------------
   # Service Areas — one file per CITY. The state and county pages above it are
@@ -205,6 +210,12 @@ collections_config:
       stateAbbr:
         type: text
         comment: Postal abbreviation shown on cards and in titles, e.g. CT.
+      items:
+        # Both the "common problems" row and the per-town FAQ use `items`, with
+        # different shapes, so the + Add button offers one of each.
+        type: array
+        options:
+          structures: _structures.location_items
 
   # ---------------------------------------------------------------------------
   # Blog posts.
@@ -458,19 +469,102 @@ _inputs:
     comment: Percentage width of the image half of a split hero, e.g. 56.72%.
 
   # --- recurring arrays ---
+  # An array input with no items and no structure is "misconfigured" in the
+  # CMS: CloudCannon cannot infer what an entry looks like, so the + Add button
+  # has nothing to add. Every array that can legitimately be empty therefore
+  # names a structure. Arrays that are always populated infer from their items
+  # and are left alone.
   paragraphs:
     type: array
     comment: One paragraph per entry.
+    options:
+      structures: _structures.text_items
   bullets:
     type: array
+    options:
+      structures: _structures.text_items
   keywords:
     type: array
     comment: SEO keywords for this page.
+    options:
+      structures: _structures.text_items
+  certifications:
+    type: array
+    options:
+      structures: _structures.text_items
+  licenseNumbers:
+    type: array
+    label: Licence numbers
+    options:
+      structures: _structures.text_items
+  chips:
+    type: array
+    label: Icon chips
+    options:
+      structures: _structures.capability_chips
+  submenu:
+    type: array
+    label: Submenu
+    options:
+      structures: _structures.menu_links
+  overrides:
+    type: array
+    label: Per-URL overrides
+    comment: Lets one page opt out of the title pattern above.
+    options:
+      structures: _structures.seo_overrides
 
 # -----------------------------------------------------------------------------
 # Shapes offered by the "+ Add" button on the arrays above.
 # -----------------------------------------------------------------------------
 _structures:
+  # A plain string entry — for arrays of text (paragraphs, bullets, keywords,
+  # checklist items). The value is the literal inserted when + Add is clicked.
+  text_items:
+    values:
+      - label: Item
+        icon: notes
+        value: ''
+
+  capability_chips:
+    values:
+      - label: Chip
+        icon: label
+        value:
+          icon: ''
+          label: ''
+
+  menu_links:
+    values:
+      - label: Link
+        icon: link
+        value:
+          label: New link
+          href: /
+
+  seo_overrides:
+    values:
+      - label: URL override
+        icon: link
+        value:
+          path: /
+          title: ''
+          description: ''
+
+  location_items:
+    values:
+      - label: Common problem
+        icon: report
+        value:
+          icon: ''
+          title: ''
+          description: ''
+      - label: FAQ question
+        icon: help
+        value:
+          question: ''
+          answer: ''
+
   form_fields:
     values:
       - label: Text

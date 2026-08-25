@@ -1,5 +1,5 @@
 ---
-import { editable } from '../utils/editable';
+import { editable, editableArrayItem } from '../utils/editable';
 /**
  * TreeStatsBar.astro
  * ------------------
@@ -52,9 +52,9 @@ const {
         <p class="tree-stats__eyebrow" {...editable(editablePrefix, 'eyebrow')}>{eyebrow}</p>
         <p class="tree-stats__heading" {...editable(editablePrefix, 'heading')}>{heading}</p>
       </div>
-      <ul class="tree-stats__list">
+      <ul class="tree-stats__list" {...editable(editablePrefix, 'items', 'array')}>
         {stats.map((stat, i) => (
-          <li class="tree-stats__item">
+          <li class="tree-stats__item" {...editableArrayItem(editablePrefix)}>
             <span class="tree-stats__value" {...editable(editablePrefix, `items.${i}.value`)}>{stat.value}</span>
             <span class="tree-stats__label" {...editable(editablePrefix, `items.${i}.label`)}>{stat.label}</span>
           </li>
