@@ -7,6 +7,7 @@
  * "View Services" link.
  */
 import TreePicture from './TreePicture.astro';
+import { editable } from '../utils/editable';
 
 export interface ServiceItem {
   title: string;
@@ -18,6 +19,12 @@ export interface ServiceItem {
 }
 
 export interface Props {
+  /**
+   * Opts this section into CloudCannon's Visual Editor and says where its props
+   * live in the page's source file — see utils/editable.ts. Omit it and no data
+   * attributes are emitted.
+   */
+  editablePrefix?: string;
   eyebrow?: string;
   heading?: string;
   services?: ServiceItem[];
@@ -46,6 +53,7 @@ export interface Props {
 }
 
 const {
+  editablePrefix,
   eyebrow = 'Our Services',
   heading = 'Professional Tree Services for Residential & Commercial Properties',
   viewAllLabel = 'View All Services',
@@ -107,8 +115,8 @@ const {
       class:list={['tree-services__header', `tree-services__header--${align}`]}
       style={`--tree-services-heading-width: ${headingWidth};`}
     >
-      {eyebrow && <p class="tree-services__eyebrow">{eyebrow}</p>}
-      <h2 class="tree-services__heading">{heading}</h2>
+      {eyebrow && <p class="tree-services__eyebrow" {...editable(editablePrefix, 'eyebrow')}>{eyebrow}</p>}
+      <h2 class="tree-services__heading" {...editable(editablePrefix, 'heading')}>{heading}</h2>
     </header>
 
     <ul class="tree-services__grid">

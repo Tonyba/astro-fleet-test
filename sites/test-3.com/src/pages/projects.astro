@@ -40,7 +40,7 @@ const header = await getHeader();
   colors={site.theme.colors}
   fonts={site.theme.fonts}
 >
-  <TreePageHero {...page.hero} compact />
+  <TreePageHero {...page.hero} editablePrefix="hero" compact />
   <TreeGallery
     items={page.gallery.items}
     initialCount={page.gallery.initialCount}

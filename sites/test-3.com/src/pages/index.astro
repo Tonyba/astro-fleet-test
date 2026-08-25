@@ -77,14 +77,14 @@ const header = await getHeader();
   colors={site.theme.colors}
   fonts={site.theme.fonts}
 >
-  <TreeHero {...home.hero} quote={quoteForm} />
+  <TreeHero {...home.hero} quote={quoteForm} editablePrefix="hero" />
   <TreeTrustBar {...globals.trustBar} />
-  <TreeServices eyebrow={home.services.eyebrow} heading={home.services.heading} services={homeServices} viewAllHref="/services/residential/" />
-  <TreeWhyChoose eyebrow={home.whyChoose.eyebrow} heading={home.whyChoose.heading} items={home.whyChoose.items} />
-  <TreeCtaBanner {...home.ctaBanner} />
-  <TreeAbout {...home.about} />
+  <TreeServices eyebrow={home.services.eyebrow} heading={home.services.heading} services={homeServices} viewAllHref="/services/residential/" editablePrefix="services" />
+  <TreeWhyChoose eyebrow={home.whyChoose.eyebrow} heading={home.whyChoose.heading} items={home.whyChoose.items} editablePrefix="whyChoose" />
+  <TreeCtaBanner {...home.ctaBanner} editablePrefix="ctaBanner" />
+  <TreeAbout {...home.about} editablePrefix="about" />
   <TreeStatsBar eyebrow={home.stats.eyebrow} heading={home.stats.heading} stats={home.stats.items} />
-  <TreeCommercial {...home.commercial} />
+  <TreeCommercial {...home.commercial} editablePrefix="commercial" />
   <TreeProjects eyebrow={globals.projects.eyebrow} heading={globals.projects.heading} description={globals.projects.description} projects={globals.projects.items} />
   <TreeEmergencyBanner {...globals.emergency} />
   <TreeProcess eyebrow={home.process.eyebrow} heading={home.process.heading} description={home.process.description} steps={home.process.steps} />

@@ -14,8 +14,15 @@
  * baked in, so they blend seamlessly against the section fill.
  */
 import TreePicture from './TreePicture.astro';
+import { editable } from '../utils/editable';
 
 export interface Props {
+  /**
+   * Opts this section into CloudCannon's Visual Editor and says where its props
+   * live in the page's source file — see utils/editable.ts. Omit it and no data
+   * attributes are emitted.
+   */
+  editablePrefix?: string;
   headingLead?: string;
   headingSub?: string;
   primaryLabel?: string;
@@ -29,6 +36,7 @@ export interface Props {
 }
 
 const {
+  editablePrefix,
   headingLead = 'Need a tree expert?',
   headingSub = 'Get your free estimate today.',
   primaryLabel = 'Get free quote now',
@@ -51,13 +59,13 @@ const telHref = phoneHref ?? `tel:${phoneNumber.replace(/[^\d+]/g, '')}`;
 
   <div class="tree-cta-banner__inner tree-container">
     <div class="tree-cta-banner__text">
-      <h2 class="tree-cta-banner__heading">{headingLead}</h2>
-      <p class="tree-cta-banner__subheading">{headingSub}</p>
+      <h2 class="tree-cta-banner__heading" {...editable(editablePrefix, 'headingLead')}>{headingLead}</h2>
+      <p class="tree-cta-banner__subheading" {...editable(editablePrefix, 'headingSub')}>{headingSub}</p>
     </div>
 
     <div class="tree-cta-banner__actions">
       <a href={primaryHref} class="tree-cta-banner__btn tree-cta-banner__btn--primary">
-        {primaryLabel}
+        <span {...editable(editablePrefix, 'primaryLabel')}>{primaryLabel}</span>
       </a>
       <a href={telHref} class="tree-cta-banner__btn tree-cta-banner__btn--call">
         <img
@@ -70,7 +78,7 @@ const telHref = phoneHref ?? `tel:${phoneNumber.replace(/[^\d+]/g, '')}`;
           loading="lazy"
           decoding="async"
         />
-        <span>{phoneLabel}</span>
+        <span {...editable(editablePrefix, 'phoneLabel')}>{phoneLabel}</span>
       </a>
     </div>
 

@@ -49,7 +49,7 @@ const header = await getHeader();
   colors={site.theme.colors}
   fonts={site.theme.fonts}
 >
-  <TreePageHero {...services.hero} />
+  <TreePageHero {...services.hero} editablePrefix="hero" />
   <TreeStatsRow stats={services.stats} />
   <TreeServices
     heading={services.services.heading}

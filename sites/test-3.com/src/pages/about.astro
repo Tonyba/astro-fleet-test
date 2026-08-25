@@ -49,7 +49,7 @@ const header = await getHeader();
   colors={site.theme.colors}
   fonts={site.theme.fonts}
 >
-  <TreePageHero {...page.hero} />
+  <TreePageHero {...page.hero} editablePrefix="hero" />
 
   {/* "Our Story" is the same block as a service page's intro, plus an eyebrow. */}
   <TreeServiceIntro {...page.story} />

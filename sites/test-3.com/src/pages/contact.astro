@@ -46,7 +46,7 @@ const header = await getHeader();
     intro stay on the hero so the page keeps a real <h1>; the form renders
     header-less beneath them.
   */}
-  <TreePageHero {...page.hero} titleSize="36px" titleTransform="uppercase">
+  <TreePageHero {...page.hero} editablePrefix="hero" titleSize="36px" titleTransform="uppercase">
     <TreeQuoteForm
       {...quoteForm}
       variant="inverse"

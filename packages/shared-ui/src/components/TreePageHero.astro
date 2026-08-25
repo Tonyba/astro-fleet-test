@@ -14,8 +14,15 @@
  * be reused by any interior page and edited from the CMS.
  */
 import TreePicture from "./TreePicture.astro";
+import { editable } from "../utils/editable";
 
 export interface Props {
+  /**
+   * Opts this section into CloudCannon's Visual Editor and says where its props
+   * live in the page's source file — `"hero"` binds the title to `hero.title`.
+   * Omit it and no data attributes are emitted at all.
+   */
+  editablePrefix?: string;
   title: string;
   description?: string;
   /** Solid accent button. */
@@ -48,6 +55,7 @@ export interface Props {
 }
 
 const {
+  editablePrefix,
   title,
   description,
   primaryCta,
@@ -82,8 +90,19 @@ const telHref = phoneCta
 >
   <div class="tree-container tree-page-hero__inner">
     <div class="tree-page-hero__copy">
-      <h1 class="tree-page-hero__title">{title}</h1>
-      {description && <p class="tree-page-hero__desc">{description}</p>}
+      <h1 class="tree-page-hero__title" {...editable(editablePrefix, "title")}>
+        {title}
+      </h1>
+      {
+        description && (
+          <p
+            class="tree-page-hero__desc"
+            {...editable(editablePrefix, "description")}
+          >
+            {description}
+          </p>
+        )
+      }
 
       {
         (primaryCta || phoneCta) && (
