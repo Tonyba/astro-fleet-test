@@ -110,6 +110,9 @@ const {
     <div class="tree-about__media">
       <figure class="tree-about__figure">
         <TreePicture
+          editablePrefix={editablePrefix}
+          editableSrcKey="photo.src"
+          editableAltKey="photo.alt"
           class="tree-about__photo"
           src={photo.src}
           alt={photo.alt}
@@ -124,7 +127,7 @@ const {
       <article class="tree-about__review" aria-label={`Review by ${review.name}`}>
         <img class="tree-about__review-source" src={review.sourceSrc} alt={review.sourceAlt} width="30" height="30" loading="lazy" />
         <div class="tree-about__review-head">
-          <TreePicture class="tree-about__review-avatar" src={review.avatarSrc} alt={review.avatarAlt} width={43} height={43} variant="fixed" loading="lazy" decoding="async" />
+          <TreePicture editablePrefix={editablePrefix} editableSrcKey="review.avatarSrc" editableAltKey="review.avatarAlt" class="tree-about__review-avatar" src={review.avatarSrc} alt={review.avatarAlt} width={43} height={43} variant="fixed" loading="lazy" decoding="async" />
           <div class="tree-about__review-meta">
             <p class="tree-about__review-name" {...editable(editablePrefix, 'review.name')}>{review.name}</p>
             <div class="tree-about__review-rating">

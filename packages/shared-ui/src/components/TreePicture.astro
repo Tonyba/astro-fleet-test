@@ -28,6 +28,7 @@ import type { ImageMetadata } from 'astro';
 import { getImage, Picture } from 'astro:assets';
 import { resolveImage, remoteSource, peek, ladderFor, usesLadder } from '../utils/images';
 import { extensionOf } from '../media/media-url';
+import { editableImage } from '../utils/editable';
 
 /** Where the image sits in the layout — decides the srcset ladder. */
 export type PictureVariant = 'hero' | 'card' | 'inline' | 'fixed';
@@ -47,6 +48,15 @@ export interface Props {
   sizes?: string;
   /** Set on the <img> when the image is purely decorative. */
   ariaHidden?: boolean;
+  /**
+   * CloudCannon image region. `editablePrefix` says where this image's keys sit
+   * in the page's source file and the two key names complete the paths, so
+   * `editablePrefix="hero"` with `editableSrcKey="image"` binds `hero.image`.
+   * Omit the prefix and nothing is emitted. See utils/editable.ts.
+   */
+  editablePrefix?: string;
+  editableSrcKey?: string;
+  editableAltKey?: string;
   /** Art direction: alternate source used below `mobileMedia`. */
   mobileSrc?: string | ImageMetadata;
   mobileWidth?: number;
@@ -83,6 +93,9 @@ const {
   mobileHeight,
   mobileMedia = '(max-width: 1024px)',
   mobileVariant,
+  editablePrefix,
+  editableSrcKey,
+  editableAltKey,
   ...rest
 } = Astro.props as Props & Record<string, unknown>;
 
@@ -92,6 +105,11 @@ const {
 const cidAttrs = Object.fromEntries(
   Object.entries(rest).filter(([key]) => key.startsWith('data-astro-cid'))
 );
+
+// CloudCannon image region. Goes on the <img> (or on <Picture>, which forwards
+// it there) so the editor has an element whose src it can swap. Empty unless
+// the caller opted in, so nothing changes for a site that is not CMS-edited.
+const editableAttrs = editableImage(editablePrefix, editableSrcKey, editableAltKey);
 
 /** `fixed` slots (badges, step icons) only ever need 1x/2x of their box. */
 const widthsFor = (v: PictureVariant, w: number) =>
@@ -350,6 +368,7 @@ const fallback = !artDirected
         decoding={decoding}
         aria-hidden={ariaHidden ? 'true' : undefined}
         {...cidAttrs}
+        {...editableAttrs}
       />
     </picture>
   ) : built ? (
@@ -369,11 +388,13 @@ const fallback = !artDirected
         decoding={decoding}
         aria-hidden={ariaHidden ? 'true' : undefined}
         {...cidAttrs}
+        {...editableAttrs}
       />
     </picture>
   ) : image ? (
     <Picture
       {...cidAttrs}
+      {...editableAttrs}
       src={image}
       alt={alt}
       width={width}
@@ -403,6 +424,7 @@ const fallback = !artDirected
       sizes={sizes}
       aria-hidden={ariaHidden ? 'true' : undefined}
       {...cidAttrs}
+      {...editableAttrs}
     />
   )
 }

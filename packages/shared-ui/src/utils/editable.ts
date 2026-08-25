@@ -45,6 +45,32 @@ export function editable(
 }
 
 /**
+ * Attributes binding an <img> to the keys holding its path and its alt text.
+ *
+ * Images use a different shape from text: `data-prop-src` and `data-prop-alt`
+ * rather than a single `data-prop`, because one region edits two keys at once —
+ * picking a new photograph in the editor should let you retype the alt text in
+ * the same breath. Both paths are relative to `prefix`, exactly like `editable`.
+ *
+ * `altKey` is optional: some slots are decorative or take their alt from
+ * elsewhere, and binding a key that does not exist in the file would offer the
+ * editor a field that writes somewhere nothing reads.
+ */
+export function editableImage(
+  prefix: string | undefined,
+  srcKey: string | undefined,
+  altKey?: string
+): Record<string, string> {
+  if (prefix === undefined || !srcKey) return {};
+  const join = (key: string) => (prefix ? `${prefix}.${key}` : key);
+  return {
+    'data-editable': 'image',
+    'data-prop-src': join(srcKey),
+    ...(altKey ? { 'data-prop-alt': join(altKey) } : {}),
+  };
+}
+
+/**
  * Join a prefix with a sub-path, for handing a nested prefix to a child
  * component: `child(editablePrefix, 'items')` then indexes as `items.0.title`.
  */

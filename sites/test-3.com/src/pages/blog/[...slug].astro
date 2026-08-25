@@ -74,6 +74,9 @@ const header = await getHeader();
       </header>
 
       <TreePicture
+        editablePrefix=""
+        editableSrcKey="image"
+        editableAltKey="imageAlt"
         class="post__cover"
         src={post.data.image ?? blog.fallbackImage}
         alt={post.data.imageAlt ?? post.data.title}

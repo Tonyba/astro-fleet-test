@@ -64,6 +64,8 @@ const telHref = `tel:${phone.number.replace(/[^\d+]/g, '')}`;
 <section class="tree-hero">
   <div class="tree-hero__bg" aria-hidden="true">
     <TreePicture
+      editablePrefix={editablePrefix}
+      editableSrcKey="backgroundImage"
       src={backgroundImage}
       mobileSrc={backgroundImageMobile}
       mobileWidth={393}
