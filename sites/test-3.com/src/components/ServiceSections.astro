@@ -108,10 +108,15 @@ const resolvedHeroTitle = heroTitle || d.hero?.title || `${d.title} Services Acr
   )
 }
 
+{/* Each service owns its Why Choose block so the section is editable on its
+    own page. The homepage block is the fallback for anything not filled in,
+    and for the service-by-city pages, which have no entry of their own. */}
 <TreeWhyChoose
-  eyebrow={home.whyChoose.eyebrow}
-  heading={whyChooseHeading || d.whyChooseHeading || home.whyChoose.heading}
-  items={home.whyChoose.items}
+  eyebrow={d.whyChoose?.eyebrow || home.whyChoose.eyebrow}
+  heading={whyChooseHeading || d.whyChoose?.heading || home.whyChoose.heading}
+  items={d.whyChoose?.cards?.length ? d.whyChoose.cards : home.whyChoose.items}
+  editablePrefix={whyChooseHeading ? undefined : childPrefix(editablePrefix, 'whyChoose')}
+  editableItemsKey="cards"
 />
 
 <TreeCtaBanner {...home.ctaBanner} />

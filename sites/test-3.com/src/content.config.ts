@@ -105,8 +105,32 @@ const services = defineCollection({
       imageAlt: string().optional(),
     }).optional(),
 
-    /** Service-specific heading for the shared Why Choose Us block. */
-    whyChooseHeading: string().optional(),
+    /**
+     * Why Choose Us, per service.
+     *
+     * This used to be one shared block read from the homepage, which meant it
+     * could not be edited on a service page — a data-prop resolves against the
+     * entry that produced the page, and homepage/home.json is a different file.
+     * Each service now owns its own copy so the section is editable in place.
+     *
+     * The array is `cards`, not `items`, deliberately: `items` is already plain
+     * strings in `checklist`, and one key cannot be two shapes in the same
+     * collection without making every + Add button ambiguous.
+     *
+     * Everything is optional and ServiceSections falls back to the homepage
+     * block, so a service that has not been filled in still renders.
+     */
+    whyChoose: object({
+      eyebrow: string().optional(),
+      heading: string().optional(),
+      cards: array(
+        object({
+          icon: string().default(''),
+          title: string().default(''),
+          description: string().default(''),
+        }),
+      ).default([]),
+    }).optional(),
 
     /** "WHAT WE CAN DO FOR YOU" — bullets on the left, icon chips on the right. */
     capabilities: object({
