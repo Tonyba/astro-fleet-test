@@ -33,8 +33,8 @@ intro:
   imageAlt: ''
 whyChooseHeading: ''
 capabilities:
-  heading: ''
-  intro: ''
+  heading: suff
+  intro: testing
   bullets: []
   ctaLabel: Get a Free Estimate
   ctaHref: /contact/
@@ -43,8 +43,10 @@ checklist:
   heading: ''
   intro: ''
   items: []
-bodyImage: ''
+bodyImage: >-
+  https://pub-d7cd5d926031451e919169ba9cb8e9f0.r2.dev/photos/homepage/commercial/photo/src-54d1a1e9.jpg
 bodyImageAlt: ''
 bodyCtaLabel: Get a Free Estimate
 bodyCtaHref: /contact/
 ---
+jnjn dqwdwqdqwd
