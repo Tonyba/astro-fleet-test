@@ -23,6 +23,14 @@ export interface Props {
    * Omit it and no data attributes are emitted at all.
    */
   editablePrefix?: string;
+  /**
+   * Keys holding the hero photograph, relative to `editablePrefix`. Pass
+   * `editableSrcKey={undefined}` to suppress the image region on a page where
+   * the photo falls back to a DIFFERENT file — binding it there would point the
+   * editor at a key that is not what rendered.
+   */
+  editableSrcKey?: string;
+  editableAltKey?: string;
   title: string;
   description?: string;
   /** Solid accent button. */
@@ -56,6 +64,8 @@ export interface Props {
 
 const {
   editablePrefix,
+  editableSrcKey = 'image',
+  editableAltKey = 'imageAlt',
   title,
   description,
   primaryCta,
@@ -148,8 +158,8 @@ const telHref = phoneCta
 
   <TreePicture
     editablePrefix={editablePrefix}
-    editableSrcKey="image"
-    editableAltKey="imageAlt"
+    editableSrcKey={editableSrcKey}
+    editableAltKey={editableAltKey}
     class="tree-page-hero__img"
     pictureClass="tree-page-hero__picture"
     src={image}

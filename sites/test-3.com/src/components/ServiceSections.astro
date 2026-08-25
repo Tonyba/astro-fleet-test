@@ -75,6 +75,12 @@ const resolvedHeroTitle = heroTitle || d.hero?.title || `${d.title} Services Acr
 {
   d.hero?.image && (
     <TreePageHero
+      {/* Only bindable when nothing overrode the entry's own hero. The
+          service-by-city pages pass heroTitle/heroDescription AND no prefix,
+          so this resolves to undefined there and emits nothing. */}
+      editablePrefix={
+        heroTitle || heroDescription ? undefined : childPrefix(editablePrefix, 'hero')
+      }
       title={resolvedHeroTitle}
       description={heroDescription || d.hero.description}
       primaryCta={{ label: 'Get free quote now', href: '#free-inspection' }}
@@ -125,6 +131,7 @@ const resolvedHeroTitle = heroTitle || d.hero?.title || `${d.title} Services Acr
 }
 
 <TreeServiceProse
+  editablePrefix={editablePrefix}
   image={d.bodyImage}
   imageAlt={d.bodyImageAlt}
   ctaLabel={d.bodyCtaLabel}

@@ -120,6 +120,11 @@ const faqItems = d.faq?.items?.length ? d.faq.items : globals.faq.items;
   fonts={site.theme.fonts}
 >
   <TreePageHero
+    editablePrefix="hero"
+    {/* The photo falls back to settings/locations.json, a different file, so
+        the image region only exists when this town supplies its own. */}
+    editableSrcKey={d.hero?.image ? 'image' : undefined}
+    editableAltKey={d.hero?.image ? 'imageAlt' : undefined}
     title={d.hero?.title || `Tree Service in ${city.label}`}
     description={d.hero?.description || fillTokens(defaults.heroDescription, tokens)}
     primaryCta={{ label: defaults.ctaLabel, href: defaults.ctaHref }}
