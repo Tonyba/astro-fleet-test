@@ -52,8 +52,7 @@ const { editablePrefix, image, imageAlt = '', ctaLabel, ctaHref = '#free-inspect
     <div class="tree-service-prose__body">
       <div
         class="tree-service-prose__rte"
-        {...editable(editablePrefix, '@content')}
-        data-type={editablePrefix !== undefined ? 'block' : undefined}
+        {...editable(editablePrefix, '@content', 'text', 'block')}
       >
         <slot />
       </div>

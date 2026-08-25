@@ -24,7 +24,7 @@
     ],
     "primaryCta": {
       "label": "Get Free Estimate",
-      "sublabel": "Fast &amp; Easy Quote",
+      "sublabel": "Fast & Easy Quote",
       "href": "#quote"
     },
     "phone": {
@@ -56,7 +56,7 @@
   },
   "services": {
     "eyebrow": "Our Services",
-    "heading": "Professional Tree Services for Residential &amp; Commercial Properties"
+    "heading": "Professional Tree Services for Residential & Commercial Properties"
   },
   "about": {
     "eyebrow": "About us",
@@ -114,7 +114,7 @@
   },
   "whyChoose": {
     "eyebrow": "Why choose us",
-    "heading": "Professional Tree Services With Care &amp; Precision",
+    "heading": "Professional Tree Services With Care & Precision",
     "items": [
       {
         "icon": "/media/icons/whyChoose/items/0/icon.png",
@@ -128,12 +128,12 @@
       },
       {
         "icon": "/media/icons/whyChoose/items/2/icon.png",
-        "title": "Free Estimates &amp; Discounts",
+        "title": "Free Estimates & Discounts",
         "description": "We offer free consultations and a 10% discount for seniors."
       },
       {
         "icon": "/media/icons/whyChoose/items/3/icon.png",
-        "title": "Fully Licensed &amp; Insured",
+        "title": "Fully Licensed & Insured",
         "description": "Our certified arborists provide expert solutions to help protect your trees, landscape, and property investment."
       }
     ]
@@ -169,7 +169,7 @@
   },
   "process": {
     "eyebrow": "How it works",
-    "heading": "Simple, Safe &amp; Efficient Tree Service Process",
+    "heading": "Simple, Safe & Efficient Tree Service Process",
     "description": "At Erick's Tree Services, we make it easy to get the tree services you need without hassle. It's easy and here is our process.",
     "steps": [
       {
@@ -197,7 +197,7 @@
         "number": "04",
         "icon": "r2:graphics/process/steps/3/icon-940e4325.png",
         "iconAlt": "Broom",
-        "title": "Cleanup &amp; Final Inspection",
+        "title": "Cleanup & Final Inspection",
         "description": "We thoroughly clean the site and perform a final inspection to make sure everything is safe, clear, and left in excellent condition."
       }
     ]

@@ -37,11 +37,21 @@ export type EditableType = 'text' | 'image' | 'array' | 'array-item';
 export function editable(
   prefix: string | undefined,
   path: string,
-  type: EditableType = 'text'
+  type: EditableType = 'text',
+  dataType: 'span' | 'text' | 'block' = 'span'
 ): Record<string, string> {
   if (prefix === undefined) return {};
   const full = prefix ? (path ? `${prefix}.${path}` : prefix) : path;
-  return { 'data-editable': type, 'data-prop': full };
+  const attrs: Record<string, string> = { 'data-editable': type, 'data-prop': full };
+
+  // Text regions default to `span` — "no rich text formatting, plain inline
+  // text". Every one of these binds a plain string in JSON or front matter, so
+  // anything richer is wrong for the data model: left to CloudCannon's own
+  // default the editor treated them as HTML and round-tripped an ampersand
+  // back as `&amp;`, which then rendered as `&amp;amp;` and, under the
+  // capitalize on those headings, as "&Amp;". Pass 'block' for markdown bodies.
+  if (type === 'text') attrs['data-type'] = dataType;
+  return attrs;
 }
 
 /**
