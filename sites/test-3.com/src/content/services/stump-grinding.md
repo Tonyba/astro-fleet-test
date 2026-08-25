@@ -32,28 +32,37 @@ intro:
   image: ''
   imageAlt: ''
 whyChoose:
-  eyebrow: 'Why choose us'
-  heading: 'Professional Tree Services With Care & Precision'
+  eyebrow: Why choose us
+  heading: Professional Tree Services With Care & Precision
   cards:
-    - icon: '/media/icons/whyChoose/items/0/icon.png'
-      title: 'Emergency Response Services'
-      description: 'We provide fast-response emergency tree removal and storm cleanup services when hazardous situations require immediate attention.'
-    - icon: '/media/icons/whyChoose/items/1/icon.png'
-      title: '25+ Years Experience'
-      description: 'Our experienced team is committed to delivering the professional tree care and reliable service our clients deserve.'
-    - icon: '/media/icons/whyChoose/items/2/icon.png'
-      title: 'Free Estimates & Discounts'
-      description: 'We offer free consultations and a 10% discount for seniors.'
-    - icon: '/media/icons/whyChoose/items/3/icon.png'
-      title: 'Fully Licensed & Insured'
-      description: 'Our certified arborists provide expert solutions to help protect your trees, landscape, and property investment.'
+    - icon: /media/icons/whyChoose/items/0/icon.png
+      title: Emergency Response Services
+      description: >-
+        We provide fast-response emergency tree removal and storm cleanup
+        services when hazardous situations require immediate attention.
+    - icon: /media/icons/whyChoose/items/1/icon.png
+      title: 25+ Years Experience
+      description: >-
+        Our experienced team is committed to delivering the professional tree
+        care and reliable service our clients deserve.
+    - icon: /media/icons/whyChoose/items/2/icon.png
+      title: Free Estimates & Discounts
+      description: We offer free consultations and a 10% discount for seniors.
+    - icon: /media/icons/whyChoose/items/3/icon.png
+      title: Fully Licensed & Insured
+      description: >-
+        Our certified arborists provide expert solutions to help protect your
+        trees, landscape, and property investment.
 capabilities:
-  heading: ''
-  intro: ''
+  heading: qwdqwd
+  intro: qwdwqdwqd
   bullets: []
   ctaLabel: Get a Free Estimate
   ctaHref: /contact/
-  chips: []
+  chips:
+    - icon: >-
+        https://pub-d7cd5d926031451e919169ba9cb8e9f0.r2.dev/graphics/process/steps/0/icon-15cae001.png
+      label: qwdqwdqwd
 checklist:
   heading: ''
   intro: ''
@@ -63,3 +72,4 @@ bodyImageAlt: ''
 bodyCtaLabel: Get a Free Estimate
 bodyCtaHref: /contact/
 ---
+wefwefewfwefwefwefwefwef
