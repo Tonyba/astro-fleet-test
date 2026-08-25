@@ -69,8 +69,8 @@ const header = await getHeader();
           <img src="/media/icons/blog-calendar.svg" alt="" width="22" height="22" aria-hidden="true" />
           <time datetime={post.data.date.toISOString()}>{dateLabel}</time>
         </span>
-        <h1 class="post__title">{post.data.title}</h1>
-        {post.data.description && <p class="post__lead">{post.data.description}</p>}
+        <h1 class="post__title" data-editable="text" data-prop="title">{post.data.title}</h1>
+        {post.data.description && <p class="post__lead" data-editable="text" data-prop="description">{post.data.description}</p>}
       </header>
 
       <TreePicture
@@ -86,7 +86,7 @@ const header = await getHeader();
         decoding="async"
       />
 
-      <div class="post__prose">
+      <div class="post__prose" data-editable="text" data-prop="@content" data-type="block">
         <Content />
       </div>
 

@@ -83,11 +83,11 @@ const header = await getHeader();
   <TreeWhyChoose eyebrow={home.whyChoose.eyebrow} heading={home.whyChoose.heading} items={home.whyChoose.items} editablePrefix="whyChoose" />
   <TreeCtaBanner {...home.ctaBanner} editablePrefix="ctaBanner" />
   <TreeAbout {...home.about} editablePrefix="about" />
-  <TreeStatsBar eyebrow={home.stats.eyebrow} heading={home.stats.heading} stats={home.stats.items} />
+  <TreeStatsBar eyebrow={home.stats.eyebrow} heading={home.stats.heading} stats={home.stats.items} editablePrefix="stats" />
   <TreeCommercial {...home.commercial} editablePrefix="commercial" />
   <TreeProjects eyebrow={globals.projects.eyebrow} heading={globals.projects.heading} description={globals.projects.description} projects={globals.projects.items} />
   <TreeEmergencyBanner {...globals.emergency} />
-  <TreeProcess eyebrow={home.process.eyebrow} heading={home.process.heading} description={home.process.description} steps={home.process.steps} />
+  <TreeProcess eyebrow={home.process.eyebrow} heading={home.process.heading} description={home.process.description} steps={home.process.steps} editablePrefix="process" />
   <TreeTestimonials eyebrow={globals.testimonials.eyebrow} heading={globals.testimonials.heading} description={globals.testimonials.description} rating={globals.testimonials.rating} reviews={globals.testimonials.reviews} />
   <TreeServiceAreas
     eyebrow={globals.serviceAreas.eyebrow}

@@ -35,9 +35,17 @@ import chrome from '../content/settings/header-footer.json';
 import home from '../content/homepage/home.json';
 import { getForm } from '../lib/forms';
 import { globals } from '../lib/global-sections';
+import { childPrefix } from '@astro-fleet/shared-ui/src/utils/editable';
 
 export interface Props {
   service: CollectionEntry<'services'>['data'];
+  /**
+   * Root of the service entry for CloudCannon's Visual Editor — pass '' from
+   * /service/<slug>/, where the page IS that entry. The service×city pages
+   * under /locations/ leave it undefined: those URLs have no collection entry
+   * of their own, so nothing on them can be bound.
+   */
+  editablePrefix?: string;
   /** Overrides the entry's own hero title — "Tree Removal in Bridgeport, CT". */
   heroTitle?: string;
   heroDescription?: string;
@@ -53,7 +61,8 @@ export interface Props {
   };
 }
 
-const { service: d, heroTitle, heroDescription, whyChooseHeading, locations } = Astro.props;
+const { service: d, heroTitle, heroDescription, whyChooseHeading, locations, editablePrefix } =
+  Astro.props;
 
 const quoteForm = await getForm('quote');
 
@@ -82,6 +91,7 @@ const resolvedHeroTitle = heroTitle || d.hero?.title || `${d.title} Services Acr
 {
   d.intro?.heading && (
     <TreeServiceIntro
+      editablePrefix={childPrefix(editablePrefix, 'intro')}
       heading={d.intro.heading}
       paragraphs={d.intro.paragraphs}
       ctaLabel={d.intro.ctaLabel}
@@ -103,6 +113,7 @@ const resolvedHeroTitle = heroTitle || d.hero?.title || `${d.title} Services Acr
 {
   d.capabilities?.heading && (
     <TreeServiceCapabilities
+      editablePrefix={childPrefix(editablePrefix, 'capabilities')}
       heading={d.capabilities.heading}
       intro={d.capabilities.intro}
       bullets={d.capabilities.bullets}
@@ -125,6 +136,7 @@ const resolvedHeroTitle = heroTitle || d.hero?.title || `${d.title} Services Acr
 {
   d.checklist?.heading && (
     <TreeServiceChecklist
+      editablePrefix={childPrefix(editablePrefix, 'checklist')}
       heading={d.checklist.heading}
       intro={d.checklist.intro}
       items={d.checklist.items}

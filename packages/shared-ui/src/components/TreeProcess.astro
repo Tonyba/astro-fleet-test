@@ -11,6 +11,7 @@
  * All content is prop-driven so it can be fed from the CMS.
  */
 import TreePicture from './TreePicture.astro';
+import { editable } from '../utils/editable';
 
 export interface TreeProcessStep {
   /** Two-digit step label shown in the badge, e.g. "01". */
@@ -23,6 +24,12 @@ export interface TreeProcessStep {
 }
 
 export interface Props {
+  /**
+   * Opts this section into CloudCannon's Visual Editor and says where its props
+   * live in the page's source file — see utils/editable.ts. Omit it and no data
+   * attributes are emitted.
+   */
+  editablePrefix?: string;
   eyebrow?: string;
   heading?: string;
   description?: string;
@@ -32,6 +39,7 @@ export interface Props {
 }
 
 const {
+  editablePrefix,
   eyebrow = 'How it works',
   heading = 'Simple, Safe & Efficient Tree Service Process',
   description =
@@ -78,9 +86,9 @@ const {
 <section class="tree-process" aria-labelledby="tree-process-heading">
   <div class="tree-process__inner tree-container">
     <header class="tree-process__head">
-      <p class="tree-process__eyebrow">{eyebrow}</p>
-      <h2 id="tree-process-heading" class="tree-process__title">{heading}</h2>
-      <p class="tree-process__intro">{description}</p>
+      <p class="tree-process__eyebrow" {...editable(editablePrefix, 'eyebrow')}>{eyebrow}</p>
+      <h2 id="tree-process-heading" class="tree-process__title" {...editable(editablePrefix, 'heading')}>{heading}</h2>
+      <p class="tree-process__intro" {...editable(editablePrefix, 'description')}>{description}</p>
     </header>
 
     <ol class="tree-process__steps">
@@ -90,7 +98,7 @@ const {
         <img class="tree-process__line" src="/media/icons/process-connector.svg" alt="" width="188" height="15" />
       </span>
 
-      {steps.map((step) => (
+      {steps.map((step, i) => (
         <li class="tree-process__step">
           <div class="tree-process__icon-group">
             <img class="tree-process__circle" src="/media/icons/process-circle.svg" alt="" width="100" height="100" aria-hidden="true" />
@@ -100,8 +108,8 @@ const {
             <span class="tree-process__badge">{step.number}</span>
           </div>
           <div class="tree-process__step-text">
-            <h3 class="tree-process__step-title">{step.title}</h3>
-            <p class="tree-process__step-desc">{step.description}</p>
+            <h3 class="tree-process__step-title" {...editable(editablePrefix, `steps.${i}.title`)}>{step.title}</h3>
+            <p class="tree-process__step-desc" {...editable(editablePrefix, `steps.${i}.description`)}>{step.description}</p>
           </div>
         </li>
       ))}

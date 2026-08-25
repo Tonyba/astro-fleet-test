@@ -60,8 +60,8 @@ const header = await getHeader();
         </svg>
       </span>
 
-      <h2 class="thanks__heading">{body.heading}</h2>
-      <p class="thanks__desc">{body.description}</p>
+      <h2 class="thanks__heading" data-editable="text" data-prop="body.heading">{body.heading}</h2>
+      <p class="thanks__desc" data-editable="text" data-prop="body.description">{body.description}</p>
 
       <div class="thanks__actions">
         {body.primaryCta.label && (
@@ -78,7 +78,7 @@ const header = await getHeader();
 
       {body.links.length > 0 && (
         <div class="thanks__links">
-          {body.linksHeading && <p class="thanks__links-heading">{body.linksHeading}</p>}
+          {body.linksHeading && <p class="thanks__links-heading" data-editable="text" data-prop="body.linksHeading">{body.linksHeading}</p>}
           <ul class="thanks__links-list">
             {body.links.map((link) => (
               <li>

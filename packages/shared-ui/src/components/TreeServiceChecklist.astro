@@ -1,4 +1,5 @@
 ---
+import { editable } from '../utils/editable';
 /**
  * TreeServiceChecklist.astro
  * --------------------------
@@ -8,28 +9,34 @@
  * <=767px it collapses to a single column.
  */
 export interface Props {
+  /**
+   * Opts this section into CloudCannon's Visual Editor and says where its props
+   * live in the page's source file — see utils/editable.ts. Omit it and no data
+   * attributes are emitted.
+   */
+  editablePrefix?: string;
   heading: string;
   intro?: string;
   items?: string[];
   iconSrc?: string;
 }
 
-const { heading, intro, items = [], iconSrc = '/media/icons/check-list.svg' } = Astro.props;
+const { editablePrefix, heading, intro, items = [], iconSrc = '/media/icons/check-list.svg' } = Astro.props;
 ---
 
 <section class="tree-checklist">
   <div class="tree-container tree-checklist__inner">
     <div class="tree-checklist__head">
-      <h2 class="tree-checklist__heading">{heading}</h2>
-      {intro && <p class="tree-checklist__intro">{intro}</p>}
+      <h2 class="tree-checklist__heading" {...editable(editablePrefix, 'heading')}>{heading}</h2>
+      {intro && <p class="tree-checklist__intro" {...editable(editablePrefix, 'intro')}>{intro}</p>}
     </div>
 
     {items.length > 0 && (
       <ul class="tree-checklist__list">
-        {items.map((item) => (
+        {items.map((item, i) => (
           <li class="tree-checklist__item">
             <img class="tree-checklist__tick" src={iconSrc} alt="" width="20" height="20" aria-hidden="true" loading="lazy" />
-            <span>{item}</span>
+            <span {...editable(editablePrefix, `items.${i}`)}>{item}</span>
           </li>
         ))}
       </ul>

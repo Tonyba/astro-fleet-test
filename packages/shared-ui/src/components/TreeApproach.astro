@@ -9,6 +9,7 @@
  * <=1024px the photo moves above the copy.
  */
 import TreePicture from './TreePicture.astro';
+import { editable } from '../utils/editable';
 
 export interface ApproachBadge {
   src: string;
@@ -16,6 +17,12 @@ export interface ApproachBadge {
 }
 
 export interface Props {
+  /**
+   * Opts this section into CloudCannon's Visual Editor and says where its props
+   * live in the page's source file — see utils/editable.ts. Omit it and no data
+   * attributes are emitted.
+   */
+  editablePrefix?: string;
   eyebrow?: string;
   heading: string;
   description?: string;
@@ -27,6 +34,7 @@ export interface Props {
 }
 
 const {
+  editablePrefix,
   eyebrow,
   heading,
   description,
@@ -57,10 +65,10 @@ const {
     <div class="tree-approach__copy">
       <div class="tree-approach__block">
         <div class="tree-approach__head">
-          {eyebrow && <p class="tree-approach__eyebrow">{eyebrow}</p>}
-          <h2 class="tree-approach__heading">{heading}</h2>
+          {eyebrow && <p class="tree-approach__eyebrow" {...editable(editablePrefix, 'eyebrow')}>{eyebrow}</p>}
+          <h2 class="tree-approach__heading" {...editable(editablePrefix, 'heading')}>{heading}</h2>
         </div>
-        {description && <p class="tree-approach__desc">{description}</p>}
+        {description && <p class="tree-approach__desc" {...editable(editablePrefix, 'description')}>{description}</p>}
         {badges.length > 0 && (
           <ul class="tree-approach__badges">
             {badges.map((b) => (

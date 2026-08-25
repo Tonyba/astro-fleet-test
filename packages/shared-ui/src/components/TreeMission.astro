@@ -8,8 +8,15 @@
  * <=767px the wash goes vertical so the text still reads on the narrow band.
  */
 import TreePicture from "./TreePicture.astro";
+import { editable } from '../utils/editable';
 
 export interface Props {
+  /**
+   * Opts this section into CloudCannon's Visual Editor and says where its props
+   * live in the page's source file — see utils/editable.ts. Omit it and no data
+   * attributes are emitted.
+   */
+  editablePrefix?: string;
   heading: string;
   description?: string;
   backgroundImage: string;
@@ -17,6 +24,7 @@ export interface Props {
 }
 
 const {
+  editablePrefix,
   heading,
   description,
   backgroundImage,
@@ -40,8 +48,8 @@ const {
 
   <div class="tree-container tree-mission__inner">
     <div class="tree-mission__copy">
-      <h2 class="tree-mission__heading">{heading}</h2>
-      {description && <p class="tree-mission__desc">{description}</p>}
+      <h2 class="tree-mission__heading" {...editable(editablePrefix, 'heading')}>{heading}</h2>
+      {description && <p class="tree-mission__desc" {...editable(editablePrefix, 'description')}>{description}</p>}
     </div>
   </div>
 </section>

@@ -52,7 +52,7 @@ const header = await getHeader();
   <TreePageHero {...page.hero} editablePrefix="hero" />
 
   {/* "Our Story" is the same block as a service page's intro, plus an eyebrow. */}
-  <TreeServiceIntro {...page.story} />
+  <TreeServiceIntro {...page.story} editablePrefix="story" />
 
   {/* Standalone here — the pill's homepage overlap would eat the 72px gap
       the design leaves above "Our Approach". */}
@@ -60,15 +60,17 @@ const header = await getHeader();
     eyebrow={page.stats.eyebrow}
     heading={page.stats.heading}
     stats={page.stats.items}
+    editablePrefix="stats"
     overlap={false}
   />
 
-  <TreeApproach {...page.approach} />
-  <TreeMission {...page.mission} />
+  <TreeApproach {...page.approach} editablePrefix="approach" />
+  <TreeMission {...page.mission} editablePrefix="mission" />
   <TreeCoreValues
     eyebrow={page.coreValues.eyebrow}
     heading={page.coreValues.heading}
     values={page.coreValues.items}
+    editablePrefix="coreValues"
   />
 
   <TreeCtaBanner {...home.ctaBanner} />

@@ -40,9 +40,9 @@ const header = await getHeader();
 
   <section class="tree-404">
     <div class="tree-container tree-404__inner">
-      <p class="tree-404__code">{body.code}</p>
-      <h2 class="tree-404__heading">{body.heading}</h2>
-      <p class="tree-404__desc">{body.description}</p>
+      <p class="tree-404__code" data-editable="text" data-prop="body.code">{body.code}</p>
+      <h2 class="tree-404__heading" data-editable="text" data-prop="body.heading">{body.heading}</h2>
+      <p class="tree-404__desc" data-editable="text" data-prop="body.description">{body.description}</p>
 
       <div class="tree-404__actions">
         {
@@ -64,7 +64,7 @@ const header = await getHeader();
       {
         body.links.length > 0 && (
           <div class="tree-404__links">
-            {body.linksHeading && <p class="tree-404__links-heading">{body.linksHeading}</p>}
+            {body.linksHeading && <p class="tree-404__links-heading" data-editable="text" data-prop="body.linksHeading">{body.linksHeading}</p>}
             <ul class="tree-404__links-list">
               {body.links.map((link) => (
                 <li>
