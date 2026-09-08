@@ -1,0 +1,60 @@
+---
+import '../../../../styles/global.css';
+import LocationsHubPage from '../../../../components/LocationsHubPage.astro';
+
+import {
+  areaSettings,
+  fillTokens,
+  getAreaServices,
+  getLocationTree,
+  toHubCards,
+  type CountyRef,
+} from '../../../../lib/locations';
+import { resolveSeo } from '../../../../lib/seo';
+
+// One page per county — /locations/connecticut/fairfield-county/.
+export async function getStaticPaths() {
+  const states = await getLocationTree();
+  return states.flatMap((state) =>
+    state.counties.map((county) => ({
+      params: { state: state.slug, county: county.slug },
+      props: { county },
+    }))
+  );
+}
+
+interface Props {
+  county: CountyRef;
+}
+
+const { county } = Astro.props;
+const services = await getAreaServices();
+
+const tokens = {
+  county: county.name,
+  state: county.stateAbbr,
+  stateName: county.state,
+  stateAbbr: county.stateAbbr,
+};
+
+const copy = areaSettings.countyPage;
+const seo = resolveSeo({
+  pattern: 'locationCounty',
+  tokens,
+  title: fillTokens(copy.heroTitle, tokens),
+  description: fillTokens(copy.seoDescription, tokens),
+  path: Astro.url.pathname,
+});
+---
+
+<LocationsHubPage
+  title={seo.title}
+  description={seo.description}
+  heroTitle={fillTokens(copy.heroTitle, tokens)}
+  heroDescription={fillTokens(copy.heroDescription, tokens)}
+  eyebrow={areaSettings.hub.eyebrow}
+  heading={fillTokens(copy.heading, tokens)}
+  lead={fillTokens(copy.description, tokens)}
+  footnote={fillTokens(areaSettings.hub.footnote, { ...tokens, state: county.state })}
+  areas={toHubCards(county.cities, services)}
+/>

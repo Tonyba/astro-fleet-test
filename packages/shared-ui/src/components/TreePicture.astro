@@ -28,6 +28,7 @@ import type { ImageMetadata } from 'astro';
 import { getImage, Picture } from 'astro:assets';
 import { resolveImage, remoteSource, peek, ladderFor, usesLadder } from '../utils/images';
 import { extensionOf } from '../media/media-url';
+import { editableImage } from '../utils/editable';
 
 /** Where the image sits in the layout — decides the srcset ladder. */
 export type PictureVariant = 'hero' | 'card' | 'inline' | 'fixed';
@@ -47,6 +48,15 @@ export interface Props {
   sizes?: string;
   /** Set on the <img> when the image is purely decorative. */
   ariaHidden?: boolean;
+  /**
+   * CloudCannon image region. `editablePrefix` says where this image's keys sit
+   * in the page's source file and the two key names complete the paths, so
+   * `editablePrefix="hero"` with `editableSrcKey="image"` binds `hero.image`.
+   * Omit the prefix and nothing is emitted. See utils/editable.ts.
+   */
+  editablePrefix?: string;
+  editableSrcKey?: string;
+  editableAltKey?: string;
   /** Art direction: alternate source used below `mobileMedia`. */
   mobileSrc?: string | ImageMetadata;
   mobileWidth?: number;
@@ -83,6 +93,9 @@ const {
   mobileHeight,
   mobileMedia = '(max-width: 1024px)',
   mobileVariant,
+  editablePrefix,
+  editableSrcKey,
+  editableAltKey,
   ...rest
 } = Astro.props as Props & Record<string, unknown>;
 
@@ -92,6 +105,11 @@ const {
 const cidAttrs = Object.fromEntries(
   Object.entries(rest).filter(([key]) => key.startsWith('data-astro-cid'))
 );
+
+// CloudCannon image region. Goes on the <img> (or on <Picture>, which forwards
+// it there) so the editor has an element whose src it can swap. Empty unless
+// the caller opted in, so nothing changes for a site that is not CMS-edited.
+const editableAttrs = editableImage(editablePrefix, editableSrcKey, editableAltKey);
 
 /** `fixed` slots (badges, step icons) only ever need 1x/2x of their box. */
 const widthsFor = (v: PictureVariant, w: number) =>
@@ -153,15 +171,64 @@ const canBuildRemote = (url: string) => !usesLadder() && !RAW_FORMATS.has(extens
  * Imported dynamically so the probe never lands in a worker bundle: the branch
  * that calls it cannot run at request time (see `canBuildRemote`).
  */
-const remoteSizes = new Map<string, { width: number; height: number } | null>();
+/**
+ * PROCESS scope, not module scope.
+ *
+ * Astro re-instantiates a component's module per page render, so a plain
+ * module-level Map is empty every time and caches nothing — measured at a 0%
+ * hit rate over 768 lookups. Hanging the cache off globalThis is what makes it
+ * span the build, which is the whole point of measuring an image once.
+ */
+const globalCaches = globalThis as unknown as {
+  __treeRemoteSizes?: Map<string, { width: number; height: number } | null>;
+  __treeRemoteLadders?: Map<string, Promise<unknown>>;
+};
+
+const remoteSizes = (globalCaches.__treeRemoteSizes ??= new Map());
+
+/**
+ * The probe is retried, because the bucket in front of it may be throttling.
+ *
+ * Cloudflare's `pub-<hash>.r2.dev` origin is documented as rate limited and for
+ * development only, and a build measures then downloads every photograph on the
+ * site in a burst — exactly the shape of traffic it sheds. One shed request used
+ * to fail the whole build: the probe returned null, the ladder fell back to
+ * `inferSize: true`, and Astro's own probe threw
+ * FailedToFetchRemoteImageDimensions with no retry behind it.
+ *
+ * Succeeding here also means `getImage` is handed explicit dimensions and never
+ * needs to infer them, so the fragile path is not reached at all. A genuinely
+ * missing object still fails the build after the last attempt, which is correct
+ * — a 404 photograph should never ship.
+ *
+ * Retries are per URL and the result is cached, so a page rendering the same
+ * photo twice costs one probe.
+ */
+const PROBE_ATTEMPTS = 5;
 const probeRemote = async (url: string) => {
   if (!remoteSizes.has(url)) {
-    remoteSizes.set(
-      url,
-      await import('astro/assets/utils')
-        .then((utils) => utils.inferRemoteSize(url))
-        .catch(() => null)
-    );
+    const { inferRemoteSize } = await import('astro/assets/utils');
+    let size: { width: number; height: number } | null = null;
+
+    for (let attempt = 0; attempt < PROBE_ATTEMPTS; attempt += 1) {
+      try {
+        size = await inferRemoteSize(url);
+        break;
+      } catch (error) {
+        if (attempt === PROBE_ATTEMPTS - 1) {
+          console.warn(
+            `[TreePicture] could not measure ${url} after ${PROBE_ATTEMPTS} attempts: ` +
+              `${error instanceof Error ? error.message : String(error)}`
+          );
+          break;
+        }
+        // 250ms, 500ms, 1s, 2s — long enough for a rate-limit window to reopen
+        // without stalling a build that is genuinely pointed at a missing file.
+        await new Promise((resolve) => setTimeout(resolve, 250 * 2 ** attempt));
+      }
+    }
+
+    remoteSizes.set(url, size);
   }
   return remoteSizes.get(url) ?? null;
 };
@@ -208,6 +275,35 @@ const remoteLadder = async (url: string, w: number, h: number, v: PictureVariant
   };
 };
 
+/**
+ * One ladder per distinct image, not per render.
+ *
+ * The global sections — projects carousel, testimonials, service areas — are on
+ * 51 of the 63 pages, so a build renders ~2,900 <img> tags for ~57 distinct
+ * photographs. Without this, each render rebuilt the same ladder: three
+ * `getImage()` calls apiece, ~8,700 for a site that only needs ~170.
+ *
+ * The PROMISE is cached, not the result, so pages rendering concurrently share
+ * one in-flight computation instead of racing to do identical work. Module
+ * scope means the cache spans the whole build — the same reason `remoteSizes`
+ * above is shaped this way.
+ */
+const remoteLadders = (globalCaches.__treeRemoteLadders ??= new Map()) as Map<
+  string,
+  ReturnType<typeof remoteLadder>
+>;
+
+const remoteLadderOnce = (url: string, w: number, h: number, v: PictureVariant) => {
+  const key = `${url}|${w}x${h}|${v}`;
+  let entry = remoteLadders.get(key);
+  if (!entry) {
+    entry = remoteLadder(url, w, h, v);
+    remoteLadders.set(key, entry);
+  }
+  return entry;
+};
+
+
 // ---- pre-built ladder -----------------------------------------------------
 // Either produced by the site's prerendered manifest endpoint (an on-demand
 // site, see setImageLadder) or, for an R2 image on a prerendered site, encoded
@@ -216,13 +312,13 @@ const remoteLadder = async (url: string, w: number, h: number, v: PictureVariant
 const built =
   ladderFor(src) ??
   (remoteUrl && canBuildRemote(remoteUrl)
-    ? await remoteLadder(remoteUrl, width, height, variant)
+    ? await remoteLadderOnce(remoteUrl, width, height, variant)
     : undefined);
 
 const mobileBuilt = mobileSrc
   ? (ladderFor(mobileSrc) ??
     (mobileRemoteUrl && canBuildRemote(mobileRemoteUrl)
-      ? await remoteLadder(mobileRemoteUrl, mWidth, mHeight, mVariant)
+      ? await remoteLadderOnce(mobileRemoteUrl, mWidth, mHeight, mVariant)
       : undefined))
   : undefined;
 
@@ -314,6 +410,7 @@ const fallback = !artDirected
         decoding={decoding}
         aria-hidden={ariaHidden ? 'true' : undefined}
         {...cidAttrs}
+        {...editableAttrs}
       />
     </picture>
   ) : built ? (
@@ -333,11 +430,13 @@ const fallback = !artDirected
         decoding={decoding}
         aria-hidden={ariaHidden ? 'true' : undefined}
         {...cidAttrs}
+        {...editableAttrs}
       />
     </picture>
   ) : image ? (
     <Picture
       {...cidAttrs}
+      {...editableAttrs}
       src={image}
       alt={alt}
       width={width}
@@ -367,6 +466,7 @@ const fallback = !artDirected
       sizes={sizes}
       aria-hidden={ariaHidden ? 'true' : undefined}
       {...cidAttrs}
+      {...editableAttrs}
     />
   )
 }

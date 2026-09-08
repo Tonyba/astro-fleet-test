@@ -8,12 +8,19 @@
  * right.
  */
 import TreePicture from './TreePicture.astro';
+import { editable } from '../utils/editable';
 import TreeQuoteForm from './TreeQuoteForm.astro';
 import type { Props as QuoteProps } from './TreeQuoteForm.astro';
 
 export interface HeroBadge { src: string; alt: string; width: number; height: number; }
 
 export interface Props {
+  /**
+   * Opts this section into CloudCannon's Visual Editor and says where its props
+   * live in the page's source file — see utils/editable.ts. Omit it and no data
+   * attributes are emitted.
+   */
+  editablePrefix?: string;
   eyebrow?: string;
   headline?: string;
   reviewText?: string;
@@ -29,6 +36,7 @@ export interface Props {
 }
 
 const {
+  editablePrefix,
   eyebrow = "CONNECTICUT'S TRUSTED TREE CARE EXPERTS",
   headline = 'SAFE. RELIABLE. EXPERT TREE CARE.',
   reviewText = '500+ 5-Star Reviews',
@@ -56,6 +64,8 @@ const telHref = `tel:${phone.number.replace(/[^\d+]/g, '')}`;
 <section class="tree-hero">
   <div class="tree-hero__bg" aria-hidden="true">
     <TreePicture
+      editablePrefix={editablePrefix}
+      editableSrcKey="backgroundImage"
       src={backgroundImage}
       mobileSrc={backgroundImageMobile}
       mobileWidth={393}
@@ -75,24 +85,24 @@ const telHref = `tel:${phone.number.replace(/[^\d+]/g, '')}`;
 
   <div class="tree-hero__inner tree-container">
     <div class="tree-hero__content">
-      <p class="tree-hero__eyebrow">{eyebrow}</p>
-      <h1 class="tree-hero__headline">{headline}</h1>
+      <p class="tree-hero__eyebrow" {...editable(editablePrefix, 'eyebrow')}>{eyebrow}</p>
+      <h1 class="tree-hero__headline" {...editable(editablePrefix, 'headline')}>{headline}</h1>
 
       <div class="tree-hero__reviews">
         <img src="/media/icons/google-stars.svg" alt="Google 5-star rating" width="130" height="30" />
-        <span>{reviewText}</span>
+        <span {...editable(editablePrefix, 'reviewText')}>{reviewText}</span>
       </div>
 
-      <p class="tree-hero__subcopy">{subcopy}</p>
+      <p class="tree-hero__subcopy" {...editable(editablePrefix, 'subcopy')}>{subcopy}</p>
 
       <ul class="tree-hero__bullets">
-        {bullets.map((b) => (
+        {bullets.map((b, i) => (
           <li class="tree-hero__bullet">
             <svg class="tree-hero__check" width="25" height="25" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <circle cx="12" cy="12" r="11" fill="var(--color-bg-action, #2f8328)" />
               <path d="M7 12.5l3.2 3.2L17 9" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
-            <span>{b}</span>
+            <span {...editable(editablePrefix, `bullets.${i}`)}>{b}</span>
           </li>
         ))}
       </ul>
@@ -106,8 +116,8 @@ const telHref = `tel:${phone.number.replace(/[^\d+]/g, '')}`;
       <div class="tree-hero__actions">
         <a href={primaryCta.href} class="tree-hero__cta">
           <span class="tree-hero__cta-text">
-            <span class="tree-hero__cta-label">{primaryCta.label}</span>
-            {primaryCta.sublabel && <span class="tree-hero__cta-sub">{primaryCta.sublabel}</span>}
+            <span class="tree-hero__cta-label" {...editable(editablePrefix, 'primaryCta.label')}>{primaryCta.label}</span>
+            {primaryCta.sublabel && <span class="tree-hero__cta-sub" {...editable(editablePrefix, 'primaryCta.sublabel')}>{primaryCta.sublabel}</span>}
           </span>
           <svg class="tree-hero__cta-arrow" width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
             <path d="M13 27 27 13m0 0H15m12 0v12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
@@ -119,7 +129,7 @@ const telHref = `tel:${phone.number.replace(/[^\d+]/g, '')}`;
           </svg>
           <span class="tree-hero__call-text">
             {phone.label && <span class="tree-hero__call-label">{phone.label}</span>}
-            <span class="tree-hero__call-number">{phone.number}</span>
+            <span class="tree-hero__call-number" {...editable(editablePrefix, 'phone.number')}>{phone.number}</span>
           </span>
         </a>
       </div>

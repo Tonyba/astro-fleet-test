@@ -1,5 +1,5 @@
 import type { ImageMetadata } from 'astro';
-import { isR2Value, mediaUrl } from '../media/media-url';
+import { isBucketValue, mediaUrl } from '../media/media-url';
 
 /**
  * images.ts
@@ -58,10 +58,11 @@ export function isImageMetadata(src: unknown): src is ImageMetadata {
 export function resolveImage(src: string | ImageMetadata): ImageMetadata | undefined {
   if (isImageMetadata(src)) return src;
   if (typeof src !== 'string' || !src) return undefined;
-  // An R2 key is not in the repo and has no ImageMetadata — callers reach for
-  // `remoteSource` instead. Bailing out here keeps it from matching a
-  // same-named asset by the filename fallback below.
-  if (isR2Value(src)) return undefined;
+  // A bucket-backed value is not in the repo and has no ImageMetadata — callers
+  // reach for `remoteSource` instead. Bailing out here keeps it from matching a
+  // same-named asset by the filename fallback below. Covers both notations: the
+  // `r2:` sentinel and the absolute URL a CloudCannon R2 DAM writes.
+  if (isBucketValue(src)) return undefined;
 
   const key = normalise(src);
   return bySrc.get(key) ?? bySrc.get(key.split('/').pop() ?? '');
@@ -144,9 +145,9 @@ export function usesLadder(): boolean {
 export function ladderFor(src: string | ImageMetadata): ImageLadder | undefined {
   if (!ladder || typeof src !== 'string' || !src) return undefined;
 
-  // R2 entries are stored under the exact value the content file holds, so
+  // Bucket entries are stored under the exact value the content file holds, so
   // there is nothing to normalise and no filename fallback to fall back to.
-  if (isR2Value(src)) return ladder[src];
+  if (isBucketValue(src)) return ladder[src];
 
   const key = normalise(src);
   return (

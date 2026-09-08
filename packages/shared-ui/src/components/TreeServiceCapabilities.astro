@@ -1,4 +1,5 @@
 ---
+import { editable, editableArrayItem, editableItemField } from '../utils/editable';
 /**
  * TreeServiceCapabilities.astro
  * -----------------------------
@@ -18,6 +19,12 @@ export interface CapabilityChip {
 }
 
 export interface Props {
+  /**
+   * Opts this section into CloudCannon's Visual Editor and says where its props
+   * live in the page's source file — see utils/editable.ts. Omit it and no data
+   * attributes are emitted.
+   */
+  editablePrefix?: string;
   heading: string;
   intro?: string;
   bullets?: string[];
@@ -27,6 +34,7 @@ export interface Props {
 }
 
 const {
+  editablePrefix,
   heading,
   intro,
   bullets = [],
@@ -45,14 +53,14 @@ const splitBullet = (text: string): [string, string] => {
 <section class="tree-capabilities">
   <div class="tree-container tree-capabilities__inner">
     <div class="tree-capabilities__copy">
-      <h2 class="tree-capabilities__heading">{heading}</h2>
-      {intro && <p class="tree-capabilities__intro">{intro}</p>}
+      <h2 class="tree-capabilities__heading" {...editable(editablePrefix, 'heading')}>{heading}</h2>
+      {intro && <p class="tree-capabilities__intro" {...editable(editablePrefix, 'intro')}>{intro}</p>}
       {bullets.length > 0 && (
-        <ul class="tree-capabilities__bullets">
+        <ul class="tree-capabilities__bullets" {...editable(editablePrefix, 'bullets', 'array')}>
           {bullets.map((b) => {
             const [lead, rest] = splitBullet(b);
             return (
-              <li>
+              <li {...editableArrayItem(editablePrefix)}>
                 {lead && <strong>{lead} </strong>}
                 {rest}
               </li>
@@ -64,13 +72,13 @@ const splitBullet = (text: string): [string, string] => {
     </div>
 
     {chips.length > 0 && (
-      <ul class="tree-capabilities__chips">
+      <ul class="tree-capabilities__chips" {...editable(editablePrefix, 'chips', 'array')}>
         {chips.map((c) => (
-          <li class="tree-capabilities__chip">
+          <li class="tree-capabilities__chip" {...editableArrayItem(editablePrefix)}>
             <span class="tree-capabilities__chip-icon">
               <img src={c.icon} alt="" width="40" height="40" loading="lazy" decoding="async" />
             </span>
-            <span class="tree-capabilities__chip-label">{c.label}</span>
+            <span class="tree-capabilities__chip-label" {...editableItemField(editablePrefix, 'label')}>{c.label}</span>
           </li>
         ))}
       </ul>

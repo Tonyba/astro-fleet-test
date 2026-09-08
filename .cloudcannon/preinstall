@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# CloudCannon's build image ships npm, pnpm and yarn — but not bun. This repo
+# needs it: bun.lock is the lockfile, sites depend on packages/* through the
+# `workspace:*` protocol, and scripts/build.mjs shells out to `bun` directly.
+#
+# This hook runs after the repository is checked out and before the Install
+# Command, which is where `bun install --frozen-lockfile` belongs.
+#
+# DO NOT add `set -e`, `set -u` or `set -o pipefail` here. CloudCannon runs this
+# file with `source`, so any shell option set here leaks into the rest of
+# run.sh — `set -u` in particular kills the build after a successful compile
+# with "run.sh: line 57: SYNC_PATHS: unbound variable". Fail explicitly instead.
+
+if ! command -v bun >/dev/null 2>&1; then
+  echo "→ installing bun (not present in the CloudCannon build image)"
+  npm install --global bun@1.3.6
+fi
+
+if command -v bun >/dev/null 2>&1; then
+  echo "→ bun $(bun --version)"
+else
+  echo "✗ bun is still not on PATH — the install command will fail" >&2
+fi

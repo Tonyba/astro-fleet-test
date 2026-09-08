@@ -14,6 +14,7 @@
  * fully without props and stays CMS-editable.
  */
 import TreePicture from './TreePicture.astro';
+import { editable } from '../utils/editable';
 
 export interface TreeAboutCta {
   text: string;
@@ -40,6 +41,12 @@ export interface TreeAboutReview {
 }
 
 export interface Props {
+  /**
+   * Opts this section into CloudCannon's Visual Editor and says where its props
+   * live in the page's source file — see utils/editable.ts. Omit it and no data
+   * attributes are emitted.
+   */
+  editablePrefix?: string;
   eyebrow?: string;
   heading?: string;
   paragraphs?: string[];
@@ -50,6 +57,7 @@ export interface Props {
 }
 
 const {
+  editablePrefix,
   eyebrow = 'About us',
   heading = 'Certified Tree Care Professionals Serving Connecticut with Trusted Arborist Services',
   paragraphs = [
@@ -83,17 +91,17 @@ const {
   <div class="tree-about__inner tree-container">
     <div class="tree-about__body">
       <div class="tree-about__block">
-        <p class="tree-about__eyebrow">{eyebrow}</p>
-        <h2 id="tree-about-heading" class="tree-about__heading">{heading}</h2>
+        <p class="tree-about__eyebrow" {...editable(editablePrefix, 'eyebrow')}>{eyebrow}</p>
+        <h2 id="tree-about-heading" class="tree-about__heading" {...editable(editablePrefix, 'heading')}>{heading}</h2>
         <div class="tree-about__text">
-          {paragraphs.map((p) => <p class="tree-about__paragraph">{p}</p>)}
+          {paragraphs.map((p, i) => <p class="tree-about__paragraph" {...editable(editablePrefix, `paragraphs.${i}`)}>{p}</p>)}
         </div>
       </div>
 
       <div class="tree-about__actions">
-        <a href={primaryCta.href} class="tree-about__btn tree-about__btn--primary">{primaryCta.text}</a>
+        <a href={primaryCta.href} class="tree-about__btn tree-about__btn--primary" {...editable(editablePrefix, 'primaryCta.text')}>{primaryCta.text}</a>
         <a href={secondaryCta.href} class="tree-about__btn tree-about__btn--ghost">
-          <span>{secondaryCta.text}</span>
+          <span {...editable(editablePrefix, 'secondaryCta.text')}>{secondaryCta.text}</span>
           <img class="tree-about__btn-arrow" src="/media/icons/about-arrow.svg" alt="" width="25" height="25" aria-hidden="true" />
         </a>
       </div>
@@ -102,6 +110,9 @@ const {
     <div class="tree-about__media">
       <figure class="tree-about__figure">
         <TreePicture
+          editablePrefix={editablePrefix}
+          editableSrcKey="photo.src"
+          editableAltKey="photo.alt"
           class="tree-about__photo"
           src={photo.src}
           alt={photo.alt}
@@ -116,16 +127,16 @@ const {
       <article class="tree-about__review" aria-label={`Review by ${review.name}`}>
         <img class="tree-about__review-source" src={review.sourceSrc} alt={review.sourceAlt} width="30" height="30" loading="lazy" />
         <div class="tree-about__review-head">
-          <TreePicture class="tree-about__review-avatar" src={review.avatarSrc} alt={review.avatarAlt} width={43} height={43} variant="fixed" loading="lazy" decoding="async" />
+          <TreePicture editablePrefix={editablePrefix} editableSrcKey="review.avatarSrc" editableAltKey="review.avatarAlt" class="tree-about__review-avatar" src={review.avatarSrc} alt={review.avatarAlt} width={43} height={43} variant="fixed" loading="lazy" decoding="async" />
           <div class="tree-about__review-meta">
-            <p class="tree-about__review-name">{review.name}</p>
+            <p class="tree-about__review-name" {...editable(editablePrefix, 'review.name')}>{review.name}</p>
             <div class="tree-about__review-rating">
               <img class="tree-about__review-stars" src={review.starsSrc} alt="5 out of 5 stars" width="98" height="17" loading="lazy" />
               <img class="tree-about__review-verified" src={review.verifiedSrc} alt="Verified review" width="20" height="20" loading="lazy" />
             </div>
           </div>
         </div>
-        <p class="tree-about__review-quote">{review.quote}</p>
+        <p class="tree-about__review-quote" {...editable(editablePrefix, 'review.quote')}>{review.quote}</p>
       </article>
     </div>
   </div>

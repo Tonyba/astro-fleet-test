@@ -1,4 +1,5 @@
 ---
+import { editable, editableArrayItem, editableItemField } from '../utils/editable';
 /**
  * TreeStatsBar.astro
  * ------------------
@@ -13,6 +14,12 @@ export interface TreeStat {
 }
 
 export interface Props {
+  /**
+   * Opts this section into CloudCannon's Visual Editor and says where its props
+   * live in the page's source file — see utils/editable.ts. Omit it and no data
+   * attributes are emitted.
+   */
+  editablePrefix?: string;
   eyebrow?: string;
   heading?: string;
   stats?: TreeStat[];
@@ -25,6 +32,7 @@ export interface Props {
 }
 
 const {
+  editablePrefix,
   eyebrow = 'Some Numbers',
   heading = 'What we did so far',
   stats = [
@@ -41,14 +49,14 @@ const {
   <div class="tree-container">
     <div class="tree-stats__bar">
       <div class="tree-stats__intro">
-        <p class="tree-stats__eyebrow">{eyebrow}</p>
-        <p class="tree-stats__heading">{heading}</p>
+        <p class="tree-stats__eyebrow" {...editable(editablePrefix, 'eyebrow')}>{eyebrow}</p>
+        <p class="tree-stats__heading" {...editable(editablePrefix, 'heading')}>{heading}</p>
       </div>
-      <ul class="tree-stats__list">
-        {stats.map((stat) => (
-          <li class="tree-stats__item">
-            <span class="tree-stats__value">{stat.value}</span>
-            <span class="tree-stats__label">{stat.label}</span>
+      <ul class="tree-stats__list" {...editable(editablePrefix, 'items', 'array')}>
+        {stats.map((stat, i) => (
+          <li class="tree-stats__item" {...editableArrayItem(editablePrefix)}>
+            <span class="tree-stats__value" {...editableItemField(editablePrefix, 'value')}>{stat.value}</span>
+            <span class="tree-stats__label" {...editableItemField(editablePrefix, 'label')}>{stat.label}</span>
           </li>
         ))}
       </ul>

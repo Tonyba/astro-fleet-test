@@ -10,15 +10,22 @@
  * <=1024px the photo moves above the prose.
  */
 import TreePicture from './TreePicture.astro';
+import { editable } from '../utils/editable';
 
 export interface Props {
+  /**
+   * Opts this section into CloudCannon's Visual Editor. The prose itself binds
+   * to `@content` — the markdown body of the entry that produced the page.
+   */
+  editablePrefix?: string;
   image?: string;
   imageAlt?: string;
   ctaLabel?: string;
   ctaHref?: string;
 }
 
-const { image, imageAlt = '', ctaLabel, ctaHref = '#free-inspection' } = Astro.props;
+const { editablePrefix, image, imageAlt = '', ctaLabel, ctaHref = '#free-inspection' } =
+  Astro.props;
 ---
 
 <section class="tree-service-prose">
@@ -26,6 +33,9 @@ const { image, imageAlt = '', ctaLabel, ctaHref = '#free-inspection' } = Astro.p
     {image && (
       <div class="tree-service-prose__media">
         <TreePicture
+          editablePrefix={editablePrefix}
+          editableSrcKey="bodyImage"
+          editableAltKey="bodyImageAlt"
           class="tree-service-prose__img"
           src={image}
           alt={imageAlt}
@@ -40,7 +50,10 @@ const { image, imageAlt = '', ctaLabel, ctaHref = '#free-inspection' } = Astro.p
     )}
 
     <div class="tree-service-prose__body">
-      <div class="tree-service-prose__rte">
+      <div
+        class="tree-service-prose__rte"
+        {...editable(editablePrefix, '@content', 'text', 'block')}
+      >
         <slot />
       </div>
       {ctaLabel && <a href={ctaHref} class="tree-service-prose__cta">{ctaLabel}</a>}

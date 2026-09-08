@@ -1,0 +1,35 @@
+{
+  "eyebrow": "Reviews",
+  "heading": "What Our Customers Are Saying",
+  "description": "See why our clients trust Erick's Tree Services for their tree service needs.",
+  "rating": {
+    "score": "4.8",
+    "caption": "Based on 14.000 reviews"
+  },
+  "serviceRating": {
+    "score": "4.8",
+    "caption": "Based on true reviews"
+  },
+  "reviews": [
+    {
+      "title": "Tree removal",
+      "quote": "From the initial call to Eric I knew I had found the right man for the job. He came to give us a bid exactly when he said. He promptly showed up to do the job, which was a very large downed oak. He and his crew made very quick work of it and were very neat, respectful of the property and did exactly what he said they",
+      "name": "Fabien Cutillo"
+    },
+    {
+      "title": "Storm cleanup",
+      "quote": "After a bad storm brought down two huge limbs onto our driveway, Erick's crew responded the same day. They were fast, careful around the house, and cleaned up every last branch before they left. Highly recommend for any emergency work.",
+      "name": "Danielle Roberts"
+    },
+    {
+      "title": "Stump grinding",
+      "quote": "We had four old stumps that had been an eyesore for years. The team ground them all well below grade, hauled away the debris, and left the yard looking better than we expected. Fair price and true professionals.",
+      "name": "Michael Alvarez"
+    },
+    {
+      "title": "Tree trimming",
+      "quote": "Erick and his crew trimmed several large trees hanging over our roof. They explained exactly what they would do, showed up on time, and the results look fantastic. We'll definitely be using them again next season.",
+      "name": "Sofia Nguyen"
+    }
+  ]
+}

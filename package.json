@@ -20,7 +20,8 @@
     "prepare": "git config core.hooksPath .githooks || true",
     "new-site": "./scripts/new-site.sh",
     "setup-infra": "./scripts/setup-infra.sh",
-    "prune-media": "node scripts/prune-media.mjs"
+    "prune-media": "node scripts/prune-media.mjs",
+    "copy-media-bucket": "node scripts/copy-media-bucket.mjs"
   },
   "devDependencies": {
     "turbo": "^2"

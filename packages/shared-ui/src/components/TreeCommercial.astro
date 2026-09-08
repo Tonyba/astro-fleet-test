@@ -15,6 +15,7 @@
  * fully without props and stays CMS-editable.
  */
 import TreePicture from './TreePicture.astro';
+import { editable } from '../utils/editable';
 
 export interface TreeCommercialCta {
   text: string;
@@ -26,6 +27,12 @@ export interface TreeCommercialPhoto {
 }
 
 export interface Props {
+  /**
+   * Opts this section into CloudCannon's Visual Editor and says where its props
+   * live in the page's source file — see utils/editable.ts. Omit it and no data
+   * attributes are emitted.
+   */
+  editablePrefix?: string;
   eyebrow?: string;
   heading?: string;
   paragraphs?: string[];
@@ -35,6 +42,7 @@ export interface Props {
 }
 
 const {
+  editablePrefix,
   eyebrow = 'Commercial Services',
   heading = 'Professional Tree Solutions for Commercial Properties',
   paragraphs = [
@@ -53,6 +61,9 @@ const {
 
 <section class="tree-commercial" aria-labelledby="tree-commercial-heading">
   <TreePicture
+    editablePrefix={editablePrefix}
+    editableSrcKey="photo.src"
+    editableAltKey="photo.alt"
     src={photo.src}
     alt={photo.alt}
     width={1600}
@@ -68,18 +79,18 @@ const {
   <div class="tree-commercial__inner tree-container">
     <div class="tree-commercial__body">
       <div class="tree-commercial__block">
-        <p class="tree-commercial__eyebrow">{eyebrow}</p>
-        <h2 id="tree-commercial-heading" class="tree-commercial__heading">{heading}</h2>
+        <p class="tree-commercial__eyebrow" {...editable(editablePrefix, 'eyebrow')}>{eyebrow}</p>
+        <h2 id="tree-commercial-heading" class="tree-commercial__heading" {...editable(editablePrefix, 'heading')}>{heading}</h2>
       </div>
 
       <div class="tree-commercial__text">
-        {paragraphs.map((p) => <p class="tree-commercial__paragraph">{p}</p>)}
+        {paragraphs.map((p, i) => <p class="tree-commercial__paragraph" {...editable(editablePrefix, `paragraphs.${i}`)}>{p}</p>)}
       </div>
 
       <div class="tree-commercial__actions">
-        <a href={primaryCta.href} class="tree-commercial__btn tree-commercial__btn--primary">{primaryCta.text}</a>
+        <a href={primaryCta.href} class="tree-commercial__btn tree-commercial__btn--primary" {...editable(editablePrefix, 'primaryCta.text')}>{primaryCta.text}</a>
         <a href={secondaryCta.href} class="tree-commercial__btn tree-commercial__btn--ghost">
-          <span>{secondaryCta.text}</span>
+          <span {...editable(editablePrefix, 'secondaryCta.text')}>{secondaryCta.text}</span>
           <img class="tree-commercial__btn-arrow" src="/media/icons/commercial-arrow.svg" alt="" width="25" height="25" aria-hidden="true" />
         </a>
       </div>

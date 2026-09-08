@@ -10,9 +10,12 @@
     "lint": "astro check"
   },
   "dependencies": {
-    "astro": "^6.1.7",
+    "@astro-fleet/config": "workspace:*",
     "@astro-fleet/shared-ui": "workspace:*",
-    "@astro-fleet/config": "workspace:*"
+    "@cloudcannon/editable-regions": "^0.0.19",
+    "astro": "^6.1.7",
+    "embla-carousel": "^8.5.2",
+    "intl-tel-input": "^25.3.1"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9",
