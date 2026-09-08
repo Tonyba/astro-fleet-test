@@ -1,0 +1,29 @@
+{
+  // Worker configuration for this site.
+  //
+  // The Astro Cloudflare adapter READS this file and writes the merged result
+  // to dist/server/wrangler.json — the one `wrangler deploy` is pointed at. It
+  // fills in `main`, the ASSETS binding and the SESSION KV namespace itself, so
+  // only what the adapter cannot know belongs here.
+  //
+  // The worker runs exactly one on-demand route, POST /api/quote; every page is
+  // prerendered and served as a static asset. There is no MEDIA binding:
+  // photographs are uploaded through CloudCannon's R2 DAM (Site Settings ->
+  // Assets), which writes straight to the test-4-com-media bucket, so nothing
+  // on the worker ever writes to it. The site only READS from the bucket's
+  // public origin, which lives in Site Settings -> Technical -> Media Bucket URL.
+  //
+  // Secrets the endpoint reads (wrangler secret put <NAME> --name test-4-com):
+  //   TURNSTILE_SECRET, GITHUB_TOKEN, GITHUB_REPO, GITHUB_BRANCH,
+  //   BREVO_API_KEY, BREVO_FROM_EMAIL, BREVO_FROM_NAME   — see src/env.d.ts
+  //
+  // Anything the adapter would otherwise supply by default has to be stated
+  // once a user config exists — `observability` in particular is silently
+  // dropped. The SESSION namespace is deliberately absent: it is
+  // auto-provisioned on deploy and must not be pinned.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "test-4-com",
+  "compatibility_date": "2026-08-13",
+
+  "observability": { "enabled": true }
+}

@@ -1,0 +1,62 @@
+---
+import '../styles/global.css';
+import TreeLayout from '@astro-fleet/shared-ui/src/layouts/TreeLayout.astro';
+import TreePageHero from '@astro-fleet/shared-ui/src/components/TreePageHero.astro';
+import TreeGallery from '@astro-fleet/shared-ui/src/components/TreeGallery.astro';
+import TreeFaq from '@astro-fleet/shared-ui/src/components/TreeFaq.astro';
+import TreeInspectionForm from '@astro-fleet/shared-ui/src/components/TreeInspectionForm.astro';
+
+import { getForm } from '../lib/forms';
+import { resolveSeo } from '../lib/seo';
+import { getHeader } from '../lib/header';
+
+// CMS-editable content (the CMS commits these JSON files; the build imports them).
+import site from '../content/settings/site.json';
+import chrome from '../content/settings/header-footer.json';
+import page from '../content/pages/projects.json';
+import { globals } from '../lib/global-sections';
+
+const quoteForm = await getForm('quote');
+
+const seo = resolveSeo({
+  title: page.seo.title,
+  description: page.seo.description,
+  path: Astro.url.pathname,
+});
+
+// The Areas We Serve submenu is generated from the Service Areas content.
+const header = await getHeader();
+---
+
+<TreeLayout
+  title={seo.title}
+  description={seo.description}
+  keywords={page.seo.keywords}
+  siteName={site.siteName}
+  logoSrc={site.logo}
+  faviconSrc={site.favicon}
+  header={header}
+  footer={chrome.footer}
+  colors={site.theme.colors}
+  fonts={site.theme.fonts}
+>
+  <TreePageHero {...page.hero} compact />
+  <TreeGallery
+    items={page.gallery.items}
+    initialCount={page.gallery.initialCount}
+    loadMoreLabel={page.gallery.loadMoreLabel}
+  />
+  <TreeFaq
+    eyebrow={globals.faq.eyebrow}
+    titleLead={globals.faq.titleLead}
+    titleRest={globals.faq.titleRest}
+    subtitle={globals.faq.subtitle}
+    faqs={globals.faq.items}
+  />
+  <TreeInspectionForm
+    heading={globals.inspection.heading}
+    lead={globals.inspection.lead}
+    paragraphs={globals.inspection.paragraphs}
+    quote={quoteForm}
+  />
+</TreeLayout>
