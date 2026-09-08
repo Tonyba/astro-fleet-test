@@ -4,11 +4,11 @@
  * ---------------
  * Deletes objects in a site's R2 bucket that no content references any more.
  *
- *   bun run prune-media --site test-2.com                 # dry run
- *   bun run prune-media --site test-2.com --apply
+ *   bun run prune-media --site <domain>                 # dry run
+ *   bun run prune-media --site <domain> --apply
  *
  * WHY THIS EXISTS RATHER THAN DELETING ON CLEAR. Clearing or replacing an image
- * in Keystatic deliberately leaves the object alone, because at that moment
+ * in the CMS deliberately leaves the object alone, because at that moment
  * nothing can safely be deleted:
  *
  *   - keys are content-addressed, so two entries may point at the SAME object;
@@ -231,7 +231,7 @@ function referencedInCheckout() {
 }
 
 /**
- * Every branch tip, local and remote. A Keystatic edit made against a branch is
+ * Every branch tip, local and remote. A CMS edit made against a branch is
  * a real reference even though it is not on main, and pruning its image would
  * break that entry the moment anyone opened it.
  */

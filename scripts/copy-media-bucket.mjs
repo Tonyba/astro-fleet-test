@@ -64,9 +64,9 @@ if (!args.site || !args.to) {
   console.error(
     'Usage: bun run copy-media-bucket --site <domain> --to <bucket> [--from <bucket>] [--apply]\n' +
       '\n' +
-      '  --site   Site directory under sites/, e.g. test-3.com\n' +
+      '  --site   Site directory under sites/, e.g. acme.com\n' +
       '  --to     Destination R2 bucket name, e.g. cloudcannon-test\n' +
-      '  --from   Source bucket name, e.g. test-2-com-media\n' +
+      '  --from   Source bucket name, e.g. acme-com-media\n' +
       '  --apply  Actually copy. Without it nothing is written.\n' +
       "  --repoint <base-url>  After a clean copy, point the site's\n" +
       '           mediaBaseUrl at this origin. Skipped if anything failed.'

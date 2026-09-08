@@ -16,7 +16,7 @@
  * `scripts/optimize-images.mjs` repairs it.
  *
  * A large JS bundle is a different kind of problem with a different fix, and
- * this was never the right place to block it — the Keystatic admin bundle only
+ * this was never the right place to block it — a CMS admin bundle only
  * CMS editors load, and Worker code never reaches a browser at all. Those used
  * to need a hand-maintained exemption list, and every future one would have
  * needed adding to it. Warning instead keeps them visible without blocking a

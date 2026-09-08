@@ -1,195 +1,80 @@
-# Adding a CMS
+# The CMS — CloudCannon
 
-The starter ships with a working CMS example in the **Meridian** demo site so you can see the pattern before wiring it up elsewhere. This guide covers how that example is structured, how to add a CMS to any other site in your fleet, the monorepo access-control caveat you need to understand before you roll it out for clients, and when to reach for a different CMS instead.
+Every site in this fleet is edited **and hosted** by [CloudCannon](https://cloudcannon.com), a git-based CMS: editors work in CloudCannon's hosted UI, every save is a commit to this repository, and CloudCannon builds the site from that commit and serves it. There is no admin route in the site, no database, no CMS code in the build and nothing to deploy from a terminal. What the editors see is described entirely by one YAML file per site, `sites/<domain>/cloudcannon.config.yml`.
 
-## What's in the example
+This guide covers how a site is connected, the file that configures the editors, the rules that keep the CMS and the build in step, forms, and how to verify a change when the CMS runs somewhere you cannot run locally.
 
-Meridian uses **[Keystatic](https://keystatic.com)** — a git-based CMS that stores content as markdown files in the repo. There is no external database and no monthly SaaS bill per client site. Editors log into an admin UI; the admin commits the changes directly back to your repo; Astro rebuilds the affected site.
+## Connecting a Site
 
-Files to look at in `sites/meridian-advisory.com/`:
+One CloudCannon Site per directory under `sites/`, all on the **`main` branch** of this repository. Under the Site (not the Organization):
 
-| File | Purpose |
-|------|---------|
-| `keystatic.config.ts` | Defines the `insights` collection — fields, validation, storage location |
-| `src/content.config.ts` | Astro content-collection schema (Zod) that reads what Keystatic writes |
-| `src/content/insights/*/index.mdoc` | The actual content entries, committed to git |
-| `src/pages/insights/index.astro` | Lists all entries |
-| `src/pages/insights/[...slug].astro` | Renders each entry |
-| `astro.config.mjs` | Registers `@keystatic/astro`, `@astrojs/react`, `@astrojs/markdoc` (gated to dev) |
+| Setting | Value |
+| --- | --- |
+| Details → Source Folder | `sites/<domain>` |
+| Details → CloudCannon Configuration Path | `sites/<domain>/cloudcannon.config.yml` |
+| Details → Mode | Hosted |
+| Build → Install command | `cd ../.. && bun install --frozen-lockfile` |
+| Build → Build command | `cd ../.. && bun run turbo build --filter=<domain>` |
+| Build → Output path | `dist` |
+| Build → Node version | 22 |
+| Assets | Link the site's R2 bucket as a DAM. Base URL **must equal** `business.technical.mediaBaseUrl` in `src/content/settings/site.json` |
+| Hosting | Attach the custom domain here once the first build is green |
 
-**Try it:**
+Three things about the build settings are not obvious:
 
-```bash
-bun install
-bun run dev --filter=meridian-advisory.com
-```
+- **`cd ../..` is mandatory.** This is a bun + Turborepo monorepo: `bun install` must run from the repository root for the `workspace:*` dependencies on `@astro-fleet/shared-ui` and `@astro-fleet/config` to resolve. The Source Folder is the site so that paths in the config stay short and several Sites can share the repo; the commands hop back up.
+- **bun is not in CloudCannon's build image.** `sites/<domain>/.cloudcannon/preinstall` installs it before the Install command runs. That file **must never set shell options** — CloudCannon `source`s it, so `set -u` leaks into their `run.sh` and kills the build *after* a successful compile with `SYNC_PATHS: unbound variable`. `.gitattributes` pins the hook to LF so a Windows checkout cannot hand Linux a `\r` shebang.
+- **Nothing CMS-related is compiled into the site.** The same `bun run build --filter=<domain>` you run locally is what CloudCannon runs; if it passes here it passes there, image budget included.
 
-Then open `http://localhost:4321/keystatic` — you'll see the admin UI. Edit an entry, save, and watch the markdown file update on disk.
+The CloudCannon CLI (`@cloudcannon/cli`) can create and inspect Sites and read build logs — `cloudcannon sites create`, `cloudcannon sites get --site <domain>`, `cloudcannon sites print-last-failed-build --site <domain>`, `cloudcannon validate` for the YAML — but it cannot delete one; that is done in the web app.
 
-## How it works
+## Anatomy of `cloudcannon.config.yml`
 
-1. **Keystatic's admin route is enabled only in dev.** The integration registers server-side routes that can't be prerendered. To keep `output: 'static'` (which is what Cloudflare Pages deploys), the integration is gated with `process.env.NODE_ENV !== 'production'` in `astro.config.mjs`. Production builds are pure static HTML.
-2. **Content is markdown (`.mdoc`).** Keystatic writes Markdoc files on save. `@astrojs/markdoc` lets Astro's content collection API read them at build time.
-3. **The content schema lives in two places.** Keystatic's `keystatic.config.ts` validates what editors can type. Astro's `src/content.config.ts` validates what the build can render. Keep them in sync.
-4. **Editing flow:** run dev, edit in `/keystatic`, commit the changed files, push. Your normal CI + deploy takes it from there.
+Every path in the file is relative to the site directory. The parts that matter most:
 
-## Adding Keystatic to another site in your fleet
+- **`collection_groups`** are the sidebar. The fleet's convention is fixed headings: *Pages*, *Content*, *Global Sections*, *Header & Footer*, *Forms*, *Settings*.
+- **`collections_config`** maps a directory (or a glob within one) to a sidebar entry. Singletons — the homepage, global sections, header & footer, settings — disable `add`, `add_folder` and file actions so an editor cannot create a file no route reads. Collections whose filename is the slug (`services`, `locations`, `posts`, `forms`) get an `add_options` entry pointing at a schema file under `.cloudcannon/schemas/`, and a `create.path` template that slugifies the title.
+- **`url`** on a collection is what "View live" opens and what the Visual Editor previews. Hand-built routes carry a `permalink` key in their JSON (`url: '{permalink}'`); slug-based collections use a template such as `/service/[full_slug]/`.
+- **`_inputs`** set the input type **by key name**, globally at the bottom of the file and per collection above it. CloudCannon infers a type from the name when nothing says otherwise, which is why every key called `number` is declared `type: text` (they hold `"(203) 367-8219"` and `"01"`, not numbers).
+- **`_structures`** are the shapes behind "+ Add" on an array. An array that can be empty **must** name a structure, or CloudCannon cannot infer an entry and marks the input misconfigured.
+- **Images:** photograph keys (`image`, `src`, `heroImage`, `backgroundImage`, …) are `type: image` with `uploads: src/assets/photos`, so a "Site files" upload lands beside the hand-placed photographs rather than in `public/`. The DAM is the intended path and writes a **fully qualified bucket URL**. `dam_static` is deliberately unset: setting it would make CloudCannon write root-relative paths that are indistinguishable from files in `public/` and would bypass build-time optimisation. Icons and the logo are `type: image` with no upload path, so they stay in `public/media/`.
+- **`paths.static` / `paths.uploads`** name where "Site files" uploads go (`public` and `public/media`); **`paths.dam_uploads`** the prefix inside the bucket (`photos`).
 
-Using the Meridian setup as the reference, here's what to replicate in any other site:
+## Keeping three files in step
 
-### 1. Install
+A content change usually touches three places, and all three must agree:
 
-```bash
-cd sites/<yoursite>
-bun add @keystatic/core @keystatic/astro @astrojs/react @astrojs/markdoc react react-dom
-bun add -D @types/react @types/react-dom
-```
+| File | Role | Breaks when out of step |
+| --- | --- | --- |
+| `src/content/**` | The data | — |
+| `cloudcannon.config.yml` | What editors can see and add | A key the config does not describe still renders as a generic input; an array with no structure has a dead "+ Add"; a key whose name implies the wrong type shows as misconfigured |
+| `src/content.config.ts` | What the build accepts (Astro collections, zod) | A required field an entry lacks throws `InvalidContentEntryDataError` and takes the whole dev server down — **every field inside an optional block must itself be optional**, because a blank section arrives as `{}` |
 
-### 2. Configure the integrations
+Adding a new section to a page therefore means: the JSON key with real content, the `_inputs`/`_structures` entries that make it editable and addable, the zod schema if the file is in a collection, the component that renders it, and the `editablePrefix` that lets the Visual Editor bind it.
 
-Edit `sites/<yoursite>/astro.config.mjs`:
+New services and towns come from the schema files and start with `draft: true`, because every grid filters drafts; an editor publishes by flipping the switch.
 
-```js
-import react from '@astrojs/react';
-import markdoc from '@astrojs/markdoc';
-import keystatic from '@keystatic/astro';
+## Visual editing
 
-const isDev = process.env.NODE_ENV !== 'production';
+CloudCannon's Visual Editor renders the hosted build and lets editors click into it. Regions are opt-in per usage: a page passes an `editablePrefix` to a section component, and `packages/shared-ui/src/utils/editable.ts` emits `data-editable`/`data-prop` attributes from it. The prefix cannot be baked into a component, because the same component sits at a different key per page (`hero` inside a service's markdown vs `home.json`). A `data-prop` path is relative to the ROOT of the ONE file the page's collection entry maps to — so a section fed from `global/*.json` or from the `services` collection cannot be bound that way and needs `data-editable="source"` with `data-path` instead. The `@cloudcannon/editable-regions` Astro integration is registered in `astro.config.mjs`.
 
-export default defineConfig({
-  // ...existing config
-  integrations: [
-    react(),
-    markdoc(),
-    ...(isDev ? [keystatic()] : []),
-    sitemap(),
-  ],
-});
-```
+## Media
 
-### 3. Define your collections
+Photographs never enter git. The DAM writes `https://<bucket-origin>/photos/<file>` into the content file; `packages/shared-ui/src/media/media-url.ts` recognises that origin (it must match `PUBLIC_MEDIA_BASE_URL`, derived from `mediaBaseUrl`), strips it back to an object key, and `TreePicture.astro` has Astro download the original at build time and encode the AVIF/WebP/JPEG ladder locally. Nothing is transformed at request time. See [media-storage.md](./media-storage.md).
 
-Create `sites/<yoursite>/keystatic.config.ts`:
+## Forms
 
-```ts
-import { config, fields, collection } from '@keystatic/core';
+Forms are a content model: one JSON file per form under `src/content/forms/`, listed under *Forms* in the sidebar, each field editable (label, placeholder, type, required, options). A page picks a form by id through `getForm()` in `src/lib/forms.ts`.
 
-export default config({
-  storage: { kind: 'local' },
-  collections: {
-    posts: collection({
-      label: 'Posts',
-      slugField: 'title',
-      path: 'src/content/posts/*',
-      format: { contentField: 'content' },
-      schema: {
-        title: fields.slug({ name: { label: 'Title' } }),
-        publishedAt: fields.date({ label: 'Published at' }),
-        summary: fields.text({ label: 'Summary', multiline: true }),
-        content: fields.markdoc({ label: 'Content' }),
-      },
-    }),
-  },
-});
-```
+Submissions go to a CloudCannon **Inbox**. `TreeQuoteForm.astro` takes an `inboxKey` prop (injected from `business.technical.cloudcannonInboxKey` in the site settings): when set it renders the `inbox_key` and `_gotcha` hidden inputs, sets `data-native-submit`, and after client-side validation calls `form.submit()` — a **native** post, not fetch. CloudCannon's hosting intercepts it, stores the submission in the Inbox, forwards it to the Inbox's targets (email, webhooks) and answers a 303 to `/thank-you/`, so every site needs that page. Turnstile is validated by CloudCannon with **your own** keys, configured on the Inbox; the widget's allowed hostnames must include the CloudCannon domain and the custom domain.
 
-### 4. Mirror the collection in Astro
+This only works on CloudCannon hosting. The same output served anywhere else silently breaks every form.
 
-Create `sites/<yoursite>/src/content.config.ts`:
+## Verifying a CMS change
 
-```ts
-import { defineCollection, z } from 'astro:content';
-import { glob } from 'astro/loaders';
+CloudCannon runs on CloudCannon, so the round trip cannot be driven from a terminal. What can be verified locally, and must be:
 
-const posts = defineCollection({
-  loader: glob({ pattern: '*/index.mdoc', base: './src/content/posts' }),
-  schema: z.object({
-    title: z.string(),
-    publishedAt: z.coerce.date(),
-    summary: z.string(),
-  }),
-});
-
-export const collections = { posts };
-```
-
-### 5. Render the content
-
-See `sites/meridian-advisory.com/src/pages/insights/` for a full working list + detail pattern. The short version:
-
-```astro
----
-import { getCollection, render } from 'astro:content';
-const posts = await getCollection('posts');
----
-<ul>
-  {posts.map((p) => (
-    <li><a href={`/posts/${p.id}/`}>{p.data.title}</a></li>
-  ))}
-</ul>
-```
-
-### 6. Run dev and edit
-
-```bash
-bun run dev --filter=<yoursite>
-# open http://localhost:4321/keystatic
-```
-
-## Access control — the monorepo caveat
-
-**Read this before you give clients a login.**
-
-Keystatic's auth is binary: can you push to this GitHub repo, yes or no? It doesn't do row-level permissions.
-
-In a **single-repo multi-site monorepo**, that means:
-
-- ✅ **Good fit:** your agency team edits on behalf of clients, or trusted in-house editors edit their own sites.
-- ❌ **Bad fit:** multiple external clients, each of whom must **not** be able to see or edit other clients' sites.
-
-If you need strict client isolation, the options are:
-
-1. **Separate repos per client** — lose the shared-components benefit of the monorepo.
-2. **Use a CMS with real multi-tenant auth** — see alternatives below.
-3. **Keep editing in-house** — clients request changes, your team makes them in dev and pushes.
-
-For a single-agency setup with in-house editors, option 3 is usually fine and is what Meridian's example assumes.
-
-## Production editing (optional)
-
-The starter's default is **dev-only editing** — editors run the site locally, hit `/keystatic`, commit, push. That's the cleanest fit for a `output: 'static'` Cloudflare Pages deploy.
-
-If you want editors to log in on a deployed URL (e.g. `meridian-advisory.com/keystatic`) without running dev locally, you have two paths:
-
-### Path A — deploy a dynamic admin
-
-1. Change `output: 'static'` to `output: 'server'` in `astro.config.mjs`.
-2. Add an adapter — `@astrojs/cloudflare`, `@astrojs/node`, or whichever target you deploy to.
-3. Add `export const prerender = true` to every page **except** the admin routes. Or flip prerender globally and opt in to SSR only on `/keystatic` and `/api/keystatic`.
-4. Switch Keystatic storage from `{ kind: 'local' }` to `{ kind: 'github', repo: 'owner/name' }` and set up a GitHub OAuth app.
-
-This is a meaningful amount of extra plumbing. It's worth it if your editors don't have a dev environment. It's overkill if they do.
-
-### Path B — run Keystatic admin separately
-
-Keep the site fully static. Expose the admin only from a separate deployment (a single "admin" site in the monorepo that pulls content paths from every sibling site). This is the cleanest architecture for "one editor, many sites" but not covered by the starter example.
-
-## When Keystatic is the wrong choice
-
-Keystatic is a great default for git-based editing of small-to-medium content sets. Reach for something else when:
-
-| You need… | Consider |
-|-----------|----------|
-| **Multi-tenant auth** — clients must not see each other's content | [Sanity](https://www.sanity.io), [Directus](https://directus.io), [Strapi](https://strapi.io) |
-| **Real-time collaboration** — multiple editors in the same doc at once | [Sanity](https://www.sanity.io), [Storyblok](https://www.storyblok.com) |
-| **Non-technical editing of large catalogs** — thousands of products, heavy media | [Directus](https://directus.io), [Payload](https://payloadcms.com), [Sanity](https://www.sanity.io) |
-| **Zero-config, free, git-based** — like Keystatic but even simpler | [Decap CMS](https://decapcms.org) |
-| **A native-app-feeling CMS that ships with its own UI** | [TinaCMS](https://tina.io) |
-
-For most agency starter use cases — blog posts, case studies, team pages, service descriptions — Keystatic is the right default. Swap it when your editor concurrency or content volume outgrows what git can comfortably handle.
-
-## Reference
-
-- [Keystatic documentation](https://keystatic.com/docs)
-- [Astro content collections](https://docs.astro.build/en/guides/content-collections/)
-- [@astrojs/markdoc](https://docs.astro.build/en/guides/integrations-guide/markdoc/)
+1. **The build.** `bun run build --filter=<domain>` after any change to content, the YAML or `content.config.ts`. Confirm the pages you touched exist under `dist/`. This is exactly what CloudCannon will run.
+2. **The content shape.** Edit the content file exactly the way CloudCannon would write it (JSON, or bare YAML frontmatter for markdown — CloudCannon does not quote values), rebuild, and grep the built HTML for the new text.
+3. **The YAML.** `cloudcannon validate` checks syntax; it does not know your content. Read the file back after editing, keep the key names identical to the content file, and check the three-way table above. After merging, open the entry in CloudCannon and look for inputs flagged as misconfigured or arrays whose "+ Add" does nothing.
+4. **CloudCannon's own build**, after the push: `cloudcannon sites print-last-failed-build --site <domain>` when the Site shows red.

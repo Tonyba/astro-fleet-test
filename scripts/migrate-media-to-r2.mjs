@@ -11,9 +11,9 @@
  * `<prefix>/<slug>-<content-hash>.<ext>` — so a photo migrated today and the
  * same photo re-uploaded tomorrow land on the same object.
  *
- *   node scripts/migrate-media-to-r2.mjs --site test-2.com              # dry run
- *   node scripts/migrate-media-to-r2.mjs --site test-2.com --apply
- *   node scripts/migrate-media-to-r2.mjs --site test-2.com --apply --delete-local
+ *   node scripts/migrate-media-to-r2.mjs --site <domain>              # dry run
+ *   node scripts/migrate-media-to-r2.mjs --site <domain> --apply
+ *   node scripts/migrate-media-to-r2.mjs --site <domain> --apply --delete-local
  *
  * DRY RUN IS THE DEFAULT and prints the full plan: every file, the key it will
  * take, and every content reference that will change. Nothing is written to the
@@ -26,7 +26,7 @@
  * under the code.
  *
  * ICONS ARE NOT TOUCHED. public/media stays in the repo by design — see the
- * media section of the site's keystatic.config.ts.
+ * media handling the CloudCannon DAM applies (see docs/media-storage.md).
  */
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
@@ -193,7 +193,7 @@ function resolveUploader() {
 }
 
 // ---------------------------------------------------------------------------
-// Key derivation — must match media-api.ts exactly
+// Key derivation — the content-addressed key the CMS uploader used to write
 // ---------------------------------------------------------------------------
 function slugifyName(name) {
   return (

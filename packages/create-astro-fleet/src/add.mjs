@@ -1,8 +1,8 @@
 import * as p from '@clack/prompts';
 import pc from 'picocolors';
-import { parseArgs, validateDomain, validatePreset, PRESETS } from './args.mjs';
+import { parseArgs, validateDomain } from './args.mjs';
 import { findFleetRoot } from './fleet-root.mjs';
-import { scaffoldSite } from './scaffold.mjs';
+import { scaffoldSite, slugify } from './scaffold.mjs';
 
 export async function add(argv) {
   const { positional, flags } = parseArgs(argv);
@@ -32,32 +32,35 @@ export async function add(argv) {
     }
   }
 
-  let preset = positional[1] || flags.preset || 'corporate';
-  if (!flags.preset && !positional[1]) {
-    const chosen = await p.select({
-      message: 'Design preset',
-      options: PRESETS.map((name) => ({ value: name, label: name })),
-      initialValue: 'corporate',
-    });
-    if (p.isCancel(chosen)) throw new Error('User cancelled.');
-    preset = chosen;
-  } else {
-    const err = validatePreset(preset);
-    if (err) {
-      p.log.error(err);
-      process.exit(1);
-    }
-  }
+  // Optional: with exactly one CloudCannon site in the fleet it is inferred.
+  const requested = typeof flags.template === 'string' ? flags.template : undefined;
 
   const spin = p.spinner();
-  spin.start(`Scaffolding sites/${domain}`);
+  spin.start(`Cloning ${requested ? `sites/${requested}` : 'the CloudCannon site'} into sites/${domain}`);
+  let template;
   try {
-    await scaffoldSite({ rootDir: root, domain, preset });
-    spin.stop(`Created sites/${domain}`);
+    ({ template } = await scaffoldSite({ rootDir: root, domain, template: requested }));
+    spin.stop(`Created sites/${domain} from sites/${template}`);
   } catch (err) {
     spin.stop(pc.red('Failed'));
     throw err;
   }
 
-  p.outro(`${pc.green('✓')} Site ready. Next:\n  ${pc.cyan('bun install')}\n  ${pc.cyan(`bun run dev --filter=${domain}`)}`);
+  p.outro(nextSteps(domain, template));
+}
+
+export function nextSteps(domain, template) {
+  const slug = slugify(domain);
+  const templateSlug = slugify(template);
+  return (
+    `${pc.green('✓')} Site ready. Next:\n` +
+    `  ${pc.cyan('bun install')}\n` +
+    `  ${pc.cyan(`bun run build --filter=${domain}`)}\n` +
+    `  Give it its own media bucket (the clone still reads ${templateSlug}-media):\n` +
+    `  ${pc.cyan(`wrangler r2 bucket create ${slug}-media`)}\n` +
+    `  ${pc.cyan(`bun run copy-media-bucket --site ${domain} --from ${templateSlug}-media --to ${slug}-media --apply`)}\n` +
+    `  Then create the CloudCannon Site on main (Source Folder sites/${domain}, Mode: Hosted,\n` +
+    `  install "cd ../.. && bun install --frozen-lockfile", build "cd ../.. && bun run turbo build --filter=${domain}",\n` +
+    `  output "dist"), link the bucket as a DAM and create its Inbox — see docs/adding-a-site.md.`
+  );
 }

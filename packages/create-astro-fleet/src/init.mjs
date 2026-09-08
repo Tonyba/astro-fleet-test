@@ -2,12 +2,12 @@ import * as p from '@clack/prompts';
 import pc from 'picocolors';
 import { downloadTemplate } from 'giget';
 import { resolve, join, basename } from 'node:path';
-import { access, rm, readFile, writeFile, readdir } from 'node:fs/promises';
-import { parseArgs, validateDomain, validatePreset, PRESETS } from './args.mjs';
-import { scaffoldSite } from './scaffold.mjs';
+import { access, readFile, writeFile, readdir } from 'node:fs/promises';
+import { parseArgs, validateDomain } from './args.mjs';
+import { scaffoldSite, findTemplateSites } from './scaffold.mjs';
+import { nextSteps } from './add.mjs';
 
 const DEFAULT_TEMPLATE = 'github:indivar/astro-fleet';
-const DEMO_SITES = ['flux-analytics.com', 'meridian-advisory.com', 'olive-and-vine.com'];
 
 async function pathExists(p) {
   try {
@@ -71,38 +71,8 @@ export async function init(argv) {
     }
   }
 
-  let preset = flags.preset || 'corporate';
-  if (!flags.preset) {
-    const chosen = await p.select({
-      message: 'Design preset for the first site',
-      options: [
-        { value: 'corporate', label: 'corporate', hint: 'navy + gold, consulting' },
-        { value: 'saas', label: 'saas', hint: 'dark + neon, developer tools' },
-        { value: 'warm', label: 'warm', hint: 'cream + amber, hospitality' },
-      ],
-      initialValue: 'corporate',
-    });
-    if (p.isCancel(chosen)) throw new Error('User cancelled.');
-    preset = chosen;
-  } else {
-    const err = validatePreset(preset);
-    if (err) {
-      p.log.error(err);
-      process.exit(1);
-    }
-  }
-
-  let keepDemos = Boolean(flags['keep-demos']);
-  if (flags['keep-demos'] === undefined) {
-    const choice = await p.confirm({
-      message: 'Keep the three demo sites as reference?',
-      initialValue: false,
-    });
-    if (p.isCancel(choice)) throw new Error('User cancelled.');
-    keepDemos = choice;
-  }
-
   const template = flags.template || DEFAULT_TEMPLATE;
+  const siteTemplate = typeof flags['site-template'] === 'string' ? flags['site-template'] : undefined;
 
   const spin = p.spinner();
   spin.start(`Downloading template from ${template}`);
@@ -118,36 +88,32 @@ export async function init(argv) {
     throw err;
   }
 
-  if (!keepDemos) {
-    const trimSpin = p.spinner();
-    trimSpin.start('Removing demo sites');
-    for (const demo of DEMO_SITES) {
-      const demoPath = join(targetDir, 'sites', demo);
-      if (await pathExists(demoPath)) {
-        await rm(demoPath, { recursive: true, force: true });
-      }
-    }
-    trimSpin.stop('Removed demo sites');
-  }
-
   await renameRootPackage(targetDir, basename(targetDir));
 
-  const scaffoldSpin = p.spinner();
-  scaffoldSpin.start(`Scaffolding sites/${domain}`);
-  try {
-    await scaffoldSite({ rootDir: targetDir, domain, preset });
-    scaffoldSpin.stop(`Created sites/${domain}`);
-  } catch (err) {
-    scaffoldSpin.stop(pc.red('Scaffold failed'));
-    throw err;
+  // The first site is a clone of a CloudCannon site shipped with the template.
+  // A template repo with no site in it (this one, since 2026-09-08) has nothing
+  // to clone, so the fleet is created empty and the first site is added by hand.
+  const candidates = await findTemplateSites(targetDir);
+  if (siteTemplate || candidates.length > 0) {
+    const scaffoldSpin = p.spinner();
+    scaffoldSpin.start(`Cloning ${siteTemplate ? `sites/${siteTemplate}` : 'the CloudCannon site'} into sites/${domain}`);
+    let used;
+    try {
+      ({ template: used } = await scaffoldSite({ rootDir: targetDir, domain, template: siteTemplate }));
+      scaffoldSpin.stop(`Created sites/${domain} from sites/${used}`);
+    } catch (err) {
+      scaffoldSpin.stop(pc.red('Scaffold failed'));
+      throw err;
+    }
+    p.outro(`${pc.green('✓')} Fleet ready. ${pc.cyan(`cd ${targetArg}`)} then:\n` + nextSteps(domain, used));
+  } else {
+    p.log.warn(
+      `The template ships no CloudCannon site to clone, so sites/${domain} was not created.\n` +
+        '  Add the first site by hand — docs/adding-a-cms.md describes the layout — and clone\n' +
+        '  every later site from it with `create-astro-fleet add <domain>`.'
+    );
+    p.outro(`${pc.green('✓')} Fleet ready. ${pc.cyan(`cd ${targetArg}`)} then ${pc.cyan('bun install')}.`);
   }
-
-  p.outro(
-    `${pc.green('✓')} Fleet ready. Next:\n` +
-      `  ${pc.cyan(`cd ${targetArg}`)}\n` +
-      `  ${pc.cyan('bun install')}\n` +
-      `  ${pc.cyan(`bun run dev --filter=${domain}`)}`
-  );
 }
 
 async function renameRootPackage(targetDir, newName) {

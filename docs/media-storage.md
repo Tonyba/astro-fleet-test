@@ -6,23 +6,28 @@ ladder, the same widths, the same quality, encoded at build time by sharp.
 
 ## Why
 
-Keystatic is a git-based CMS, so `fields.image` commits the file. An editor
-uploading a photo from their phone therefore committed 6 MB of binary to `main`,
-and the repo grew with every edit — which is what `optimize-images.mjs`,
-`check-file-sizes.mjs` and the 1 MB budget were built to contain.
+CloudCannon is a git-based CMS, so an image uploaded to "Site files" is a
+commit. An editor uploading a photo from their phone would commit 6 MB of binary
+to `main`, and the repo would grow with every edit — which is what
+`optimize-images.mjs`, `check-file-sizes.mjs` and the 1 MB budget were built to
+contain.
 
-With the bucket in the path, a page save is a one-line JSON diff:
+With the bucket linked as a DAM (Site Settings → Assets), a page save is a
+one-line JSON diff:
 
 ```diff
 -  "backgroundImage": "/src/assets/photos/homepage/hero/backgroundImage.jpg",
-+  "backgroundImage": "r2:photos/homepage/hero-3f2a9c1b.jpg",
++  "backgroundImage": "https://pub-<hash>.r2.dev/photos/homepage/hero-3f2a9c1b.jpg",
 ```
+
+The older `r2:<key>` sentinel that the previous uploader wrote is still
+recognised, so both notations can sit in one site.
 
 ## What is stored where
 
 | What | Where | Why |
 | --- | --- | --- |
-| Photographs uploaded through the CMS | R2, content holds `r2:<key>` | the bytes; they are what grew the repo |
+| Photographs uploaded through the CMS | R2, content holds the full bucket URL (or legacy `r2:<key>`) | the bytes; they are what grew the repo |
 | Photographs placed by hand | `src/assets/` via `bun run import-photo` | build inputs a developer commits deliberately |
 | SVG icons, logo, favicon | `public/media/` | 2 KB vectors, same-origin, one is a CSS `mask-image` |
 
@@ -31,7 +36,7 @@ With the bucket in the path, a page save is a one-line JSON diff:
 Nothing is resized at request time and no image-transformation service is
 involved — that would be billed per transform and slower than a static file.
 
-1. `TreePicture.astro` turns `r2:<key>` into `${mediaBaseUrl}/${key}`.
+1. `TreePicture.astro` resolves the stored value to `${mediaBaseUrl}/${key}` — a DAM URL is recognised by its origin (`isMediaUrl` in `packages/shared-ui/src/media/media-url.ts`), a legacy `r2:<key>` by its prefix.
 2. Astro is allowed to fetch that host (`image.remotePatterns` in the site's
    `astro.config.mjs`, derived from the same setting).
 3. At build time it downloads the original once, measures it, and writes AVIF +
@@ -41,13 +46,10 @@ involved — that would be billed per transform and slower than a static file.
 The ladder is clamped to the source width, so a 1200px original is never
 encoded four times over for a hero's 640/1024/1440/1920 ladder.
 
-**On a runtime-content site** (`deploy.runtimeContent`, e.g. test-1.com) pages
-render on demand, where there is no sharp. Those sites pre-encode the ladder in
-a prerendered endpoint, `src/pages/image-manifest.json.ts`, which walks the
-content tree for `r2:` values as well as the local assets. A key that only
-appears after that build has no ladder and is served straight from the bucket —
-so CI treats a content diff that *introduces* an `r2:` key as a code change and
-rebuilds.
+Every page in the fleet is prerendered, so the ladder is always produced at
+build time. CI treats a content diff that *introduces* a new bucket reference as
+a code change and rebuilds, so a photo uploaded through the CMS is encoded on
+the very next run.
 
 ## Setup for a site
 
@@ -69,21 +71,16 @@ With no zones in the account that command cannot succeed; use the r2.dev URL.
 **Does r2.dev's rate limiting matter?** Barely, because of where these URLs are
 read. The build downloads each original once and the site serves the encoded
 copies from `dist/_astro`, so a visitor never touches the bucket. Only the build
-and the CMS preview do. The one exception is a **runtime-content site**
-(test-1.com): an image uploaded after the last build has no ladder entry and is
-served to visitors straight from the bucket until the next build. If that site
-goes to production traffic, put it behind a custom domain.
+and the CMS preview do.
 
-1. `sites/<domain>/wrangler.jsonc` — bind it as `MEDIA` (already there for
-   test-1.com and test-2.com).
-2. Site Settings → Technical → **Media Bucket URL** — the public origin. This is
-   the single source of truth; `astro.config.mjs` reads it and inlines it as
-   `PUBLIC_MEDIA_BASE_URL`. It takes effect on the next build.
-3. Local development only: R2 API credentials in `sites/<domain>/.env`
-   (`R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`).
-   `astro dev` runs in Node with no bindings, so it writes to the same bucket
-   over R2's S3 API. **Production needs none of these** — the worker uses the
-   binding.
+1. CloudCannon → Site Settings → Assets — link the bucket as a **DAM**. Uploads
+   go straight from the editor's browser to the bucket; nothing in the site or
+   the Worker ever writes to it, so there is no `MEDIA` binding and no R2
+   credential anywhere in the repo.
+2. Site Settings → Technical → **Media Bucket URL** (`mediaBaseUrl` in
+   `src/content/settings/site.json`) — the public origin, equal to the DAM's
+   Base URL. This is the single source of truth; `astro.config.mjs` reads it
+   and inlines it as `PUBLIC_MEDIA_BASE_URL`. It takes effect on the next build.
 
 ## Moving existing photographs into the bucket
 
@@ -98,35 +95,27 @@ uploads, then rewrites every reference in `src/content/`. `--delete-local` keeps
 any file still named by a component default and tells you which component to fix
 first.
 
-## The endpoint
+## Who writes to the bucket
 
-`POST /api/media` (multipart `file`, `prefix`) → `{ value: "r2:<key>", url }`
-`GET  /api/media?prefix=…` → list · `GET /api/media?url=<key>` → public URL
-`DELETE /api/media?key=…`
-
-Authorisation is the point of that route: an open upload endpoint on a public
-domain is free hosting for whoever finds it. Every request must carry the
-Keystatic session cookie (`keystatic-gh-access-token`), which is checked against
-GitHub for **push access to the site's repo** and cached for five minutes.
-`astro dev` skips the check — Keystatic runs in local mode there and the server
-is not on the internet.
-
-Uploads are limited to 25 MB, restricted to image content types, and an SVG
-containing script is refused.
+Only CloudCannon's DAM, from the editor's browser, with CloudCannon's own
+credentials configured under Site Settings → Assets. No site ships an upload
+endpoint any more: the `/api/media` route that the earlier Keystatic sites
+carried was removed with them, so there is no R2 credential in the repo and
+nothing on a public domain accepts an upload. The scripts below talk to the
+bucket through `wrangler`, with the developer's own login.
 
 ## Keys
 
-`<prefix>/<slug>-<8 hex of sha256>.<ext>` — e.g.
-`photos/about/team-photo-3f2a9c1b.jpg`.
-
-Content-addressed, so re-uploading the same file lands on the same object rather
-than littering the bucket, and two photos both named `IMG_1234.jpg` cannot
-collide. The prefix is organisational only: nothing resolves through it, so
-unlike Keystatic's `directory` it can be renamed without orphaning anything.
+The DAM writes objects under `paths.dam_uploads` from `cloudcannon.config.yml`
+(`photos/`), named by the uploaded file. `migrate-media` and `copy-media-bucket`
+write content-addressed keys instead, `<prefix>/<slug>-<8 hex of sha256>.<ext>`
+(e.g. `photos/about/team-photo-3f2a9c1b.jpg`), so re-running them lands on the
+same object rather than littering the bucket. Both shapes are ordinary keys to
+the build; the prefix is organisational only and nothing resolves through it.
 
 Objects are never deleted when a field is cleared or replaced. An entry pointing
-at a key that another entry also uses is a normal, safe thing here — the failure
-mode that made shared images dangerous under `fields.image` does not exist.
+at a URL that another entry also uses is a normal, safe thing here — sharing a
+photo between two entries is just sharing a string.
 
 ## Cleaning up unreferenced objects
 
@@ -148,7 +137,7 @@ Three things keep it from deleting a live image, each covering a real way that
 could happen:
 
 - **It reads every branch tip**, not just the checkout — an image referenced
-  only by an unmerged Keystatic branch is not an orphan.
+  only by an unmerged branch is not an orphan.
 - **It fetches and refuses to `--apply` while the checkout is behind its
   upstream.** The CMS commits to the remote, so a stale clone cannot tell a new
   reference from a missing one.
