@@ -82,6 +82,17 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
+    // The adapter pre-bundles Astro's runtime for the workerd module runner but
+    // not its own server entrypoint, which Vite then discovers mid-build and
+    // re-optimises ("optimized dependencies changed. reloading"). On a slow or
+    // busy runner the reload can hand workerd a mixed set of chunks — CI failed
+    // with `require_dist is not a function` from a chunk of the old set when
+    // two adapter sites built in parallel. Declaring it up front means the
+    // optimizer knows the full set before the first module runs and never
+    // reloads. Build only: in dev there is no adapter and no workerd.
+    ssr: isBuild
+      ? { optimizeDeps: { include: ['@astrojs/cloudflare/entrypoints/server'] } }
+      : undefined,
     // `cloudflare:workers` only exists once the adapter is loaded, so in dev it
     // resolves to a stub that hands back an empty env.
     resolve: isBuild
