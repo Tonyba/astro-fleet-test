@@ -4,20 +4,43 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 
-# Usage
-if [ $# -lt 1 ]; then
-  echo "Usage: ./scripts/new-site.sh <domain> [preset]"
+# Every site in this fleet is edited by CloudCannon, so a new site is a clone
+# of an existing CloudCannon site rather than a blank starter: the content
+# model, cloudcannon.config.yml, the media pipeline and the form endpoint all
+# come along, and only the names change. The template is any site under sites/
+# that carries a cloudcannon.config.yml — pass one with --template, or let the
+# script pick the only one there is.
+TEMPLATE_SITE=""
+
+usage() {
+  echo "Usage: ./scripts/new-site.sh <domain> [--template <site>]"
   echo ""
-  echo "  domain  — e.g. mydomain.com (becomes the site directory name)"
-  echo "  preset  — corporate | saas | warm (default: corporate)"
+  echo "  domain      e.g. mydomain.com (becomes the site directory name)"
+  echo "  --template  site under sites/ to clone. Optional when exactly one"
+  echo "              site with a cloudcannon.config.yml exists."
   echo ""
   echo "Example:"
-  echo "  ./scripts/new-site.sh acme.com saas"
+  echo "  ./scripts/new-site.sh acme.com --template client-a.com"
+}
+
+if [ $# -lt 1 ]; then
+  usage
   exit 1
 fi
 
-DOMAIN="$1"
-PRESET="${2:-corporate}"
+DOMAIN=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --template)
+      [ $# -ge 2 ] || { echo "Error: --template needs a value."; exit 1; }
+      TEMPLATE_SITE="$2"; shift 2 ;;
+    -h|--help) usage; exit 0 ;;
+    -*) echo "Error: unknown option '$1'."; usage; exit 1 ;;
+    *)
+      [ -z "$DOMAIN" ] || { echo "Error: unexpected argument '$1'."; usage; exit 1; }
+      DOMAIN="$1"; shift ;;
+  esac
+done
 
 # Validate domain — alphanumeric, hyphens, dots only. Blocks path traversal and sed injection.
 if [[ ! "$DOMAIN" =~ ^[a-zA-Z0-9]([a-zA-Z0-9.-]*[a-zA-Z0-9])?$ ]] || [[ "$DOMAIN" == *..* ]]; then
@@ -25,186 +48,109 @@ if [[ ! "$DOMAIN" =~ ^[a-zA-Z0-9]([a-zA-Z0-9.-]*[a-zA-Z0-9])?$ ]] || [[ "$DOMAIN
   exit 1
 fi
 
-# Validate preset
-if [[ "$PRESET" != "corporate" && "$PRESET" != "saas" && "$PRESET" != "warm" ]]; then
-  echo "Error: Invalid preset '$PRESET'. Choose: corporate, saas, or warm."
-  exit 1
-fi
-
-# Check if site already exists
 if [ -d "$ROOT_DIR/sites/$DOMAIN" ]; then
   echo "Error: sites/$DOMAIN already exists."
   exit 1
 fi
 
-# Check starter exists
-if [ ! -d "$ROOT_DIR/sites/starter" ]; then
-  echo "Error: sites/starter template not found."
+# No --template: use the one CloudCannon site in the fleet, if there is exactly one.
+if [ -z "$TEMPLATE_SITE" ]; then
+  CANDIDATES=()
+  for cfg in "$ROOT_DIR"/sites/*/cloudcannon.config.yml; do
+    [ -f "$cfg" ] && CANDIDATES+=("$(basename "$(dirname "$cfg")")")
+  done
+  if [ ${#CANDIDATES[@]} -eq 1 ]; then
+    TEMPLATE_SITE="${CANDIDATES[0]}"
+  elif [ ${#CANDIDATES[@]} -eq 0 ]; then
+    echo "Error: no site under sites/ carries a cloudcannon.config.yml, so there is nothing to clone."
+    echo "       Add the first CloudCannon site by hand (see docs/adding-a-cms.md), then clone it."
+    exit 1
+  else
+    echo "Error: several CloudCannon sites found (${CANDIDATES[*]}). Pass --template <site>."
+    exit 1
+  fi
+fi
+
+if [ ! -d "$ROOT_DIR/sites/$TEMPLATE_SITE" ]; then
+  echo "Error: template sites/$TEMPLATE_SITE not found."
+  exit 1
+fi
+if [ ! -f "$ROOT_DIR/sites/$TEMPLATE_SITE/cloudcannon.config.yml" ]; then
+  echo "Error: sites/$TEMPLATE_SITE has no cloudcannon.config.yml — only CloudCannon sites can be cloned."
   exit 1
 fi
 
-echo "Creating site: $DOMAIN (preset: $PRESET)"
+# Bucket names and other dot-free identifiers: acme.com -> acme-com.
+TEMPLATE_SLUG=$(echo "$TEMPLATE_SITE" | tr '.' '-' | tr '[:upper:]' '[:lower:]')
+SLUG=$(echo "$DOMAIN" | tr '.' '-' | tr '[:upper:]' '[:lower:]')
+# Literal forms for sed: the domain validation above only allows [A-Za-z0-9.-],
+# so the dot is the only regex metacharacter that can appear.
+TEMPLATE_SITE_RE=$(echo "$TEMPLATE_SITE" | sed 's/\./\\./g')
+TEMPLATE_SLUG_RE=$(echo "$TEMPLATE_SLUG" | sed 's/\./\\./g')
+
+echo "Creating site: $DOMAIN (cloned from sites/$TEMPLATE_SITE)"
 echo ""
 
-# 1. Copy starter
-cp -r "$ROOT_DIR/sites/starter" "$ROOT_DIR/sites/$DOMAIN"
+# 1. Copy the template one top-level entry at a time so build output, caches,
+#    local secrets and node_modules (bun links workspace packages in there)
+#    never come along.
+SRC="$ROOT_DIR/sites/$TEMPLATE_SITE"
+DEST="$ROOT_DIR/sites/$DOMAIN"
+mkdir -p "$DEST"
+for entry in "$SRC"/* "$SRC"/.[!.]*; do
+  [ -e "$entry" ] || continue
+  case "$(basename "$entry")" in
+    node_modules|dist|.turbo|.astro|.wrangler|.env|.env.*) continue ;;
+  esac
+  cp -r "$entry" "$DEST/"
+done
 
-# 2. Update astro.config.mjs — replace example.com with the actual domain
-sed -i'' -e "s|https://www.example.com|https://www.$DOMAIN|g" "$ROOT_DIR/sites/$DOMAIN/astro.config.mjs"
-sed -i'' -e "s|https://www.example.com|https://www.$DOMAIN|g" "$ROOT_DIR/sites/$DOMAIN/public/robots.txt"
+# 2. Rename every reference to the template site: the package name, the
+#    canonical siteUrl in the CMS settings, the CloudCannon `source`, the
+#    Worker name, the paths /api/quote commits submissions to, and the bucket
+#    the comments point at. Text files only — nothing under public/media is a
+#    text file that names the site.
+find "$DEST" -type f \
+  \( -name '*.ts' -o -name '*.tsx' -o -name '*.mjs' -o -name '*.js' -o -name '*.json' \
+     -o -name '*.jsonc' -o -name '*.yml' -o -name '*.yaml' -o -name '*.md' -o -name '*.astro' \
+     -o -name '*.css' -o -name '*.txt' -o -name '*.env*' \) \
+  -print0 | while IFS= read -r -d '' file; do
+    if grep -qF -e "$TEMPLATE_SITE" -e "$TEMPLATE_SLUG" "$file"; then
+      # Dots escaped: unescaped, `acme.com` also matches `acme-com` and every
+      # dot-free identifier would be renamed to the dotted domain.
+      sed -i'' -e "s|$TEMPLATE_SITE_RE|$DOMAIN|g" -e "s|$TEMPLATE_SLUG_RE|$SLUG|g" "$file"
+    fi
+  done
 
-# 3. Update package.json — replace name
-sed -i'' -e "s|\"name\": \"starter\"|\"name\": \"$DOMAIN\"|g" "$ROOT_DIR/sites/$DOMAIN/package.json"
-
-# 4. Update site-config.ts — replace site name
-# Title-case the domain name (strip TLD, capitalize first letter)
-SITE_TITLE=$(echo "$DOMAIN" | sed 's/\..*//' | sed 's/./\U&/')
-sed -i'' -e "s|'Starter Site'|'$SITE_TITLE'|g" "$ROOT_DIR/sites/$DOMAIN/src/lib/site-config.ts"
-sed -i'' -e "s|'Built with Astro Fleet'|'Powered by $SITE_TITLE'|g" "$ROOT_DIR/sites/$DOMAIN/src/lib/site-config.ts"
-
-# 5. Apply design preset — update CSS and astro.config.mjs fonts
-if [ "$PRESET" = "saas" ]; then
-  cat > "$ROOT_DIR/sites/$DOMAIN/src/styles/global.css" << 'CSSEOF'
-@import "tailwindcss";
-
-@theme {
-  --color-primary: #0a0f14;
-  --color-secondary: #1a1f2e;
-  --color-accent: #34d399;
-  --color-bg: #0d1117;
-  --color-text: #e6edf3;
-  --color-cta: #10b981;
-  --color-text-secondary: #8b949e;
-  --color-text-muted: #6e7681;
-  --color-border: #30363d;
-  --color-elevated: #161b22;
-  --font-heading: 'Sora', sans-serif;
-  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
-}
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; }
-body {
-  font-family: var(--font-body);
-  background: var(--color-bg);
-  color: var(--color-text);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-}
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading);
-  line-height: 1.15;
-  color: var(--color-text);
-}
-a { color: inherit; text-decoration: none; }
-a:hover { color: var(--color-accent); }
-CSSEOF
-
-  cat > "$ROOT_DIR/sites/$DOMAIN/astro.config.mjs" << CONFEOF
-import { defineConfig, fontProviders } from 'astro/config';
-import tailwindcss from '@tailwindcss/vite';
-import sitemap from '@astrojs/sitemap';
-
-export default defineConfig({
-  site: 'https://www.$DOMAIN',
-  integrations: [sitemap()],
-  vite: { plugins: [tailwindcss()] },
-  output: 'static',
-  fonts: [
-    {
-      provider: fontProviders.google(),
-      name: 'Sora',
-      cssVariable: '--font-heading',
-      weights: [400, 500, 600, 700, 800],
-    },
-    {
-      provider: fontProviders.google(),
-      name: 'Inter',
-      cssVariable: '--font-body',
-      weights: [400, 500, 600, 700],
-    },
-  ],
-});
-CONFEOF
-
-elif [ "$PRESET" = "warm" ]; then
-  cat > "$ROOT_DIR/sites/$DOMAIN/src/styles/global.css" << 'CSSEOF'
-@import "tailwindcss";
-
-@theme {
-  --color-primary: #1c1917;
-  --color-secondary: #44403c;
-  --color-accent: #d97706;
-  --color-bg: #faf7f2;
-  --color-text: #1c1917;
-  --color-cta: #b45309;
-  --color-text-secondary: #57534e;
-  --color-text-muted: #78716c;
-  --color-border: #e7e5e4;
-  --color-elevated: #ffffff;
-  --font-heading: 'Playfair Display', serif;
-  --font-body: 'Source Sans 3', system-ui, -apple-system, sans-serif;
-}
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; }
-body {
-  font-family: var(--font-body);
-  background: var(--color-bg);
-  color: var(--color-text);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-}
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading);
-  line-height: 1.15;
-  color: var(--color-text);
-}
-a { color: inherit; text-decoration: none; }
-a:hover { color: var(--color-accent); }
-CSSEOF
-
-  cat > "$ROOT_DIR/sites/$DOMAIN/astro.config.mjs" << CONFEOF
-import { defineConfig, fontProviders } from 'astro/config';
-import tailwindcss from '@tailwindcss/vite';
-import sitemap from '@astrojs/sitemap';
-
-export default defineConfig({
-  site: 'https://www.$DOMAIN',
-  integrations: [sitemap()],
-  vite: { plugins: [tailwindcss()] },
-  output: 'static',
-  fonts: [
-    {
-      provider: fontProviders.google(),
-      name: 'Playfair Display',
-      cssVariable: '--font-heading',
-      weights: [400, 600, 700, 800],
-    },
-    {
-      provider: fontProviders.google(),
-      name: 'Source Sans 3',
-      cssVariable: '--font-body',
-      weights: [400, 500, 600, 700],
-    },
-  ],
-});
-CONFEOF
-fi
-
-# 6. Clean up sed backup files (macOS sed creates .bak files with -i'')
-find "$ROOT_DIR/sites/$DOMAIN" -name "*-e" -delete 2>/dev/null || true
+# 3. Clean up sed backup files (macOS sed creates them with -i'')
+find "$DEST" -name "*-e" -delete 2>/dev/null || true
 
 echo "✓ Created sites/$DOMAIN"
 echo ""
 echo "Next steps:"
-echo "  1. Edit sites/$DOMAIN/src/lib/site-config.ts with your site details"
-echo "  2. Run: bun install"
-echo "  3. Run: bun run dev --filter=$DOMAIN"
+echo "  1. bun install                                  # register the workspace"
+echo "  2. bun run build --filter=$DOMAIN               # prove it builds"
+echo "  3. Give it its own media bucket. The clone still READS the template's"
+echo "     bucket (mediaBaseUrl in src/content/settings/site.json), so:"
+echo "       wrangler r2 bucket create $SLUG-media"
+echo "       wrangler r2 bucket dev-url enable $SLUG-media"
+echo "       bun run copy-media-bucket --site $DOMAIN --from $TEMPLATE_SLUG-media --to $SLUG-media --apply"
+echo "     then set Site Settings -> Technical -> Media Bucket URL and replace the"
+echo "     old bucket origin across src/content/ (DAM values are full URLs)."
+echo "  4. In CloudCannon, create a Site on this repo's main branch:"
+echo "       Details -> Source Folder:            sites/$DOMAIN"
+echo "       Details -> Configuration Path:       sites/$DOMAIN/cloudcannon.config.yml"
+echo "       Details -> Mode:                     Hosted"
+echo "       Build   -> Install command:          cd ../.. && bun install --frozen-lockfile"
+echo "       Build   -> Build command:            cd ../.. && bun run turbo build --filter=$DOMAIN"
+echo "       Build   -> Output path:              dist"
+echo "       Build   -> Node version:             22"
+echo "       Assets  -> link the R2 bucket as a DAM (Base URL = mediaBaseUrl)"
+echo "  5. Create the site's Inbox (Organization -> Inboxes) with its email targets"
+echo "     and Turnstile keys; put the Inbox key and the Turnstile site key in"
+echo "     sites/$DOMAIN/src/content/settings/site.json (Site Settings -> Technical)."
+echo "  6. Edit sites/$DOMAIN/src/content/settings/site.json — business identity,"
+echo "     siteUrl (already https://www.$DOMAIN). Attach the domain under Hosting"
+echo "     once the first CloudCannon build is green."
 echo ""
-echo "  The starter ships without a CMS. If you add Keystatic, put its photo"
-echo "  uploads in R2 rather than the repo — copy the media wiring from"
-echo "  sites/test-2.com (wrangler.jsonc, src/pages/api/media.ts, the r2Image"
-echo "  helpers in keystatic.config.ts) and see docs/media-storage.md."
-echo ""
-echo "Preset: $PRESET"
-echo "Config: sites/$DOMAIN/src/lib/site-config.ts"
-echo "Styles: sites/$DOMAIN/src/styles/global.css"
+echo "See docs/adding-a-site.md and docs/adding-a-cms.md."

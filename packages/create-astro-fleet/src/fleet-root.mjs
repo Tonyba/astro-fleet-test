@@ -24,7 +24,9 @@ export async function findFleetRoot(startDir = process.cwd()) {
     const pkg = await readJson(join(current, 'package.json'));
     const looksLikeFleet =
       pkg?.name === 'astro-fleet' ||
-      (pkg?.workspaces && (await pathExists(join(current, 'sites', 'starter'))));
+      (pkg?.workspaces &&
+        (await pathExists(join(current, 'sites'))) &&
+        (await pathExists(join(current, 'packages', 'shared-ui'))));
     if (looksLikeFleet) return current;
     const parent = dirname(current);
     if (parent === current) return null;

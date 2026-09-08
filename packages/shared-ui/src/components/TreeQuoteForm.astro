@@ -70,8 +70,9 @@ export interface Props {
    * browser has to follow it. `action` therefore becomes the success page
    * rather than an endpoint.
    *
-   * Leave unset and the form behaves exactly as before — that is what
-   * test-2.com's worker endpoint still uses.
+   * Leave unset and the form posts JSON with fetch to `action` — the legacy
+   * behaviour for a site with its own /api endpoint. Every CloudCannon-hosted
+   * site sets inboxKey.
    */
   inboxKey?: string;
 }

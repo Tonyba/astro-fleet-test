@@ -28,14 +28,3 @@ export function validateDomain(domain) {
   }
   return null;
 }
-
-const PRESETS = ['corporate', 'saas', 'warm'];
-
-export function validatePreset(preset) {
-  if (!PRESETS.includes(preset)) {
-    return `Preset must be one of: ${PRESETS.join(', ')}.`;
-  }
-  return null;
-}
-
-export { PRESETS };

@@ -7,6 +7,8 @@ Get Astro Fleet running locally in under five minutes.
 - **[Bun](https://bun.sh)** — install with `curl -fsSL https://bun.sh/install | bash`
 - **Git**
 - **Node.js 22.12+** (required by Astro 6 — check with `node --version`)
+- **[Wrangler](https://developers.cloudflare.com/workers/wrangler/)** logged in to the Cloudflare account that holds the R2 media buckets (`bunx wrangler login`) — R2 is storage only; the sites themselves are hosted by CloudCannon
+- **[CloudCannon CLI](https://cloudcannon.com)** (`npm i -g @cloudcannon/cli`, then `cloudcannon login`) — optional, for inspecting Sites and build logs
 
 ## 1. Clone the repository
 
@@ -21,80 +23,63 @@ cd astro-fleet
 bun install
 ```
 
-This installs dependencies for all workspaces: the root, `packages/config`, `packages/shared-ui`, and `sites/starter`.
+This installs dependencies for all workspaces: the root, `packages/config`, `packages/shared-ui`, `packages/create-astro-fleet`, and every site under `sites/`. It also points git's hooks path at `.githooks/`, so oversized images are re-encoded before they can be committed.
 
-## 3. Start the dev server
-
-```bash
-bun run dev
-```
-
-The starter site is now running at **http://localhost:4321**.
-
-Open it in your browser. You should see the five-page starter site with the default CORPORATE preset (navy/blue).
-
-## 4. Create your first site
-
-Run the scaffolding script with your domain and a preset:
+## 3. Start a dev server
 
 ```bash
-./scripts/new-site.sh yourdomain.com saas
+bun run dev --filter=<domain> -- --port 4321
 ```
 
-Available presets: `corporate`, `saas`, `warm`
+The site is now running at **http://localhost:4321**. Photographs are downloaded from the site's R2 bucket on first render, so the first page load takes a few seconds.
 
-The script copies the starter template into `sites/yourdomain.com/`, updates the package name, sets the site URL, and writes the correct CSS variables for the chosen preset.
+There is no local CMS admin: content is edited on [CloudCannon](https://cloudcannon.com), which commits to this repository. Locally you edit the content files under `sites/<domain>/src/content/` directly and the dev server picks the change up.
 
-## 5. Edit your site config
+## 4. Create a site
 
-Open the generated config file:
-
+```bash
+./scripts/new-site.sh yourdomain.com [--template <site>]
+# or
+bunx create-astro-fleet add yourdomain.com [--template <site>]
 ```
-sites/yourdomain.com/src/lib/site-config.ts
-```
 
-This is the single file that controls your site's identity, navigation, footer columns, contact details, and social links. Change `SITE_NAME`, `TAGLINE`, navigation items, and footer columns. Everything propagates to all shared components automatically.
+The script clones an existing CloudCannon site under `sites/` into `sites/yourdomain.com/` and renames every reference to the template. With no site in the fleet there is nothing to clone — build the first one by hand following [adding-a-cms.md](./adding-a-cms.md). See [adding-a-site.md](./adding-a-site.md) for the full walk-through, including the media bucket, the CloudCannon Site settings and the Inbox.
 
-See [adding-a-site.md](./adding-a-site.md) for a full field-by-field reference.
-
-## 6. Install new site dependencies and start its dev server
-
-After creating a new site, re-run install so Bun registers the new workspace package:
+## 5. Install and build the new site
 
 ```bash
 bun install
-bun run dev --filter=yourdomain.com
+bun run build --filter=yourdomain.com
 ```
 
-The new site starts at **http://localhost:4321**.
-
-If you want to run the starter and your new site at the same time, pass a different port:
+Then start its dev server:
 
 ```bash
-bun run dev --filter=yourdomain.com -- --port 4322
+bun run dev --filter=yourdomain.com -- --port 4321
 ```
 
-## 7. Edit pages and content
+## 6. Edit the site's content
 
-Pages live at `sites/yourdomain.com/src/pages/`. The starter includes:
+Everything an editor can change is a file under `sites/yourdomain.com/src/content/`:
 
-| File | Route |
-|------|-------|
-| `index.astro` | `/` |
-| `about.astro` | `/about/` |
-| `services.astro` | `/services/` |
-| `contact.astro` | `/contact/` |
-| `404.astro` | 404 error page |
+| Path | What it holds |
+|------|---------------|
+| `settings/site.json` | Site URL, name, logo, favicon, business identity, contact details, SEO patterns, media bucket URL, Inbox key |
+| `settings/header-footer.json` | Header menu (with submenus), footer columns, social links |
+| `homepage/home.json`, `pages/*.json` | Per-page sections and SEO for the hand-built routes in `src/pages/` |
+| `global/*.json` | Sections shared by several pages |
+| `services/`, `locations/`, `posts/` | Collections; the filename is the slug |
+| `forms/*.json` | Reusable form definitions |
 
-Each page imports from `site-config.ts` and passes props to `BaseLayout`. Edit the page content directly in `.astro` files.
+The CMS view of these files is described by `sites/yourdomain.com/cloudcannon.config.yml`. When you add a field to a content file, add it there too, and to the matching schema in `src/content.config.ts` if the file belongs to a collection.
 
-## 8. Build for production
+## 7. Build for production
 
 ```bash
 bun run build --filter=yourdomain.com
 ```
 
-The static output lands in `sites/yourdomain.com/dist/`. This is the directory you deploy.
+The static output lands in `sites/yourdomain.com/dist/`. This is exactly what CloudCannon builds on its side.
 
 To build all sites at once:
 
@@ -102,14 +87,12 @@ To build all sites at once:
 bun run build
 ```
 
-## 9. Deploy
+## 8. Deploy
 
-See [deployment.md](./deployment.md) for step-by-step guides covering:
+There is nothing to run. CloudCannon is connected to `main`, builds the Site on every push and hosts the result; merging a PR, or an editor saving in the CMS, **is** the deploy. GitHub Actions builds every PR as a check so a broken build never reaches CloudCannon.
 
-- **Cloudflare Pages** (recommended — free, global CDN, zero config)
-- **Vercel / Netlify**
-- **Self-hosted** with Traefik + Caddy on a VPS
+See [deployment.md](./deployment.md) for the CloudCannon build settings; the Cloudflare, Vercel, Netlify and self-hosted recipes there are legacy.
 
 ---
 
-**That's it.** The full cycle is: clone → install → create site → edit config → dev → build → deploy.
+**That's it.** The full cycle is: clone → install → create site → connect CloudCannon → edit content → merge → CloudCannon builds and hosts.

@@ -21,7 +21,7 @@
  *     1 MB repo budget enforced by `scripts/check-file-sizes.mjs`.
  *
  * Usage:
- *   node scripts/import-photo.mjs <file...> --out sites/test-2.com/src/assets/photos [--max-width 1920] [--quality 90]
+ *   node scripts/import-photo.mjs <file...> --out sites/<domain>/src/assets/photos [--max-width 1920] [--quality 90]
  */
 import { mkdir, rename, stat, unlink } from 'node:fs/promises';
 import { basename, extname, join, resolve } from 'node:path';

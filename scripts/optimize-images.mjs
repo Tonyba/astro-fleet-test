@@ -5,8 +5,8 @@
  * Self-healing counterpart to `check-file-sizes.mjs`.
  *
  * `import-photo.mjs` is the front door for photographs a DEVELOPER adds. It is
- * not the only door: /keystatic uploads land in `src/assets/` (and `public/`)
- * at whatever size the editor's camera produced, and in production Keystatic
+ * not the only door: "Site files" uploads from CloudCannon land in `src/assets/` (and `public/`)
+ * at whatever size the editor's camera produced, and in production the CMS
  * commits them straight to `main` without this machine ever seeing them. Those
  * uploads are what trip the 1 MB budget in CI.
  *
@@ -164,7 +164,7 @@ async function walk(dir, onFile) {
 /**
  * The substring every reference to an image shares, whichever form it takes.
  *
- * Keystatic writes `/src/assets/photos/a/b.png`, an Astro import writes
+ * The CMS writes `/src/assets/photos/a/b.png`, an Astro import writes
  * `../assets/photos/a/b.png`, and a public file is `/media/icons/c.png`.
  * Dropping everything up to and including the `src/` or `public/` segment
  * leaves `assets/photos/a/b.png` / `media/icons/c.png`, which all three contain
@@ -285,7 +285,7 @@ async function optimize(file, repoRel, originalBytes) {
   }
 
   // Renaming onto a file that already exists would destroy it — and whatever
-  // still points at it. Rare (Keystatic deletes the file it replaces), but
+  // still points at it. Rare, but
   // unrecoverable, so stop and say what to remove.
   if (renaming && existsSync(target)) {
     await unlink(tmp);

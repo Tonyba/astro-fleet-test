@@ -39,7 +39,7 @@ jobs:
 
     steps:
       # FULL history and every branch. The script counts an image as referenced
-      # if ANY branch tip names it, which is what keeps an unmerged Keystatic
+      # if ANY branch tip names it, which is what keeps an unmerged CMS
       # edit's image from looking like an orphan. A shallow or single-branch
       # clone would silently narrow that to one branch and make the sweep more
       # aggressive than it looks.

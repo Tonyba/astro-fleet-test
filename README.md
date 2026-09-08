@@ -64,7 +64,7 @@ bun install
 bun run dev
 ```
 
-The CLI prompts for a target directory, first-site domain, and design preset. Use `--domain` / `--preset` flags to skip prompts.
+The CLI prompts for a target directory and the first-site domain. Use the `--domain` flag to skip the prompt.
 
 **Or clone this repo directly:**
 
@@ -72,15 +72,15 @@ The CLI prompts for a target directory, first-site domain, and design preset. Us
 git clone https://github.com/indivar/astro-fleet.git
 cd astro-fleet
 bun install
-bun run dev          # → starter site at localhost:4321
+bun run dev --filter=<domain> -- --port 4321     # → that site at localhost:4321
 ```
 
 Add more sites to an existing fleet:
 
 ```bash
-bunx create-astro-fleet add yourdomain.com saas
+bunx create-astro-fleet add yourdomain.com
 # or the equivalent bash:
-./scripts/new-site.sh yourdomain.com saas
+./scripts/new-site.sh yourdomain.com
 bun install
 ```
 
@@ -88,8 +88,8 @@ bun install
 
 - **22 shared components + 3 layouts** — Header, Footer, SEO Head, CTA blocks, cards, forms, testimonials, breadcrumbs, pricing tables, FAQ accordions, team grids, timelines, hero sliders, section dividers, comparison tables, and more. All accept content via typed props, all use CSS variables for theming.
 - **Design token system** — 3 presets (Corporate, SaaS, Warm) with a TypeScript interface. Create custom presets or modify colors and fonts per site without touching component code.
-- **Site scaffolder** — Either `bunx create-astro-fleet` (cross-platform, interactive prompts) or `./scripts/new-site.sh domain.com [preset]` (bash) creates a new site from the starter template with the correct config, styles, and build pipeline wired up.
-- **CMS-ready** — Meridian demo ships with [Keystatic](https://keystatic.com) wired up for editable content. Admin at `/keystatic` in dev, content committed as markdown. See [Adding a CMS](docs/adding-a-cms.md) for the pattern and alternatives.
+- **Site scaffolder** — Either `bunx create-astro-fleet add domain.com` (cross-platform) or `./scripts/new-site.sh domain.com` (bash) clones the reference CloudCannon site into `sites/domain.com/` with every reference renamed, so the CMS config, media pipeline, form endpoint and deploy wiring come along.
+- **CloudCannon CMS + hosting** — every site is edited on [CloudCannon](https://cloudcannon.com), which commits straight to this repo, builds the site and hosts it; `sites/<domain>/cloudcannon.config.yml` describes the editors. Nothing to deploy. See [The CMS](docs/adding-a-cms.md).
 - **Infrastructure templates** — Optional Docker Compose + Traefik + Caddy setup for self-hosting on a VPS. Run `./scripts/setup-infra.sh` to generate configs for your domains.
 - **Framework-agnostic** — All components are native `.astro` files (zero JS by default). Need interactivity? Add React, Vue, Svelte, Solid, or Preact to any site — Astro's [Islands Architecture](https://docs.astro.build/en/concepts/islands/) hydrates only the interactive parts.
 - **Self-hosted fonts** — Astro 6 Fonts API downloads Google Fonts at build time and serves them from your domain. No runtime requests to third-party servers, better privacy, optimized fallbacks.
@@ -99,12 +99,12 @@ bun install
 
 - [Getting Started](docs/getting-started.md) — Clone to first deploy in 15 minutes
 - [Adding a Site](docs/adding-a-site.md) — Create and configure additional sites
-- [Adding a CMS](docs/adding-a-cms.md) — Keystatic pattern used in Meridian, plus when to pick a different CMS
+- [The CMS — CloudCannon](docs/adding-a-cms.md) — connecting a hosted Site, the config file, keeping content, YAML and zod in step, forms and Inboxes, verifying changes
 - [SEO Recipes](docs/seo-recipes.md) — Optional SEO add-ons (per-page OG images, git-based lastmod, llms.txt, IndexNow, view transitions, and more)
 - [Components Reference](docs/components.md) — Props, usage examples, CSS variables for every component
 - [Design Tokens](docs/design-tokens.md) — Branding system, presets, custom palettes
 - [Framework Integrations](docs/framework-integrations.md) — Add React/Vue/Svelte, Islands Architecture, View Transitions, Content Collections, and more
-- [Deployment](docs/deployment.md) — Cloudflare Pages, Vercel, Netlify, or self-hosted
+- [Deployment](docs/deployment.md) — CloudCannon hosts every site; the Cloudflare/Vercel/Netlify/self-hosted recipes are legacy
 - [AI Workflow](docs/ai-workflow.md) — Sample prompts, tool setup, AI-driven development patterns
 
 ## Stack

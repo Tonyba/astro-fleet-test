@@ -7,7 +7,7 @@
  * The build is three steps — repair oversized images, build, then enforce the
  * size budget on what was built — and it used to be a `&&` chain inside
  * package.json. A shell appends forwarded arguments to the LAST command in such
- * a chain, so `bun run build --filter=test-2.com` handed `--filter` to the size
+ * a chain, so `bun run build --filter=<domain>` handed `--filter` to the size
  * checker (which ignored it) while turbo happily built all 14 packages. The
  * documented way to build one site was quietly building everything.
  *

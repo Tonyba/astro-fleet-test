@@ -3,7 +3,7 @@
  * ------------
  * The contract between what the CMS stores and what the site renders.
  *
- * A photograph uploaded through Keystatic no longer lands in the repo: it goes
+ * A photograph uploaded through the CMS never lands in the repo: it goes
  * to an R2 bucket and the content file keeps only its key, written with an
  * `r2:` sentinel so it can never be confused with the legacy repo paths:
  *

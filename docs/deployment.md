@@ -1,6 +1,15 @@
 # Deployment
 
-Three deployment paths are supported. All of them consume the same static output from `sites/<domain>/dist/` produced by `bun run build --filter=<domain>`.
+> **The fleet is hosted by CloudCannon.** Every site is built and served by the
+> CloudCannon Site connected to `main`; merging a PR or saving in the CMS is the
+> deploy, and there is nothing to run. The build settings live in
+> [adding-a-cms.md](./adding-a-cms.md#connecting-a-site) (Source Folder
+> `sites/<domain>`, install and build commands prefixed with `cd ../..`, output
+> `dist`). Forms depend on that hosting — a CloudCannon Inbox only receives a
+> post served by CloudCannon — so the paths below are **legacy**: they still
+> produce a working static site, but every form on it would silently break.
+
+Three legacy deployment paths remain documented. All of them consume the same static output from `sites/<domain>/dist/` produced by `bun run build --filter=<domain>`.
 
 ---
 

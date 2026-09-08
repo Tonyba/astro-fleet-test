@@ -1,123 +1,41 @@
-import { cp, readFile, writeFile, access } from 'node:fs/promises';
-import { join } from 'node:path';
+import { cp, readdir, readFile, writeFile, access, stat } from 'node:fs/promises';
+import { join, extname } from 'node:path';
 
-const PRESET_STYLES = {
-  corporate: null,
-  saas: {
-    css: `@import "tailwindcss";
-
-@theme {
-  --color-primary: #0a0f14;
-  --color-secondary: #1a1f2e;
-  --color-accent: #34d399;
-  --color-bg: #0d1117;
-  --color-text: #e6edf3;
-  --color-cta: #10b981;
-  --color-text-secondary: #8b949e;
-  --color-text-muted: #6e7681;
-  --color-border: #30363d;
-  --color-elevated: #161b22;
-  --font-heading: 'Sora', sans-serif;
-  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+/**
+ * Every site in the fleet is edited by CloudCannon, so a new site is a clone
+ * of an existing CloudCannon site, not a blank starter: the content model,
+ * cloudcannon.config.yml, the media pipeline and the form endpoint all come
+ * along, and only the names change. The template is any site under sites/
+ * that carries a cloudcannon.config.yml.
+ */
+export async function findTemplateSites(rootDir) {
+  const sitesDir = join(rootDir, 'sites');
+  if (!(await pathExists(sitesDir))) return [];
+  const found = [];
+  for (const entry of await readdir(sitesDir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    if (await pathExists(join(sitesDir, entry.name, 'cloudcannon.config.yml'))) found.push(entry.name);
+  }
+  return found.sort();
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; }
-body {
-  font-family: var(--font-body);
-  background: var(--color-bg);
-  color: var(--color-text);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-}
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading);
-  line-height: 1.15;
-  color: var(--color-text);
-}
-a { color: inherit; text-decoration: none; }
-a:hover { color: var(--color-accent); }
-`,
-    fonts: {
-      heading: { name: 'Sora', weights: [400, 500, 600, 700, 800] },
-      body: { name: 'Inter', weights: [400, 500, 600, 700] },
-    },
-  },
-  warm: {
-    css: `@import "tailwindcss";
-
-@theme {
-  --color-primary: #1c1917;
-  --color-secondary: #44403c;
-  --color-accent: #d97706;
-  --color-bg: #faf7f2;
-  --color-text: #1c1917;
-  --color-cta: #b45309;
-  --color-text-secondary: #57534e;
-  --color-text-muted: #78716c;
-  --color-border: #e7e5e4;
-  --color-elevated: #ffffff;
-  --font-heading: 'Playfair Display', serif;
-  --font-body: 'Source Sans 3', system-ui, -apple-system, sans-serif;
+async function resolveTemplate(rootDir, template) {
+  if (template) return template;
+  const candidates = await findTemplateSites(rootDir);
+  if (candidates.length === 1) return candidates[0];
+  if (candidates.length === 0) {
+    throw new Error(
+      'No site under sites/ carries a cloudcannon.config.yml, so there is nothing to clone. ' +
+        'Add the first CloudCannon site by hand (see docs/adding-a-cms.md), then clone it.'
+    );
+  }
+  throw new Error(`Several CloudCannon sites found (${candidates.join(', ')}). Pass --template <site>.`);
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; }
-body {
-  font-family: var(--font-body);
-  background: var(--color-bg);
-  color: var(--color-text);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-}
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading);
-  line-height: 1.15;
-  color: var(--color-text);
-}
-a { color: inherit; text-decoration: none; }
-a:hover { color: var(--color-accent); }
-`,
-    fonts: {
-      heading: { name: 'Playfair Display', weights: [400, 600, 700, 800] },
-      body: { name: 'Source Sans 3', weights: [400, 500, 600, 700] },
-    },
-  },
-};
-
-function astroConfigFor(domain, preset) {
-  const styles = PRESET_STYLES[preset];
-  if (!styles) return null;
-  const { fonts } = styles;
-  return `import { defineConfig, fontProviders } from 'astro/config';
-import tailwindcss from '@tailwindcss/vite';
-import sitemap from '@astrojs/sitemap';
-
-export default defineConfig({
-  site: 'https://www.${domain}',
-  integrations: [sitemap()],
-  vite: { plugins: [tailwindcss()] },
-  output: 'static',
-  fonts: [
-    {
-      provider: fontProviders.google(),
-      name: '${fonts.heading.name}',
-      cssVariable: '--font-heading',
-      weights: [${fonts.heading.weights.join(', ')}],
-    },
-    {
-      provider: fontProviders.google(),
-      name: '${fonts.body.name}',
-      cssVariable: '--font-body',
-      weights: [${fonts.body.weights.join(', ')}],
-    },
-  ],
-});
-`;
-}
-
-function titleCase(domain) {
-  const base = domain.split('.')[0];
-  return base.charAt(0).toUpperCase() + base.slice(1);
-}
+const SKIP_DIRS = new Set(['node_modules', 'dist', '.turbo', '.astro', '.wrangler']);
+const TEXT_EXTENSIONS = new Set([
+  '.ts', '.tsx', '.mjs', '.js', '.json', '.jsonc', '.yml', '.yaml', '.md', '.astro', '.css', '.txt',
+]);
 
 async function pathExists(p) {
   try {
@@ -128,59 +46,68 @@ async function pathExists(p) {
   }
 }
 
-async function replaceInFile(path, replacements) {
-  const original = await readFile(path, 'utf8');
-  let next = original;
-  for (const [from, to] of replacements) {
-    next = next.split(from).join(to);
-  }
-  if (next !== original) await writeFile(path, next);
+/** Bucket and other dot-free identifiers: acme.com -> acme-com. */
+export function slugify(domain) {
+  return domain.toLowerCase().replace(/\./g, '-');
 }
 
-export async function scaffoldSite({ rootDir, domain, preset }) {
+function escapeRegExp(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+async function* walk(dir) {
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (!SKIP_DIRS.has(entry.name)) yield* walk(full);
+    } else if (entry.isFile()) {
+      yield full;
+    }
+  }
+}
+
+export async function scaffoldSite({ rootDir, domain, template: requested }) {
+  const template = await resolveTemplate(rootDir, requested);
   const sitesDir = join(rootDir, 'sites');
-  const starterDir = join(sitesDir, 'starter');
+  const templateDir = join(sitesDir, template);
   const targetDir = join(sitesDir, domain);
 
-  if (!(await pathExists(starterDir))) {
-    throw new Error(`Starter template not found at sites/starter in ${rootDir}.`);
+  if (!(await pathExists(templateDir))) {
+    throw new Error(`Template site not found at sites/${template} in ${rootDir}.`);
+  }
+  if (!(await pathExists(join(templateDir, 'cloudcannon.config.yml')))) {
+    throw new Error(`sites/${template} has no cloudcannon.config.yml — only CloudCannon sites can be cloned.`);
   }
   if (await pathExists(targetDir)) {
     throw new Error(`sites/${domain} already exists.`);
   }
 
-  await cp(starterDir, targetDir, {
+  // Build output, caches, node_modules and local secrets stay behind.
+  await cp(templateDir, targetDir, {
     recursive: true,
-    filter: (src) => !/[\\/](node_modules|dist|\.turbo|\.astro)($|[\\/])/.test(src),
+    filter: (src) => {
+      const name = src.split(/[\\/]/).pop();
+      if (SKIP_DIRS.has(name)) return false;
+      if (name === '.env' || name.startsWith('.env.')) return false;
+      return true;
+    },
   });
 
-  const siteTitle = titleCase(domain);
+  // Rename every reference to the template site: the package name, the
+  // canonical siteUrl in the CMS settings, the CloudCannon `source`, the Worker
+  // name, the paths /api/quote commits submissions to, and the bucket the
+  // comments point at.
+  const domainRe = new RegExp(escapeRegExp(template), 'g');
+  const slugRe = new RegExp(escapeRegExp(slugify(template)), 'g');
+  const slug = slugify(domain);
 
-  await replaceInFile(join(targetDir, 'astro.config.mjs'), [
-    ['https://www.example.com', `https://www.${domain}`],
-  ]);
-
-  const robotsPath = join(targetDir, 'public', 'robots.txt');
-  if (await pathExists(robotsPath)) {
-    await replaceInFile(robotsPath, [
-      ['https://www.example.com', `https://www.${domain}`],
-    ]);
+  for await (const file of walk(targetDir)) {
+    if (!TEXT_EXTENSIONS.has(extname(file))) continue;
+    if ((await stat(file)).size > 2 * 1024 * 1024) continue;
+    const original = await readFile(file, 'utf8');
+    const next = original.replace(domainRe, domain).replace(slugRe, slug);
+    if (next !== original) await writeFile(file, next);
   }
 
-  await replaceInFile(join(targetDir, 'package.json'), [
-    ['"name": "starter"', `"name": "${domain}"`],
-  ]);
-
-  await replaceInFile(join(targetDir, 'src', 'lib', 'site-config.ts'), [
-    ["'Starter Site'", `'${siteTitle}'`],
-    ["'Built with Astro Fleet'", `'Powered by ${siteTitle}'`],
-  ]);
-
-  const styles = PRESET_STYLES[preset];
-  if (styles) {
-    await writeFile(join(targetDir, 'src', 'styles', 'global.css'), styles.css);
-    await writeFile(join(targetDir, 'astro.config.mjs'), astroConfigFor(domain, preset));
-  }
-
-  return targetDir;
+  return { targetDir, template };
 }
